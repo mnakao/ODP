@@ -275,7 +275,7 @@ The number of them plus 6 ( `= nodes/groups`) matches the 1st row in the next gr
 Here, 22 + 6 = 28, but the number of nodes is 24, so it goes around and becomes 28 - 24 = 6.
 
 There is also an exception if the value of `groups` are even.
-The edge with vertex numbers 4 and 16 in the 3rd row is the diameter across the center of the circle.
+The edge with vertex numbers 4 and 16 in the 3rd line is the diameter across the center of the circle.
 Specifically, the value obtained by subtracting the vertex numbers is half the number of nodes.
 The difference between the 3rd and 12th lines is exactly 6, but the difference between the 12th and 21st lines is not 6.
 This is because if the difference between the 3rd and 21st lines is 12, the lines will overlap.
