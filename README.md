@@ -249,7 +249,7 @@ void apsp_all_mpi_cuda_run_grid(char *fname, MPI_Comm comm, int *width, int *hei
 * [OUT] length : Maximum length of a grid graph
 
 ### Initialize for a graph with symmetry
-These functions can be used instead of the apsp_init\* functions for only a general graph.
+These functions can be used instead of the apsp_init\* functions for only a general graph with symmetry.
 
 ```
 void apsp_init_s         (int nodes, int degree, int num_degrees[nodes], int groups)
@@ -274,13 +274,13 @@ For example, the values on the 1st row are 22 and 15.
 The number of them plus 6 ( `= nodes/groups`) matches the 1st row in the next group (in line 10).
 Here, 22 + 6 = 28, but the number of nodes is 24, so it goes around and becomes 28 - 24 = 6.
 
-There is also an exception if the values of groups are even.
+There is also an exception if the value of `groups` are even.
 The edge with vertex numbers 4 and 16 in the 3rd row is the diameter across the center of the circle.
 Specifically, the value obtained by subtracting the vertex numbers is half the number of nodes.
 The difference between the 3rd and 12th lines is exactly 6, but the difference between the 12th and 21st lines is not 6.
 This is because if the difference between the 3rd and 21st lines is 12, the lines will overlap.
 In such cases, the edge list is devided into two large groups.
-One group consists of the 1st to `groups/2`th group, and another group consists of the remaining groups `groups/2+1`th to the last group.
+One group consists of the 1st to `groups/2`th group, and another group consists of the remaining groups (`groups/2+1`th to the last group).
 Within each group, the difference between the vertices should be `nodes/groups`.
 
 ## Note
