@@ -1,0 +1,20 @@
+Width = 4, Height = 4, Length = 2, Degrees = 3
+Diameter     = 3
+Diameter Gap = 0 (3 - 3)
+ASPL         = 2.2000000000 (264/120)
+ASPL Gap     = 0.0000000000 (2.2000000000 - 2.2000000000)
+Width = 5, Height = 5, Length = 2, Degrees = 4
+Diameter     = 4
+Diameter Gap = 0 (4 - 4)
+ASPL         = 2.2666666667 (680/300)
+ASPL Gap     = 0.0533333333 (2.2666666667 - 2.2133333333)
+Width = 10, Height = 10, Length = 3, Degrees = 6
+Diameter     = 6
+Diameter Gap = 0 (6 - 6)
+ASPL         = 2.9030303030 (14370/4950)
+ASPL Gap     = 0.0642424242 (2.9030303030 - 2.8387878788)
+Width = 10, Height = 10, Length = 4, Degrees = 8
+Diameter     = 5
+Diameter Gap = 0 (5 - 5)
+ASPL         = 2.4262626263 (12010/4950)
+ASPL Gap     = 0.0751515152 (2.4262626263 - 2.3511111111)

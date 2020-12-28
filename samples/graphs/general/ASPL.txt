@@ -1,0 +1,30 @@
+Nodes = 12, Degrees = 3
+Diameter     = 4
+Diameter Gap = 1 (4 - 3)
+ASPL         = 2.1363636364 (141/66)
+ASPL Gap     = 0.2272727273 (2.1363636364 - 1.9090909091)
+Nodes = 16, Degrees = 4
+Diameter     = 3
+Diameter Gap = 1 (3 - 2)
+ASPL         = 1.9166666667 (230/120)
+ASPL Gap     = 0.1833333333 (1.9166666667 - 1.7333333333)
+Nodes = 72, Degrees = 4
+Diameter     = 4
+Diameter Gap = 0 (4 - 4)
+ASPL         = 2.9859154930 (7632/2556)
+ASPL Gap     = 0.0000000000 (2.9859154930 - 2.9859154930)
+Nodes = 100, Degrees = 10
+Diameter     = 3
+Diameter Gap = 1 (3 - 2)
+ASPL         = 2.2252525253 (11015/4950)
+ASPL Gap     = 0.3262626263 (2.2252525253 - 1.8989898990)
+Nodes = 256, Degrees = 5
+Diameter     = 6
+Diameter Gap = 2 (6 - 4)
+ASPL         = 3.7324448529 (121827/32640)
+ASPL Gap     = 0.2618566176 (3.7324448529 - 3.4705882353)
+Nodes = 256, Degrees = 10
+Diameter     = 4
+Diameter Gap = 1 (4 - 3)
+ASPL         = 2.6487132353 (86454/32640)
+ASPL Gap     = 0.0800857843 (2.6487132353 - 2.5686274510)
