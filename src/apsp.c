@@ -139,13 +139,13 @@ void apsp_init_s(const int nodes, const int degree, const int* num_degrees, cons
   if(_kind == APSP_NORMAL){
     unsigned int elements = (nodes/groups+(UINT64_BITS-1))/UINT64_BITS;
     size_t s = nodes * elements * sizeof(uint64_t);
-    _A = malloc(s); // uint64_t A[nodes][elements];
-    _B = malloc(s); // uint64_t B[nodes][elements];
+    posix_memalign((void **)&_A, ALIGN_VALUE, s); // uint64_t A[nodes][elements];
+    posix_memalign((void **)&_B, ALIGN_VALUE, s); // uint64_t B[nodes][elements];
   }
   else{
     size_t s = nodes * CHUNK * sizeof(uint64_t);
-    _A = malloc(s); // uint64_t A[nodes][CHUNK];
-    _B = malloc(s); // uint64_t B[nodes][CHUNK];
+    posix_memalign((void **)&_A, ALIGN_VALUE, s); // uint64_t A[nodes][CHUNK];
+    posix_memalign((void **)&_B, ALIGN_VALUE, s); // uint64_t B[nodes][CHUNK];
   }
 
   _nodes = nodes;

@@ -156,13 +156,13 @@ void apsp_mpi_init_s(const int nodes, const int degree,
     unsigned int elements = (nodes/groups+(UINT64_BITS-1))/UINT64_BITS;
     unsigned int chunk = (elements+(_procs-1))/_procs;
     size_t s = nodes * chunk * sizeof(uint64_t);
-    _A = malloc(s);  // uint64_t A[nodes][chunk];
-    _B = malloc(s);  // uint64_t B[nodes][chunk];
+    posix_memalign((void **)&_A, ALIGN_VALUE, s); // uint64_t A[nodes][chunk];
+    posix_memalign((void **)&_B, ALIGN_VALUE, s); // uint64_t B[nodes][chunk];
   }
   else{
     size_t s = nodes * CHUNK * sizeof(uint64_t);
-    _A = malloc(s);  // uint64_t A[nodes][CHUNK];
-    _B = malloc(s);  // uint64_t B[nodes][CHUNK];
+    posix_memalign((void **)&_A, ALIGN_VALUE, s); // uint64_t A[nodes][CHUNK];
+    posix_memalign((void **)&_B, ALIGN_VALUE, s); // uint64_t B[nodes][CHUNK];
   }
   _nodes = nodes;
   _degree = degree;
