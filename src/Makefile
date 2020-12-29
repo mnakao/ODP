@@ -1,11 +1,11 @@
 ifeq ($(ENV), intel)
   CC=icc
-  CFLAGS=-O3 -std=gnu99 -Wno-unknown-pragmas
+  CFLAGS=-O3 -std=gnu99 -Wno-unknown-pragmas -mavx2
   CUDA_FLAGS=-O3
   OMP_FLAGS=-qopenmp
 else
   CC=gcc
-  CFLAGS=-O3 -mcmodel=medium -march=native -std=gnu99
+  CFLAGS=-O3 -mcmodel=medium -march=native -std=gnu99 -Wno-unknown-pragmas
   CUDA_FLAGS=-O3
   OMP_FLAGS=-fopenmp
 endif

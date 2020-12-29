@@ -1,6 +1,6 @@
 ifeq ($(ENV), intel)
   CC=icc
-  CFLAGS=-O3 -std=gnu99
+  CFLAGS=-O3 -std=gnu99 -mavx2
   OMP_FLAGS=-qopenmp
   CUDA_BIN=-ccbin icc
 else
