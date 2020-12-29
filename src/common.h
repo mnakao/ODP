@@ -12,8 +12,8 @@
 #include <unistd.h>
 #include <limits.h>
 #include "parameter.h"
-#ifndef _CYGNUS
-  #include <nmmintrin.h>
+#ifdef __AVX2__
+#include <immintrin.h>
 #endif
 #ifdef _OPENMP
   #include <omp.h>
