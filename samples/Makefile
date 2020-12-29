@@ -1,4 +1,4 @@
-ifeq ($(ENV), cygnus)
+ifeq ($(ENV), intel)
   CC=icc
   CFLAGS=-O3 -std=gnu99
   OMP_FLAGS=-qopenmp
