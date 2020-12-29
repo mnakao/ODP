@@ -3,25 +3,25 @@ static time_t _start_t;
 static double _elapsed_time;
 
 double apsp_get_mem_usage(const int kind, const int nodes, const int degree, const int groups,
-			  const int *num_degree, const int procs)
+			  const int *num_degree, const int procs, const int chunk)
 {
   double edge_size   = (double)nodes * degree * sizeof(int);
   double adj_size    = edge_size;
   double degree_size = (num_degree)? (double)nodes * sizeof(int) : 0;
   double normal_mem  = (double)nodes * ((double)nodes / (4 * groups * procs));
-  double saving_mem  = 16 * (double)nodes * CHUNK;
+  double saving_mem  = 16 * (double)nodes * chunk;
   double in_apsp     = (kind == APSP_NORMAL)? normal_mem : saving_mem;
   
   return (edge_size + adj_size + degree_size + in_apsp)/1024/1024;
 }
 
 int apsp_get_kind(const int nodes, const int degree, const int* num_degrees, const int groups,
-		  const int procs)
+		  const int procs, const int chunk)
 {
   char *val = getenv("APSP");
   int kind;
   if(val == NULL){
-    double normal_mem_usage = apsp_get_mem_usage(APSP_NORMAL, nodes, degree, groups, num_degrees, procs);
+    double normal_mem_usage = apsp_get_mem_usage(APSP_NORMAL, nodes, degree, groups, num_degrees, procs, chunk);
     if(normal_mem_usage <= MEM_THRESHOLD)
       kind = APSP_NORMAL;
     else

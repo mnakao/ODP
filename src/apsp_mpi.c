@@ -8,11 +8,11 @@ static double _mem_usage;
 static MPI_Comm _comm;
 
 extern int  apsp_get_kind(const int nodes, const int degree, const int* num_degrees, const int groups,
-                          const int procs);
+                          const int procs, const int chunk);
 extern void apsp_start_profile();
 extern void apsp_end_profile(const char* name, const int kind, const int groups, const double mem_usage, const int procs);
 extern double apsp_get_mem_usage(const int kind, const int nodes, const int degree, const int groups,
-				 const int *num_degree, const int procs);
+				 const int *num_degree, const int procs, const int chunk);
 extern void matmul(const uint64_t *restrict A, uint64_t *restrict B, const int* restrict adjacency,
 		   const int nodes, int degree, const int *num_degrees, const unsigned int rows);
 
@@ -116,18 +116,18 @@ static void apsp_mpi_mat(const int* restrict adjacency,
 static void apsp_mpi_mat_saving(const int* restrict adjacency,
 				int *diameter, long *sum, double *ASPL)
 {
-  int parsize = (_total_elements+(CHUNK-1))/CHUNK;
+  int parsize = (_total_elements+(CPU_CHUNK-1))/CPU_CHUNK;
  
   *sum = 0.0;
   *diameter = 1;
   for(int t=_rank;t<parsize;t+=_procs){
     unsigned int kk, l;
 #pragma omp parallel for
-    for(int i=0;i<_nodes*CHUNK;i++)
+    for(int i=0;i<_nodes*CPU_CHUNK;i++)
       _A[i] = _B[i] = 0;
     
-    for(l=0; l<UINT64_BITS*CHUNK && UINT64_BITS*t*CHUNK+l<_nodes/_groups; l++){
-      unsigned int offset = (UINT64_BITS*t*CHUNK+l)*CHUNK+l/UINT64_BITS;
+    for(l=0; l<UINT64_BITS*CPU_CHUNK && UINT64_BITS*t*CPU_CHUNK+l<_nodes/_groups; l++){
+      unsigned int offset = (UINT64_BITS*t*CPU_CHUNK+l)*CPU_CHUNK+l/UINT64_BITS;
       _A[offset] = _B[offset] = (0x1ULL<<(l%UINT64_BITS));
     }
 
@@ -136,11 +136,11 @@ static void apsp_mpi_mat_saving(const int* restrict adjacency,
       if(!_num_degrees){
 #pragma omp parallel for
         for(int i=0;i<_nodes;i++){
-          __m256i *b = (__m256i *)(_B + i*CHUNK);
+          __m256i *b = (__m256i *)(_B + i*CPU_CHUNK);
           for(int j=0;j<_degree;j++){
             int n = *(adjacency + i * _degree + j);  // int n = adjacency[i][j];
-            __m256i *a = (__m256i *)(_A + n*CHUNK);
-            for(int k=0;k<CHUNK/4;k++){
+            __m256i *a = (__m256i *)(_A + n*CPU_CHUNK);
+            for(int k=0;k<CPU_CHUNK/4;k++){
               __m256i aa = _mm256_load_si256(a+k);
               __m256i bb = _mm256_load_si256(b+k);
               _mm256_store_si256(b+k, _mm256_or_si256(aa, bb));
@@ -151,11 +151,11 @@ static void apsp_mpi_mat_saving(const int* restrict adjacency,
       else{
 #pragma omp parallel for
         for(int i=0;i<_nodes;i++){
-          __m256i *b = (__m256i *)(_B + i*CHUNK);
+          __m256i *b = (__m256i *)(_B + i*CPU_CHUNK);
           for(int j=0;j<_num_degrees[i];j++){
             int n = *(adjacency + i * _degree + j);  // int n = adjacency[i][j];
-            __m256i *a = (__m256i *)(_A + n*CHUNK);
-            for(int k=0;k<CHUNK/4;k++){
+            __m256i *a = (__m256i *)(_A + n*CPU_CHUNK);
+            for(int k=0;k<CPU_CHUNK/4;k++){
               __m256i aa = _mm256_load_si256(a+k);
               __m256i bb = _mm256_load_si256(b+k);
               _mm256_store_si256(b+k, _mm256_or_si256(aa, bb));
@@ -169,8 +169,8 @@ static void apsp_mpi_mat_saving(const int* restrict adjacency,
         for(int i=0;i<_nodes;i++){
           for(int j=0;j<_degree;j++){
             int n = *(adjacency + i * _degree + j);  // int n = adjacency[i][j];
-            for(int k=0;k<CHUNK;k++)
-              _B[i*CHUNK+k] |= _A[n*CHUNK+k];
+            for(int k=0;k<CPU_CHUNK;k++)
+              _B[i*CPU_CHUNK+k] |= _A[n*CPU_CHUNK+k];
           }
         }
       }
@@ -179,8 +179,8 @@ static void apsp_mpi_mat_saving(const int* restrict adjacency,
         for(int i=0;i<_nodes;i++){
           for(int j=0;j<_num_degrees[i];j++){
             int n = *(adjacency + i * _degree + j);  // int n = adjacency[i][j];
-            for(int k=0;k<CHUNK;k++)
-              _B[i*CHUNK+k] |= _A[n*CHUNK+k];
+            for(int k=0;k<CPU_CHUNK;k++)
+              _B[i*CPU_CHUNK+k] |= _A[n*CPU_CHUNK+k];
           }
         }
       }
@@ -188,7 +188,7 @@ static void apsp_mpi_mat_saving(const int* restrict adjacency,
 
       uint64_t num = 0;
 #pragma omp parallel for reduction(+:num)
-      for(int i=0;i<CHUNK*_nodes;i++)
+      for(int i=0;i<CPU_CHUNK*_nodes;i++)
         num += POPCNT(_B[i]);
 
       if(num == (uint64_t)_nodes*l) break;
@@ -215,14 +215,14 @@ void apsp_mpi_init_s(const int nodes, const int degree,
 {
   if(nodes % groups != 0)
     ERROR("nodes(%d) must be divisible by group(%d)\n", nodes, groups);
-  else if(CHUNK % 4 != 0)
-    ERROR("CHUNK(%d) in parameter.h must be multiple of 4\n", CHUNK);
+  else if(CPU_CHUNK % 4 != 0)
+    ERROR("CPU_CHUNK(%d) in parameter.h must be multiple of 4\n", CPU_CHUNK);
 
   MPI_Comm_rank(comm, &_rank);
   MPI_Comm_size(comm, &_procs);
 
-  _kind = apsp_get_kind(nodes, degree, num_degrees, groups, _procs);
-  _mem_usage = apsp_get_mem_usage(_kind, nodes, degree, groups, num_degrees, _procs);
+  _kind = apsp_get_kind(nodes, degree, num_degrees, groups, _procs, CPU_CHUNK);
+  _mem_usage = apsp_get_mem_usage(_kind, nodes, degree, groups, num_degrees, _procs, CPU_CHUNK);
   _total_elements = (nodes/groups+(UINT64_BITS-1))/UINT64_BITS;
   _elements = (_total_elements+(_procs-1))/_procs;
 #ifdef __AVX2__
@@ -240,13 +240,13 @@ void apsp_mpi_init_s(const int nodes, const int degree,
 #endif
   }
   else{
-    size_t s = nodes * CHUNK * sizeof(uint64_t);
+    size_t s = nodes * CPU_CHUNK * sizeof(uint64_t);
 #ifdef __AVX2__
-    _A = (uint64_t *) _mm_malloc(s, ALIGN_VALUE); // uint64_t A[nodes][CHUNK];
-    _B = (uint64_t *) _mm_malloc(s, ALIGN_VALUE); // uint64_t B[nodes][CHUNK];
+    _A = (uint64_t *) _mm_malloc(s, ALIGN_VALUE); // uint64_t A[nodes][CPU_CHUNK];
+    _B = (uint64_t *) _mm_malloc(s, ALIGN_VALUE); // uint64_t B[nodes][CPU_CHUNK];
 #else
-    posix_memalign((void **)&_A, ALIGN_VALUE, s); // uint64_t A[nodes][CHUNK];
-    posix_memalign((void **)&_B, ALIGN_VALUE, s); // uint64_t B[nodes][CHUNK];
+    posix_memalign((void **)&_A, ALIGN_VALUE, s); // uint64_t A[nodes][CPU_CHUNK];
+    posix_memalign((void **)&_B, ALIGN_VALUE, s); // uint64_t B[nodes][CPU_CHUNK];
 #endif
   }
   _nodes = nodes;

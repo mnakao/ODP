@@ -9,9 +9,9 @@ static double _mem_usage;
 extern "C" void apsp_start_profile();
 extern "C" void apsp_end_profile(const char* name, const int kind, const int groups, const double mem_usage, const int procs);
 extern "C" double apsp_get_mem_usage(const int kind, const int nodes, const int degree, const int groups,
-				     const int *num_degree, const int procs);
+				     const int *num_degree, const int procs, const int chunk);
 extern "C" int  apsp_get_kind(const int nodes, const int degree, const int* num_degrees, const int groups,
-			      const int procs);
+			      const int procs, const int chunk);
 extern __global__ void clear_buffers(uint64_t* __restrict__ A, uint64_t* __restrict__ B, const int length);
 extern __global__ void popcnt(const uint64_t* __restrict__ B, const int nodes,
                               const unsigned int elements, uint64_t* __restrict__ result);
@@ -33,8 +33,8 @@ static __global__ void init_buffers_saving(uint64_t* __restrict__ A, uint64_t* _
 					   const int nodes, const int groups, const int t)
 {
   int tid = threadIdx.x + blockIdx.x * blockDim.x;
-  while (tid<UINT64_BITS*CHUNK && UINT64_BITS*t*CHUNK+tid<nodes/groups) {
-    unsigned int offset = (UINT64_BITS*t*CHUNK+tid)*CHUNK+tid/UINT64_BITS;
+  while (tid<UINT64_BITS*GPU_CHUNK && UINT64_BITS*t*GPU_CHUNK+tid<nodes/groups) {
+    unsigned int offset = (UINT64_BITS*t*GPU_CHUNK+tid)*GPU_CHUNK+tid/UINT64_BITS;
     A[offset] = B[offset] = (0x1ULL<<(tid%UINT64_BITS));
     tid += blockDim.x * gridDim.x;
   }
@@ -79,20 +79,20 @@ static void apsp_cuda_mat_saving(const int* __restrict__ adjacency,
 				 int *diameter, long *sum, double *ASPL)
 {
   unsigned int elements = (_nodes/_groups+UINT64_BITS-1)/UINT64_BITS;
-  int parsize = (elements + CHUNK - 1)/CHUNK;
+  int parsize = (elements + GPU_CHUNK - 1)/GPU_CHUNK;
   *sum = (long)_nodes * (_nodes - 1);
   *diameter = 1;
 
   for(int t=0;t<parsize;t++){
     unsigned int kk, l;
-    for(l=0; l<UINT64_BITS*CHUNK && UINT64_BITS*t*CHUNK+l<_nodes/_groups; l++){}
-    clear_buffers       <<< BLOCKS, THREADS >>> (_A_dev, _B_dev, _nodes*CHUNK);
+    for(l=0; l<UINT64_BITS*GPU_CHUNK && UINT64_BITS*t*GPU_CHUNK+l<_nodes/_groups; l++){}
+    clear_buffers       <<< BLOCKS, THREADS >>> (_A_dev, _B_dev, _nodes*GPU_CHUNK);
     init_buffers_saving <<< BLOCKS, THREADS >>> (_A_dev, _B_dev, _nodes, _groups, t);
 
     for(kk=0;kk<_nodes;kk++){
       matrix_op <<< BLOCKS, THREADS >>> (_A_dev, _B_dev, _adjacency_dev, _num_degrees_dev,
-					 _nodes, _degree, CHUNK);
-      popcnt    <<< BLOCKS, THREADS >>> (_B_dev, _nodes, CHUNK, _result_dev);
+					 _nodes, _degree, GPU_CHUNK);
+      popcnt    <<< BLOCKS, THREADS >>> (_B_dev, _nodes, GPU_CHUNK, _result_dev);
 
       cudaMemcpy(_result, _result_dev, sizeof(uint64_t)*BLOCKS, cudaMemcpyDeviceToHost);
       uint64_t num = 0;
@@ -123,9 +123,9 @@ extern "C" void apsp_cuda_init_s(const int nodes, const int degree,
   if(nodes % groups != 0)
     ERROR("nodes(%d) must be divisible by group(%d)\n", nodes, groups);
 
-  _kind = apsp_get_kind(nodes, degree, num_degrees, groups, 1);
-  _mem_usage = apsp_get_mem_usage(_kind, nodes, degree, groups, num_degrees, 1);
-  size_t s = (_kind == APSP_NORMAL)? (nodes/groups+(UINT64_BITS-1))/UINT64_BITS : CHUNK;
+  _kind = apsp_get_kind(nodes, degree, num_degrees, groups, 1, GPU_CHUNK);
+  _mem_usage = apsp_get_mem_usage(_kind, nodes, degree, groups, num_degrees, 1, GPU_CHUNK);
+  size_t s = (_kind == APSP_NORMAL)? (nodes/groups+(UINT64_BITS-1))/UINT64_BITS : GPU_CHUNK;
   s *= nodes * sizeof(uint64_t);
 
   _nodes = nodes;
