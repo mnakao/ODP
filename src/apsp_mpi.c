@@ -73,7 +73,7 @@ static void apsp_mpi_mat(const int* restrict adjacency,
 	  for(int j=0;j<_degree;j++){
 	    int n = *(adjacency + i * _degree + j);  // int n = adjacency[i][j];
 	    for(int k=0;k<_elements;k++)
-	      B[i*_elements+k] |= A[n*_elements+k];
+	      _B[i*_elements+k] |= _A[n*_elements+k];
 	  }
 	}
       }
@@ -83,7 +83,7 @@ static void apsp_mpi_mat(const int* restrict adjacency,
 	  for(int j=0;j<_num_degrees[i];j++){
 	    int n = *(adjacency + i * _degree + j);  // int n = adjacency[i][j];
 	    for(int k=0;k<_elements;k++)
-	      B[i*_elements+k] |= A[n*_elements+k];
+	      _B[i*_elements+k] |= _A[n*_elements+k];
 	  }
 	}
       }
@@ -170,7 +170,7 @@ static void apsp_mpi_mat_saving(const int* restrict adjacency,
           for(int j=0;j<_degree;j++){
             int n = *(adjacency + i * _degree + j);  // int n = adjacency[i][j];
             for(int k=0;k<CHUNK;k++)
-              B[i*CHUNK+k] |= A[n*CHUNK+k];
+              _B[i*CHUNK+k] |= _A[n*CHUNK+k];
           }
         }
       }
@@ -180,7 +180,7 @@ static void apsp_mpi_mat_saving(const int* restrict adjacency,
           for(int j=0;j<_num_degrees[i];j++){
             int n = *(adjacency + i * _degree + j);  // int n = adjacency[i][j];
             for(int k=0;k<CHUNK;k++)
-              B[i*CHUNK+k] |= A[n*CHUNK+k];
+              _B[i*CHUNK+k] |= _A[n*CHUNK+k];
           }
         }
       }
