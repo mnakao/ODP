@@ -11,8 +11,6 @@ extern int  apsp_get_kind(const int nodes, const int degree, const int* num_degr
 			  const int procs);
 extern double apsp_get_mem_usage(const int kind, const int nodes, const int degree, const int groups,
                                  const int *num_degree, const int procs);
-extern void matmul(const uint64_t *restrict A, uint64_t *restrict B, const int* restrict adjacency,
-		   const int nodes, int degree, const int *num_degrees, const unsigned int rows);
 
 static void apsp_mat(const int* restrict adjacency,
 		     int *diameter, long *sum, double *ASPL)
@@ -30,7 +28,59 @@ static void apsp_mat(const int* restrict adjacency,
   *sum = (long)_nodes * (_nodes - 1);
   *diameter = 1;
   for(int kk=0;kk<_nodes;kk++){
-    matmul(_A, _B, adjacency, _nodes, _degree, _num_degrees, _elements);
+#ifdef __AVX2__
+    if(!_num_degrees){
+#pragma omp parallel for
+      for(int i=0;i<_nodes;i++){
+	__m256i *b = (__m256i *)(_B + i*_elements);
+	for(int j=0;j<_degree;j++){
+	  int n = *(adjacency + i * _degree + j);  // int n = adjacency[i][j];
+	  __m256i *a = (__m256i *)(_A + n*_elements);
+	  for(int k=0;k<_elements/4;k++){
+	    __m256i aa = _mm256_load_si256(a+k);
+	    __m256i bb = _mm256_load_si256(b+k);
+	    _mm256_store_si256(b+k, _mm256_or_si256(aa, bb));
+	  }
+	}
+      }
+    }
+    else{
+#pragma omp parallel for
+      for(int i=0;i<_nodes;i++){
+	__m256i *b = (__m256i *)(_B + i*_elements);
+	for(int j=0;j<_num_degrees[i];j++){
+	  int n = *(adjacency + i * _degree + j);  // int n = adjacency[i][j];
+	  __m256i *a = (__m256i *)(_A + n*_elements);
+	  for(int k=0;k<_elements/4;k++){
+	    __m256i aa = _mm256_load_si256(a+k);
+	    __m256i bb = _mm256_load_si256(b+k);
+	    _mm256_store_si256(b+k, _mm256_or_si256(aa, bb));
+        }
+	}
+      }
+    }
+#else
+    if(!_num_degrees){
+#pragma omp parallel for
+      for(int i=0;i<_nodes;i++){
+	for(int j=0;j<_degree;j++){
+	  int n = *(adjacency + i * _degree + j);  // int n = adjacency[i][j];
+	  for(int k=0;k<_elements;k++)
+	    B[i*_elements+k] |= A[n*_elements+k];
+	}
+      }
+    }
+    else{
+#pragma omp parallel for
+      for(int i=0;i<_nodes;i++){
+	for(int j=0;j<_num_degrees[i];j++){
+	  int n = *(adjacency + i * _degree + j);  // int n = adjacency[i][j];
+          for(int k=0;k<_elements;k++)
+            B[i*_elements+k] |= A[n*_elements+k];
+	}
+      }
+    }
+#endif
 
     uint64_t num = 0;
 #pragma omp parallel for reduction(+:num)
@@ -72,8 +122,60 @@ static void apsp_mat_saving(const int* restrict adjacency,
     }
 
     for(kk=0;kk<_nodes;kk++){
-      matmul(_A, _B, adjacency, _nodes, _degree, _num_degrees, CHUNK);
-
+#ifdef __AVX2__
+      if(!_num_degrees){
+#pragma omp parallel for
+	for(int i=0;i<_nodes;i++){
+	  __m256i *b = (__m256i *)(_B + i*CHUNK);
+	  for(int j=0;j<_degree;j++){
+	    int n = *(adjacency + i * _degree + j);  // int n = adjacency[i][j];
+	    __m256i *a = (__m256i *)(_A + n*CHUNK);
+	    for(int k=0;k<CHUNK/4;k++){
+	      __m256i aa = _mm256_load_si256(a+k);
+	      __m256i bb = _mm256_load_si256(b+k);
+	      _mm256_store_si256(b+k, _mm256_or_si256(aa, bb));
+	    }
+	  }
+	}
+      }
+      else{
+#pragma omp parallel for
+	for(int i=0;i<_nodes;i++){
+	  __m256i *b = (__m256i *)(_B + i*CHUNK);
+	  for(int j=0;j<_num_degrees[i];j++){
+	    int n = *(adjacency + i * _degree + j);  // int n = adjacency[i][j];
+	    __m256i *a = (__m256i *)(_A + n*CHUNK);
+	    for(int k=0;k<CHUNK/4;k++){
+	      __m256i aa = _mm256_load_si256(a+k);
+	      __m256i bb = _mm256_load_si256(b+k);
+	      _mm256_store_si256(b+k, _mm256_or_si256(aa, bb));
+	    }
+	  }
+	}
+      }
+#else
+      if(!_num_degrees){
+#pragma omp parallel for
+	for(int i=0;i<_nodes;i++){
+	  for(int j=0;j<_degree;j++){
+	    int n = *(adjacency + i * _degree + j);  // int n = adjacency[i][j];
+	    for(int k=0;k<CHUNK;k++)
+	      B[i*CHUNK+k] |= A[n*CHUNK+k];
+	  }
+	}
+      }
+      else{
+#pragma omp parallel for
+	for(int i=0;i<_nodes;i++){
+	  for(int j=0;j<_num_degrees[i];j++){
+	    int n = *(adjacency + i * _degree + j);  // int n = adjacency[i][j];
+	    for(int k=0;k<CHUNK;k++)
+	      B[i*CHUNK+k] |= A[n*CHUNK+k];
+	  }
+	}
+      }
+#endif
+    
       uint64_t num = 0;
 #pragma omp parallel for reduction(+:num)
       for(int i=0;i<CHUNK*_nodes;i++)

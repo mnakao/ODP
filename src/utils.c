@@ -2,64 +2,6 @@
 static time_t _start_t;
 static double _elapsed_time;
 
-void matmul(const uint64_t *restrict A, uint64_t *restrict B, const int* restrict adjacency,
-	    const int nodes, int degree, const int *num_degrees, const unsigned int rows)
-{
-#ifdef __AVX2__
-  if(!num_degrees){
-#pragma omp parallel for
-    for(int i=0;i<nodes;i++){
-      __m256i *b = (__m256i *)(B + i*rows);
-      for(int j=0;j<degree;j++){
-        int n = *(adjacency + i * degree + j);  // int n = adjacency[i][j];
-        __m256i *a = (__m256i *)(A + n*rows);
-        for(int k=0;k<rows/4;k++){
-          __m256i aa = _mm256_load_si256(a+k);
-          __m256i bb = _mm256_load_si256(b+k);
-          _mm256_store_si256(b+k, _mm256_or_si256(aa, bb));
-        }
-      }
-    }
-  }
-  else{
-#pragma omp parallel for
-    for(int i=0;i<nodes;i++){
-      __m256i *b = (__m256i *)(B + i*rows);
-      for(int j=0;j<num_degrees[i];j++){
-        int n = *(adjacency + i * degree + j);  // int n = adjacency[i][j];
-        __m256i *a = (__m256i *)(A + n*rows);
-        for(int k=0;k<rows/4;k++){
-          __m256i aa = _mm256_load_si256(a+k);
-          __m256i bb = _mm256_load_si256(b+k);
-          _mm256_store_si256(b+k, _mm256_or_si256(aa, bb));
-        }
-      }
-    }
-  }
-#else
-  if(!num_degrees){
-#pragma omp parallel for
-    for(int i=0;i<nodes;i++){
-      for(int j=0;j<degree;j++){
-        int n = *(adjacency + i * degree + j);  // int n = adjacency[i][j];
-        for(int k=0;k<rows;k++)
-          B[i*rows+k] |= A[n*rows+k];
-      }
-    }
-  }
-  else{
-#pragma omp parallel for
-    for(int i=0;i<nodes;i++){
-      for(int j=0;j<num_degrees[i];j++){
-        int n = *(adjacency + i * degree + j);  // int n = adjacency[i][j];
-          for(int k=0;k<rows;k++)
-            B[i*rows+k] |= A[n*rows+k];
-      }
-    }
-  }
-#endif
-}
-
 double apsp_get_mem_usage(const int kind, const int nodes, const int degree, const int groups,
 			  const int *num_degree, const int procs)
 {
