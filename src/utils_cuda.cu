@@ -1,5 +1,19 @@
 #include "common.h"
 
+__global__ void create_adjacency(const int based_elements, const int total_elements,
+				 const int based_nodes, const int nodes, int* __restrict__ adjacency_dev)
+{
+  int tid = threadIdx.x + blockIdx.x * blockDim.x + based_elements;
+  while (tid < total_elements) {
+    int t = tid/based_elements;
+    int i = tid - (t*based_elements);
+    int v = adjacency_dev[i] + t*based_nodes;
+    adjacency_dev[tid] = (v < nodes)? v : v - nodes;
+
+    tid += blockDim.x * gridDim.x;
+  }
+}
+
 __global__ void clear_buffers(uint64_t* __restrict__ A, uint64_t* __restrict__ B, const int length)
 {
   int tid = threadIdx.x + blockIdx.x * blockDim.x;

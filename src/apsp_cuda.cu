@@ -17,6 +17,8 @@ extern __global__ void popcnt(const uint64_t* __restrict__ B, const int nodes,
                               const unsigned int elements, uint64_t* __restrict__ result);
 extern __global__ void matrix_op(const uint64_t* __restrict__ A, uint64_t* __restrict__ B, const int* __restrict__ adjacency,
                                  const int* __restrict__ num_degrees, const int nodes, const int degree, const unsigned int elements);
+extern __global__ void create_adjacency(const int based_elements, const int total_elements,
+					const int based_nodes, const int nodes, int* __restrict__ adjacency_dev);
 
 static __global__ void init_buffers(uint64_t* __restrict__ A, uint64_t* __restrict__ B,
 				    const int nodes, const int groups, const unsigned int elements)
@@ -164,9 +166,11 @@ extern "C" void apsp_cuda_run(const int* __restrict__ adjacency,
 			      int *diameter, long *sum, double *ASPL)
 {
   apsp_start_profile();
+  cudaMemcpy(_adjacency_dev, adjacency, sizeof(int)*(_nodes/_groups)*_degree, cudaMemcpyHostToDevice);
+  if(_groups != 1)
+    create_adjacency <<< BLOCKS, THREADS >>> ((_nodes/_groups)*_degree, _nodes*_degree,
+					      _nodes/_groups, _nodes, _adjacency_dev);
   
-  cudaMemcpy(_adjacency_dev, adjacency, sizeof(int)*_nodes*_degree, cudaMemcpyHostToDevice);
-    
   if(_kind == APSP_NORMAL)
     apsp_cuda_mat       (adjacency, diameter, sum, ASPL);
   else
