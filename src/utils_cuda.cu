@@ -83,3 +83,35 @@ __global__ void matrix_op(const uint64_t* __restrict__ A, uint64_t* __restrict__
   }
 }
 
+__global__ void matrix_op_chunk(const uint64_t* __restrict__ A, uint64_t* __restrict__ B, const int* __restrict__ adjacency,
+				const int* __restrict__ num_degrees, const int nodes, const int degree)
+{
+  int tid = threadIdx.x + blockIdx.x * blockDim.x;
+
+  if(!num_degrees){
+    while (tid < nodes*GPU_CHUNK) {
+      int i = tid / GPU_CHUNK;
+      int k = tid % GPU_CHUNK;
+      uint64_t tmp = B[tid];
+      for(int j=0;j<degree;j++){
+        int n = *(adjacency + i * degree + j);  // int n = adjacency[i][j];
+        tmp |= A[n*GPU_CHUNK+k];
+      }
+      B[tid] = tmp;
+      tid += blockDim.x * gridDim.x;
+    }
+  }
+  else{
+    while (tid < nodes*GPU_CHUNK) {
+      int i = tid / GPU_CHUNK;
+      int k = tid % GPU_CHUNK;
+      uint64_t tmp = B[tid];
+      for(int j=0;j<num_degrees[i];j++){
+        int n = *(adjacency + i * degree + j);  // int n = adjacency[i][j];
+        tmp |= A[n*GPU_CHUNK+k];
+      }
+      B[tid] = tmp;
+      tid += blockDim.x * gridDim.x;
+    }
+  }
+}
