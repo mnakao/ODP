@@ -13,6 +13,8 @@ extern __global__ void popcnt(const uint64_t* __restrict__ B, const int nodes,
                               const unsigned int elements, uint64_t* __restrict__ result);
 extern __global__ void matrix_op(const uint64_t* __restrict__ A, uint64_t* __restrict__ B, const int* __restrict__ adjacency,
                                  const int* __restrict__ num_degrees, const int nodes, const int degree, const unsigned int elements);
+extern __global__ void matrix_op_chunk(const uint64_t* __restrict__ A, uint64_t* __restrict__ B, const int* __restrict__ adjacency,
+                                       const int* __restrict__ num_degrees, const int nodes, const int degree);
 extern __global__ void create_adjacency(const int based_elements, const int total_elements,
 					const int based_nodes, const int nodes, int* __restrict__ adjacency_dev);
 extern "C" void apsp_start_profile();
@@ -95,8 +97,8 @@ static void apsp_mpi_cuda_mat_saving(const int* __restrict__ adjacency,
     init_buffers  <<< BLOCKS, THREADS >>> (_A_dev, _B_dev, _nodes, _groups, t, GPU_CHUNK);
 
     for(kk=0;kk<_nodes;kk++){
-      matrix_op <<< BLOCKS, THREADS >>> (_A_dev, _B_dev, _adjacency_dev, _num_degrees_dev,
-					 _nodes, _degree, GPU_CHUNK);
+      matrix_op_chunk <<< BLOCKS, THREADS >>> (_A_dev, _B_dev, _adjacency_dev, _num_degrees_dev,
+					       _nodes, _degree);
       popcnt    <<< BLOCKS, THREADS >>> (_B_dev, _nodes, GPU_CHUNK, _result_dev);
 
       cudaMemcpy(_result, _result_dev, sizeof(uint64_t)*BLOCKS, cudaMemcpyDeviceToHost);
