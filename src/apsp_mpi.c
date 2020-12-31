@@ -15,7 +15,7 @@ extern void apsp_end_profile(const char* name, const int kind, const int groups,
 extern double apsp_get_mem_usage(const int kind, const int nodes, const int degree, const int groups,
 				 const int *num_degree, const int procs, const int chunk);
 extern void matmul(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
-                   const int *num_degrees, const int *restrict adjacency, const int elements, const bool enable_avx2);
+		   const int *num_degrees, const int *restrict adjacency, const bool enable_avx2, const int elements);
 extern void matmul_CHUNK(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
                          const int *num_degrees, const int *restrict adjacency, const bool enable_avx2);
 extern void apsp_malloc(uint64_t **a, const size_t s, const bool enable_avx2);
@@ -133,7 +133,7 @@ void apsp_mpi_init_s(const int nodes, const int degree,
     _elements = ((_elements+3)/4)*4;  // _elements must be multiple of 4
   }
 #endif
-  
+
   size_t s = (_kind == APSP_NORMAL)? _elements : CPU_CHUNK;
   apsp_malloc(&_A, nodes*s*sizeof(uint64_t), _enable_avx2); // uint64_t A[nodes][s];
   apsp_malloc(&_B, nodes*s*sizeof(uint64_t), _enable_avx2); // uint64_t B[nodes][s];
