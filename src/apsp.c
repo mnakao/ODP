@@ -4,6 +4,7 @@ static int _nodes, _degree, _groups, _kind;
 static const int* _num_degrees;
 static unsigned int _elements;
 static double _mem_usage;
+static bool _enable_avx2 = false;
 
 extern void apsp_start_profile();
 extern void apsp_end_profile(const char* name, const int kind, const int groups, const double mem_usage, const int procs);
@@ -11,6 +12,12 @@ extern int  apsp_get_kind(const int nodes, const int degree, const int* num_degr
 			  const int procs, const int chunk);
 extern double apsp_get_mem_usage(const int kind, const int nodes, const int degree, const int groups,
                                  const int *num_degree, const int procs, const int chunk);
+extern void matmul(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
+		   const int *num_degrees, const int *restrict adjacency, const bool enable_avx2, const int elements);
+extern void matmul_CHUNK(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
+			 const int *num_degrees, const int *restrict adjacency, const bool enable_avx2);
+extern void apsp_malloc(uint64_t **a, const size_t s, const bool enable_avx2);
+extern void apsp_free(uint64_t *a, const bool enable_avx2);
 
 static void apsp_mat(const int* restrict adjacency,
 		     int *diameter, long *sum, double *ASPL)
@@ -28,60 +35,9 @@ static void apsp_mat(const int* restrict adjacency,
   *sum = (long)_nodes * (_nodes - 1);
   *diameter = 1;
   for(int kk=0;kk<_nodes;kk++){
-#ifdef __AVX2__
-    if(!_num_degrees){
-#pragma omp parallel for
-      for(int i=0;i<_nodes;i++){
-	__m256i *b = (__m256i *)(_B + i*_elements);
-	for(int j=0;j<_degree;j++){
-	  int n = *(adjacency + i * _degree + j);  // int n = adjacency[i][j];
-	  __m256i *a = (__m256i *)(_A + n*_elements);
-	  for(int k=0;k<_elements/4;k++){
-	    __m256i aa = _mm256_load_si256(a+k);
-	    __m256i bb = _mm256_load_si256(b+k);
-	    _mm256_store_si256(b+k, _mm256_or_si256(aa, bb));
-	  }
-	}
-      }
-    }
-    else{
-#pragma omp parallel for
-      for(int i=0;i<_nodes;i++){
-	__m256i *b = (__m256i *)(_B + i*_elements);
-	for(int j=0;j<_num_degrees[i];j++){
-	  int n = *(adjacency + i * _degree + j);  // int n = adjacency[i][j];
-	  __m256i *a = (__m256i *)(_A + n*_elements);
-	  for(int k=0;k<_elements/4;k++){
-	    __m256i aa = _mm256_load_si256(a+k);
-	    __m256i bb = _mm256_load_si256(b+k);
-	    _mm256_store_si256(b+k, _mm256_or_si256(aa, bb));
-        }
-	}
-      }
-    }
-#else
-    if(!_num_degrees){
-#pragma omp parallel for
-      for(int i=0;i<_nodes;i++){
-	for(int j=0;j<_degree;j++){
-	  int n = *(adjacency + i * _degree + j);  // int n = adjacency[i][j];
-	  for(int k=0;k<_elements;k++)
-	    _B[i*_elements+k] |= _A[n*_elements+k];
-	}
-      }
-    }
-    else{
-#pragma omp parallel for
-      for(int i=0;i<_nodes;i++){
-	for(int j=0;j<_num_degrees[i];j++){
-	  int n = *(adjacency + i * _degree + j);  // int n = adjacency[i][j];
-          for(int k=0;k<_elements;k++)
-            _B[i*_elements+k] |= _A[n*_elements+k];
-	}
-      }
-    }
-#endif
-
+    matmul(_A, _B, _nodes, _degree, _num_degrees, adjacency, 
+	   _enable_avx2, _elements);
+    
     uint64_t num = 0;
 #pragma omp parallel for reduction(+:num)
     for(int i=0;i<_elements*_nodes;i++)
@@ -122,60 +78,8 @@ static void apsp_mat_saving(const int* restrict adjacency,
     }
 
     for(kk=0;kk<_nodes;kk++){
-#ifdef __AVX2__
-      if(!_num_degrees){
-#pragma omp parallel for
-	for(int i=0;i<_nodes;i++){
-	  __m256i *b = (__m256i *)(_B + i*CPU_CHUNK);
-	  for(int j=0;j<_degree;j++){
-	    int n = *(adjacency + i * _degree + j);  // int n = adjacency[i][j];
-	    __m256i *a = (__m256i *)(_A + n*CPU_CHUNK);
-	    for(int k=0;k<CPU_CHUNK/4;k++){
-	      __m256i aa = _mm256_load_si256(a+k);
-	      __m256i bb = _mm256_load_si256(b+k);
-	      _mm256_store_si256(b+k, _mm256_or_si256(aa, bb));
-	    }
-	  }
-	}
-      }
-      else{
-#pragma omp parallel for
-	for(int i=0;i<_nodes;i++){
-	  __m256i *b = (__m256i *)(_B + i*CPU_CHUNK);
-	  for(int j=0;j<_num_degrees[i];j++){
-	    int n = *(adjacency + i * _degree + j);  // int n = adjacency[i][j];
-	    __m256i *a = (__m256i *)(_A + n*CPU_CHUNK);
-	    for(int k=0;k<CPU_CHUNK/4;k++){
-	      __m256i aa = _mm256_load_si256(a+k);
-	      __m256i bb = _mm256_load_si256(b+k);
-	      _mm256_store_si256(b+k, _mm256_or_si256(aa, bb));
-	    }
-	  }
-	}
-      }
-#else
-      if(!_num_degrees){
-#pragma omp parallel for
-	for(int i=0;i<_nodes;i++){
-	  for(int j=0;j<_degree;j++){
-	    int n = *(adjacency + i * _degree + j);  // int n = adjacency[i][j];
-	    for(int k=0;k<CPU_CHUNK;k++)
-	      _B[i*CPU_CHUNK+k] |= _A[n*CPU_CHUNK+k];
-	  }
-	}
-      }
-      else{
-#pragma omp parallel for
-	for(int i=0;i<_nodes;i++){
-	  for(int j=0;j<_num_degrees[i];j++){
-	    int n = *(adjacency + i * _degree + j);  // int n = adjacency[i][j];
-	    for(int k=0;k<CPU_CHUNK;k++)
-	      _B[i*CPU_CHUNK+k] |= _A[n*CPU_CHUNK+k];
-	  }
-	}
-      }
-#endif
-    
+      matmul_CHUNK(_A, _B, _nodes, _degree, _num_degrees, adjacency, _enable_avx2);
+
       uint64_t num = 0;
 #pragma omp parallel for reduction(+:num)
       for(int i=0;i<CPU_CHUNK*_nodes;i++)
@@ -208,29 +112,15 @@ void apsp_init_s(const int nodes, const int degree, const int* num_degrees, cons
   _mem_usage = apsp_get_mem_usage(_kind, nodes, degree, groups, num_degrees, 1, CPU_CHUNK);
   _elements = (nodes/groups+(UINT64_BITS-1))/UINT64_BITS;
 #ifdef __AVX2__
-  _elements = ((_elements+3)/4)*4;  // _elements must be multiple of 4
-#endif
-  
-  if(_kind == APSP_NORMAL){
-    size_t s = nodes * _elements * sizeof(uint64_t);
-#ifdef __AVX2__
-    _A = (uint64_t *) _mm_malloc(s, ALIGN_VALUE); // uint64_t A[nodes][elements];
-    _B = (uint64_t *) _mm_malloc(s, ALIGN_VALUE); // uint64_t B[nodes][elements];
-#else
-    posix_memalign((void **)&_A, ALIGN_VALUE, s); // uint64_t A[nodes][elements];
-    posix_memalign((void **)&_B, ALIGN_VALUE, s); // uint64_t B[nodes][elements];
-#endif
+  if(_elements >= 4){ // For performance
+    _enable_avx2 = true;
+    _elements = ((_elements+3)/4)*4;  // _elements must be multiple of 4
   }
-  else{
-    size_t s = nodes * CPU_CHUNK * sizeof(uint64_t); // CHUNK must be multiple of 4
-#ifdef __AVX2__
-    _A = (uint64_t *) _mm_malloc(s, ALIGN_VALUE); // uint64_t A[nodes][CPU_CHUNK];
-    _B = (uint64_t *) _mm_malloc(s, ALIGN_VALUE); // uint64_t B[nodes][CPU_CHUNK];
-#else
-    posix_memalign((void **)&_A, ALIGN_VALUE, s); // uint64_t A[nodes][CPU_CHUNK];
-    posix_memalign((void **)&_B, ALIGN_VALUE, s); // uint64_t B[nodes][CPU_CHUNK];
 #endif
-  }
+
+  size_t s = (_kind == APSP_NORMAL)? _elements : CPU_CHUNK;
+  apsp_malloc(&_A, nodes*s*sizeof(uint64_t), _enable_avx2); // uint64_t A[nodes][s];
+  apsp_malloc(&_B, nodes*s*sizeof(uint64_t), _enable_avx2); // uint64_t B[nodes][s];
 
   _nodes = nodes;
   _degree = degree;
@@ -245,13 +135,8 @@ void apsp_init(const int nodes, const int degree, const int* num_degrees)
 
 void apsp_finalize()
 {
-#ifdef __AVX2__
-  _mm_free(_A);
-  _mm_free(_B);
-#else
-  free(_A);
-  free(_B);
-#endif
+  apsp_free(_A, _enable_avx2);
+  apsp_free(_B, _enable_avx2);
 }
 
 void apsp_run(const int* restrict adjacency, int *diameter, long *sum, double *ASPL)
