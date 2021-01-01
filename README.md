@@ -265,23 +265,22 @@ void apsp_mpi_cuda_init_s(int nodes, int degree, int num_degrees[nodes], MPI_Com
 
 Symmetry in this software means that when the vertices are arranged on a circle,
 the graph when rotated by `360/groups` degrees and the graph before rotation match.
-Please see `samples/graphs/general/n24d4g4.edges` and `samples/graphs/general/n24d4g4.png` as an example of (nodes, degree, groups) = (24, 4, 4).
 
 ![](./misc/img/symmetry.png)
 
-This image is a `samples/graphs/general/n24d4g4.edges`, and is divided into four ( = the value of `groups`).
-For example, the values on the 1st row are 22 and 15.
-The number of them plus 6 ( `= nodes/groups`) matches the 1st row in the next group (in line 10).
-Here, 22 + 6 = 28, but the number of nodes is 24, so it goes around and becomes 28 - 24 = 6.
+The above image is an example of a graph with (nodes, degree, groups) = (24, 4, 4).
+This image is created from `samples/graphs/general/n24d4g4.png` and `samples/graphs/general/n24d4g4.edges`.
+It also shows the adjacency matrix created from the edge list.
+The adjacency matrix can be divided into four groups.
+The values on the 1st row are 19, 9, and 2.
+It means that the vertex number 0 has three edges, 0-19, 0-9, and 0-2.
+The edges plus 6 ( `= nodes/groups`) matches the 1st row in the next group (in line 7).
+2 + 6 = 8 and 9 + 6 = 15.
+Here, 19 + 6 = 25, but the number of nodes is 24, so it goes around and becomes 25 - 24 = 1.
+This rule holds for all groups.
 
-There is also an exception if the value of `groups` are even.
-The edge with vertex numbers 4 and 16 in the 3rd line is the diameter across the center of the circle.
-Specifically, the value obtained by subtracting the vertex numbers is half the number of nodes.
-The difference between the 3rd and 12th lines is exactly 6, but the difference between the 12th and 21st lines is not 6.
-This is because if the difference between the 3rd and 21st lines is 12, the lines will overlap.
-In such cases, the edge list is devided into two large groups.
-One group consists of the 1st to `groups/2`th group, and another group consists of the remaining groups (`groups/2+1`th to the last group).
-Within each group, the difference between the vertices should be `nodes/groups`.
+In other words,
+a graph with symmetry is defined if all elements of the adjacency matrix can be computed using up to the first `nodes/groups` rows of the adjacency matrix.
 
 ## Note
 The software also supports non-regular graphs, but usage of memory may be not efficient.
