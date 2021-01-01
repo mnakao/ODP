@@ -48,13 +48,13 @@ ASPL Gap     = 0.1833333333 (1.9166666667 - 1.7333333333)
 
 ## How to create libraries
 ```
-$ cd src
+$ cd APSP/src
 $ make [serial|threads|mpi|mpi_threads|cuda|mpi_cuda|all]
 ```
  
 ## How to run sample programs
 ```
-$ cd sample
+$ cd APSP/sample
 $ make [serial|threads|mpi|mpi_threads|cuda|mpi_cuda|all]
 $ ./general.x ./graphs/general/n16d4.edges
 Nodes = 16, Degrees = 4
@@ -108,8 +108,8 @@ Thread parallelization is performed automatically depending on the library to be
 Perform the initialization process before running APSP.
 ```
 void apsp_init         (int nodes, int degree, int num_degrees[nodes])
-void apsp_cuda_init    (int nodes, int degree, int num_degrees[nodes])
 void apsp_mpi_init     (int nodes, int degree, int num_degrees[nodes], MPI_Comm comm)
+void apsp_cuda_init    (int nodes, int degree, int num_degrees[nodes])
 void apsp_mpi_cuda_init(int nodes, int degree, int num_degrees[nodes], MPI_Comm comm)
 ```
 * [IN] nodes : Number of nodes in a graph
@@ -121,8 +121,8 @@ void apsp_mpi_cuda_init(int nodes, int degree, int num_degrees[nodes], MPI_Comm 
 Release the resources allocated in apsp_\*init().
 ```
 void apsp_finalize()
-void apsp_cuda_finalize()
 void apsp_mpi_finalize()
+void apsp_cuda_finalize()
 void apsp_mpi_cuda_finalize()
 ```
 
@@ -130,8 +130,8 @@ void apsp_mpi_cuda_finalize()
 Calculate APSP. Note that they must be executed between apsp_\*init() and apsp_\*finalize().
 ```
 void apsp_run         (int adjacency[nodes][degree], int *diameter, long *sum, double *ASPL)
-void apsp_cuda_run    (int adjacency[nodes][degree], int *diameter, long *sum, double *ASPL)
 void apsp_mpi_run     (int adjacency[nodes][degree], int *diameter, long *sum, double *ASPL)
+void apsp_cuda_run    (int adjacency[nodes][degree], int *diameter, long *sum, double *ASPL)
 void apsp_mpi_cuda_run(int adjacency[nodes][degree], int *diameter, long *sum, double *ASPL)
 ```
 * [IN] adjacency[nodes][degree] : Adjacency matrix of a graph
@@ -241,14 +241,14 @@ Return other values just by specifying fname and comm.
 Please see `samples/simple_general.c`.
 
 ```
-void apsp_all_run_general(char *fname, int *nodes, int *degree, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
-void apsp_all_run_grid   (char *fname, int *width, int *height, int *degree, int *length, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
-void apsp_all_cuda_run_general(char *fname, int *nodes, int *degree, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
-void apsp_all_cuda_run_grid(char *fname, int *width, int *height, int *degree, int *length, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
-void apsp_all_mpi_run_general(char *fname, MPI_Comm comm, int *nodes, int *degree, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
-void apsp_all_mpi_run_grid(char *fname, MPI_Comm comm, int *width, int *height, int *degree, int *length, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
+void apsp_all_run_general         (char *fname, int *nodes, int *degree, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
+void apsp_all_run_grid            (char *fname, int *width, int *height, int *degree, int *length, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
+void apsp_all_mpi_run_general     (char *fname, MPI_Comm comm, int *nodes, int *degree, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
+void apsp_all_mpi_run_grid        (char *fname, MPI_Comm comm, int *width, int *height, int *degree, int *length, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
+void apsp_all_cuda_run_general    (char *fname, int *nodes, int *degree, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
+void apsp_all_cuda_run_grid       (char *fname, int *width, int *height, int *degree, int *length, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
 void apsp_all_mpi_cuda_run_general(char *fname, MPI_Comm comm, int *nodes, int *degree, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
-void apsp_all_mpi_cuda_run_grid(char *fname, MPI_Comm comm, int *width, int *height, int *degree, int *length, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
+void apsp_all_mpi_cuda_run_grid   (char *fname, MPI_Comm comm, int *width, int *height, int *degree, int *length, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
 ```
 * [IN] fname : File name of a graph
 * [IN] comm : MPI communicator
@@ -268,8 +268,8 @@ These functions can be used instead of the apsp_init\* functions for only a gene
 
 ```
 void apsp_init_s         (int nodes, int degree, int num_degrees[nodes], int groups)
-void apsp_cuda_init_s    (int nodes, int degree, int num_degrees[nodes], int groups)
 void apsp_mpi_init_s     (int nodes, int degree, int num_degrees[nodes], MPI_Comm comm, int groups)
+void apsp_cuda_init_s    (int nodes, int degree, int num_degrees[nodes], int groups)
 void apsp_mpi_cuda_init_s(int nodes, int degree, int num_degrees[nodes], MPI_Comm comm, int groups)
 ```
 * [IN] nodes : Number of nodes in a graph
