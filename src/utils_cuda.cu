@@ -1,19 +1,5 @@
 #include "common.h"
 
-__global__ void create_adjacency(const int based_elements, const int total_elements,
-				 const int based_nodes, const int nodes, int* __restrict__ adjacency_dev)
-{
-  int tid = threadIdx.x + blockIdx.x * blockDim.x + based_elements;
-  while (tid < total_elements) {
-    int t = tid/based_elements;
-    int i = tid - (t*based_elements);
-    int v = adjacency_dev[i] + t*based_nodes;
-    adjacency_dev[tid] = (v < nodes)? v : v - nodes;
-
-    tid += blockDim.x * gridDim.x;
-  }
-}
-
 __global__ void clear_buffers(uint64_t* __restrict__ A, uint64_t* __restrict__ B, const int length)
 {
   int tid = threadIdx.x + blockIdx.x * blockDim.x;
@@ -51,18 +37,21 @@ __global__ void popcnt(const uint64_t* __restrict__ B, const int nodes,
 }
 
 __global__ void matrix_op(const uint64_t* __restrict__ A, uint64_t* __restrict__ B, const int* __restrict__ adjacency,
-			  const int* __restrict__ num_degrees, const int nodes, const int degree, const unsigned int elements)
+			  const int* __restrict__ num_degrees, const int nodes, const int degree, const unsigned int elements, const int based_nodes)
 {
   int tid = threadIdx.x + blockIdx.x * blockDim.x;
-
   if(!num_degrees){
     while (tid < nodes*elements) {
       int i = tid / elements;
       int k = tid % elements;
+      int t = i / based_nodes;
+      int h = t * based_nodes;
+      int m = i - h;
       uint64_t tmp = B[tid];
       for(int j=0;j<degree;j++){
-        int n = *(adjacency + i * degree + j);  // int n = adjacency[i][j];
-        tmp |= A[n*elements+k];
+        int n = *(adjacency + m * degree + j) + h; // int n = adjacency[i][j] <- adjacency[m][j] + t*based_nodes;
+	if(n >= nodes) n -= nodes;
+	tmp |= A[n*elements+k];
       }
       B[tid] = tmp;
       tid += blockDim.x * gridDim.x;
@@ -72,9 +61,13 @@ __global__ void matrix_op(const uint64_t* __restrict__ A, uint64_t* __restrict__
     while (tid < nodes*elements) {
       int i = tid / elements;
       int k = tid % elements;
+      int t = i / based_nodes;
+      int h = t * based_nodes;
+      int m = i - h;
       uint64_t tmp = B[tid];
       for(int j=0;j<num_degrees[i];j++){
-        int n = *(adjacency + i * degree + j);  // int n = adjacency[i][j];
+        int n = *(adjacency + m * degree + j) + h; // int n = adjacency[i][j] <- adjacency[m][j] + t*based_nodes;
+        if(n >= nodes) n -= nodes;
         tmp |= A[n*elements+k];
       }
       B[tid] = tmp;
@@ -84,17 +77,20 @@ __global__ void matrix_op(const uint64_t* __restrict__ A, uint64_t* __restrict__
 }
 
 __global__ void matrix_op_chunk(const uint64_t* __restrict__ A, uint64_t* __restrict__ B, const int* __restrict__ adjacency,
-				const int* __restrict__ num_degrees, const int nodes, const int degree)
+				const int* __restrict__ num_degrees, const int nodes, const int degree, const int based_nodes)
 {
   int tid = threadIdx.x + blockIdx.x * blockDim.x;
-
   if(!num_degrees){
     while (tid < nodes*GPU_CHUNK) {
       int i = tid / GPU_CHUNK;
       int k = tid % GPU_CHUNK;
+      int t = i / based_nodes;
+      int h = t * based_nodes;
+      int m = i - h;
       uint64_t tmp = B[tid];
       for(int j=0;j<degree;j++){
-        int n = *(adjacency + i * degree + j);  // int n = adjacency[i][j];
+        int n = *(adjacency + m * degree + j) + h; // int n = adjacency[i][j] <- adjacency[m][j] + t*based_nodes;
+	if(n >= nodes) n -= nodes;
         tmp |= A[n*GPU_CHUNK+k];
       }
       B[tid] = tmp;
@@ -105,9 +101,13 @@ __global__ void matrix_op_chunk(const uint64_t* __restrict__ A, uint64_t* __rest
     while (tid < nodes*GPU_CHUNK) {
       int i = tid / GPU_CHUNK;
       int k = tid % GPU_CHUNK;
+      int t = i / based_nodes;
+      int h = t * based_nodes;
+      int m = i - h;
       uint64_t tmp = B[tid];
       for(int j=0;j<num_degrees[i];j++){
-        int n = *(adjacency + i * degree + j);  // int n = adjacency[i][j];
+        int n = *(adjacency + m * degree + j) + h;
+	if(n >= nodes) n -= nodes;
         tmp |= A[n*GPU_CHUNK+k];
       }
       B[tid] = tmp;
