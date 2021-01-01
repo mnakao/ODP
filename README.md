@@ -31,6 +31,21 @@ Please see the paper (Open Access).
 
 _When you write a paper using this software, please refer to the paper._
 
+## Quick start
+```
+$ git clone https://github.com/mnakao/APSP.git
+$ cd APSP/src
+$ make
+$ cd ../samples
+$ make
+$ ./general.x ./graphs/general/n16d4.edges
+Nodes = 16, Degrees = 4
+Diameter     = 3
+Diameter Gap = 1 (3 - 2)
+ASPL         = 1.9166666667 (230/120)
+ASPL Gap     = 0.1833333333 (1.9166666667 - 1.7333333333)
+```
+
 ## How to create libraries
 ```
 $ cd src
