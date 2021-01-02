@@ -25,6 +25,8 @@
 #define ERROR(...) do{fprintf(stderr,__VA_ARGS__); exit(1);}while(0)
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
+#define WIDTH(v, height) (v/height)
+#define HEIGHT(v, height) (v%height)
 #define UINT64_BITS 64
 #define APSP_NORMAL 1
 #define APSP_SAVING 2

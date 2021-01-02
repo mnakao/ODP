@@ -25,20 +25,18 @@ static bool check_duplicated_vertex(const int e00, const int e01, const int e10,
   return (e00 == e10 || e01 == e11 || e00 == e11 || e01 == e10);
 }
 
-static void apsp_run_2opt(const int lines, int edge[lines][2])
+static void simple_2opt_general(const int lines, int edge[lines][2])
 {
-  int r0, r1;
-  while(1){
-    r0 = get_random(lines);
-    r1 = get_random(lines);
-    if(!check_duplicated_vertex(edge[r0][0], edge[r0][1], edge[r1][0], edge[r1][1]))
-      break;
-  }
-  
+  int e0, e1;
+  do{
+    e0 = get_random(lines);
+    e1 = get_random(lines);
+  } while(check_duplicated_vertex(edge[e0][0], edge[e0][1], edge[e1][0], edge[e1][1]));
+
   if(get_random(2) == 0)
-    swap(&edge[r0][1], &edge[r1][1]);
+    swap(&edge[e0][1], &edge[e1][1]);
   else
-    swap(&edge[r0][1], &edge[r1][0]);
+    swap(&edge[e0][1], &edge[e1][0]);
 }
 
 void apsp_random_general(const int nodes, const int degree, const unsigned int seed, int *edge)
@@ -68,8 +66,8 @@ void apsp_random_general(const int nodes, const int degree, const unsigned int s
   }
 
   int lines = (nodes*degree)/2;
-  for(int i=0;i<lines*GEN_GRAPH_ITERS;i++)
-    apsp_run_2opt(lines, (int (*)[2])edge);
+  for(int i=0;i<lines*GEN_GRAPH_ITERS;i++) // Give randomness
+    simple_2opt_general(lines, (int (*)[2])edge);
 }
 
 void apsp_output_edge_general(char *fname, const int lines, const int edge[lines][2])
@@ -85,6 +83,21 @@ void apsp_output_edge_general(char *fname, const int lines, const int edge[lines
   fclose(fp);
 }
 
+void apsp_output_edge_grid(char *fname, const int lines, const int height, const int edge[lines][2])
+{
+  FILE *fp = NULL;
+
+  if((fp = fopen(fname, "w")) == NULL)
+    ERROR("Cannot open %s\n", fname);
+
+  for(int i=0;i<lines;i++)
+    fprintf(fp, "%d,%d %d,%d\n",
+	    WIDTH(edge[i][0], height), HEIGHT(edge[i][0], height),
+            WIDTH(edge[i][1], height), HEIGHT(edge[i][1], height));
+    
+  fclose(fp);
+}
+
 void apsp_random_general_s(const int nodes, const int degree, const int groups, const unsigned int seed, int *edge)
 {
   check_graph_parameters(nodes, degree);
@@ -92,11 +105,81 @@ void apsp_random_general_s(const int nodes, const int degree, const int groups, 
   ERROR("Not implemented yet\n");
 }
 
-void apsp_random_grid(const int nodes, const int degree, const unsigned int seed, int *edge)
+static bool check_length(const int v, const int w, const int height, const int length)
 {
+  int w0 = WIDTH(v,height);
+  int h0 = HEIGHT(v,height);
+  int w1 = WIDTH(w,height);
+  int h1 = HEIGHT(w,height);
+  int distance = abs(w0 - w1) + abs(h0 - h1);
+  
+  return (distance <= length);
+}
+
+static void simple_2opt_grid(const int height, const int length, const int lines, int edge[lines][2])
+{
+  while(1){
+    int e0, e1;
+    do{
+      e0 = get_random(lines);
+      e1 = get_random(lines);
+    } while(check_duplicated_vertex(edge[e0][0], edge[e0][1], edge[e1][0], edge[e1][1]));
+
+    if(get_random(2) == 0){
+      if(check_length(edge[e0][0], edge[e1][1], height, length) && check_length(edge[e0][1], edge[e1][0], height, length)){
+	swap(&edge[e0][1], &edge[e1][1]);
+	break;
+      }
+    }
+    else{
+      if(check_length(edge[e0][0], edge[e1][0], height, length) && check_length(edge[e0][1], edge[e1][1], height, length)){
+	swap(&edge[e0][1], &edge[e1][0]);
+	break;
+      }
+    }
+  }
+}
+
+// Inherited from http://research.nii.ac.jp/graphgolf/c/create-lattice.c
+void apsp_random_grid(const int width, const int height, const int degree,
+		      const int length, const unsigned int seed, int *edge)
+{
+  int nodes = width * height;
   check_graph_parameters(nodes, degree);
   srand(seed);
-  ERROR("Not implemented yet\n");
+
+  int i = 0;
+  for(int x=0;x<width/2;x++){
+    for(int y=0;y<height;y++){
+      for(int k=0;k<degree;k++){
+        edge[i*2]   = y + 2 * x * height;
+        edge[i*2+1] = edge[i*2] + height;
+        i++;
+      }
+    }
+  }
+
+  if(width%2 == 1){
+    for(int y=0;y<height/2;y++){
+      for(int k=0;k<degree;k++){
+        edge[i*2]   = (width - 1) * height + 2 * y;
+        edge[i*2+1] = edge[i*2] + 1;
+        i++;
+      }
+    }
+
+    /* add self-loop */
+    if(height%2 == 1){
+      for(int k=0;k<degree/2;k++){
+        edge[i*2] = edge[i*2+1] = nodes - 1;
+        i++;
+      }
+    }
+  }
+
+  int lines = (nodes*degree)/2;
+  for(int i=0;i<lines*GEN_GRAPH_ITERS;i++)  // Give randomness
+    simple_2opt_grid(height, length, lines, (int (*)[2])edge);
 }
 
 void apsp_malloc(uint64_t **a, const size_t s, const bool enable_avx2)

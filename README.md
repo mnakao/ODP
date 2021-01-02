@@ -162,6 +162,30 @@ void apsp_set_edge_grid   (char *fname, int *width, int *height, int (*edge)[2])
 * [OUT] width : Width of a grid graph
 * [OUT] height : Height of a grid graph
 
+### Create random graph
+Note that the graph created by the function may contain duplicate edges and loops.
+```
+void apsp_random_general(int nodes, int degree, unsigned int seed, int (*edge)[2])
+void apsp_random_grid   (int width, int height, int degree, int length, unsigned int seed, int (*edge)[2])
+```
+* [IN] nodes : Number of nodes in a graph
+* [IN] degree : Degree in a graph
+* [IN] seed   : Seed for random
+* [IN] width : Width of a grid graph
+* [IN] height : Height of a grid graph
+* [IN] length : Maximum length of a grid graph
+* [OUT] edge : Edge list of a graph
+
+### Output a graph to file
+```
+void apsp_output_edge_general(char *fname, int lines, int (*edge)[2])
+void apsp_output_edge_grid   (char *fname, int lines, int height, int (*edge)[2])
+```
+* [IN] fname : File name of a graph
+* [IN] lines : Number of lines in an edge list
+* [IN] height : Height of a grid graph
+* [IN] edge : Edge list of a graph
+
 ### Set adjacency matrix from an edge list
 ```
 void apsp_set_adjacency(int nodes, int degree, int lines, int edge[lines][2], int adjacency[nodes][degree])
