@@ -55,4 +55,6 @@ extern int  apsp_get_length(int lines, int edge[lines][2], int height);
 extern bool apsp_check_general(char *fname);
 extern bool apsp_check_duplicated_edge(int lines, int edge[lines][2]);
 extern bool apsp_check_loop(int lines, int edge[lines][2]);
+extern void apsp_random_general(int nodes, int degree, unsigned int seed, void *edge);
+extern void apsp_output_edge_general(char *fname, int lines, int (*edge)[2]);
 #endif

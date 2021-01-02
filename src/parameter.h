@@ -8,4 +8,5 @@
 #define BLOCKS          (28*16) /* Only for GPU. */
 #define THREADS         (64*16) /* Only for GPU. Must be 2^n */
 #define MAX_HOSTNAME_LENGTH 256
+#define GEN_GRAPH_ITERS      10
 #endif

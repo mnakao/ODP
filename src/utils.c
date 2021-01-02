@@ -2,6 +2,103 @@
 static time_t _start_t;
 static double _elapsed_time;
 
+static void check_graph_parameters(const int nodes, const int degree)
+{
+  if(nodes % 2 == 1 && degree % 2 == 1)
+    ERROR("Nodes(%d) or Degree(%d) must be a multiple of 2.\n", nodes, degree);
+}
+
+static int get_random(const int max)
+{
+  return (int)(random()*((double)max)/(1.0+RAND_MAX));
+}
+
+static void swap(int *a, int *b)
+{
+  int tmp = *a;
+  *a = *b;
+  *b = tmp;
+}
+
+static bool check_duplicated_vertex(const int e00, const int e01, const int e10, const int e11)
+{
+  return (e00 == e10 || e01 == e11 || e00 == e11 || e01 == e10);
+}
+
+static void apsp_run_2opt(const int lines, int edge[lines][2])
+{
+  int r0, r1;
+  while(1){
+    r0 = get_random(lines);
+    r1 = get_random(lines);
+    if(!check_duplicated_vertex(edge[r0][0], edge[r0][1], edge[r1][0], edge[r1][1]))
+      break;
+  }
+  
+  if(get_random(2) == 0)
+    swap(&edge[r0][1], &edge[r1][1]);
+  else
+    swap(&edge[r0][1], &edge[r1][0]);
+}
+
+void apsp_random_general(const int nodes, const int degree, const unsigned int seed, int *edge)
+{
+  check_graph_parameters(nodes, degree);
+  srand(seed);
+
+  int half_degree = degree/2;
+  for(int i=0;i<nodes-1;i++){
+    for(int j=0;j<half_degree;j++){
+      edge[(i*half_degree+j)*2  ] = i;
+      edge[(i*half_degree+j)*2+1] = i+1;
+    }
+  }
+  for(int j=0;j<half_degree;j++){
+    int i = nodes - 1;
+    edge[(i*half_degree+j)*2  ] = i;
+    edge[(i*half_degree+j)*2+1] = 0;
+  }
+
+  if(degree%2 == 1){
+    int half_node = nodes/2; // half_nodes must be a multiple of 2
+    for(int i=0;i<half_node;i++){
+      edge[(half_degree*nodes+i)*2  ] = i;
+      edge[(half_degree*nodes+i)*2+1] = i+half_node;
+    }
+  }
+
+  int lines = (nodes*degree)/2;
+  for(int i=0;i<lines*GEN_GRAPH_ITERS;i++)
+    apsp_run_2opt(lines, (int (*)[2])edge);
+}
+
+void apsp_output_edge_general(char *fname, const int lines, const int edge[lines][2])
+{
+  FILE *fp = NULL;
+  
+  if((fp = fopen(fname, "w")) == NULL)
+    ERROR("Cannot open %s\n", fname);
+  
+  for(int i=0;i<lines;i++)
+    fprintf(fp, "%d %d\n", edge[i][0], edge[i][1]);
+  
+  fclose(fp);
+}
+
+void apsp_random_general_s(const int nodes, const int degree, const int groups, const unsigned int seed, int *edge)
+{
+  check_graph_parameters(nodes, degree);
+  srand(seed);
+  ERROR("Not implemented yet\n");
+}
+
+void apsp_random_grid(const int nodes, const int degree, const unsigned int seed, int *edge)
+{
+  check_graph_parameters(nodes, degree);
+  srand(seed);
+  ERROR("Not implemented yet\n");
+}
+
 void apsp_malloc(uint64_t **a, const size_t s, const bool enable_avx2)
 {
   if(enable_avx2)
@@ -446,7 +543,7 @@ void apsp_set_lbounds_grid(const int m, const int n, const int degree, const int
 }
 
 void apsp_set_adjacency(const int nodes, const int degree, const int lines,
-			int edge[lines][2], int *adjacency)
+			const int edge[lines][2], int *adjacency)
 {
   int num_degrees[nodes];
   for(int i=0;i<nodes;i++)

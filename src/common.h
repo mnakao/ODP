@@ -37,7 +37,7 @@
 
 extern void apsp_set_edge_general(const char* fname, int (*edge)[2]);
 extern void apsp_set_adjacency(const int nodes, const int degree, const int lines,
-			       int (*edge)[2], int *adjacency);
+			      const  int (*edge)[2], int *adjacency);
 extern void apsp_set_lbounds_general(const int nodes, const int degree, int *low_diameter,
 				     double *low_ASPL);
 extern void apsp_set_degrees(const int nodes, const int lines, int (*edge)[2],
