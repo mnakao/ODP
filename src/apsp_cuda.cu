@@ -9,9 +9,9 @@ static double _mem_usage;
 extern "C" void apsp_start_profile();
 extern "C" void apsp_end_profile(const char* name, const int kind, const int groups, const double mem_usage, const int procs);
 extern "C" double apsp_get_mem_usage(const int kind, const int nodes, const int degree, const int groups,
-				     const int *num_degree, const int procs, const int chunk);
+				     const int *num_degrees, const int procs, const bool is_cpu);
 extern "C" int  apsp_get_kind(const int nodes, const int degree, const int* num_degrees, const int groups,
-			      const int procs, const int chunk);
+			      const int procs, const bool is_cpu);
 extern __global__ void clear_buffers(uint64_t* __restrict__ A, uint64_t* __restrict__ B, const int length);
 extern __global__ void popcnt(const uint64_t* __restrict__ B, const int nodes,
                               const unsigned int elements, uint64_t* __restrict__ result);
@@ -125,8 +125,8 @@ extern "C" void apsp_cuda_init_s(const int nodes, const int degree,
   if(nodes % groups != 0)
     ERROR("nodes(%d) must be divisible by group(%d)\n", nodes, groups);
 
-  _kind = apsp_get_kind(nodes, degree, num_degrees, groups, 1, GPU_CHUNK);
-  _mem_usage = apsp_get_mem_usage(_kind, nodes, degree, groups, num_degrees, 1, GPU_CHUNK);
+  _kind = apsp_get_kind(nodes, degree, num_degrees, groups, 1, false);
+  _mem_usage = apsp_get_mem_usage(_kind, nodes, degree, groups, num_degrees, 1, false);
   size_t s = (_kind == APSP_NORMAL)? (nodes/groups+(UINT64_BITS-1))/UINT64_BITS : GPU_CHUNK;
   s *= nodes * sizeof(uint64_t);
 

@@ -317,25 +317,30 @@ void matmul_CHUNK(const uint64_t *restrict A, uint64_t *restrict B, const int no
 }
 
 double apsp_get_mem_usage(const int kind, const int nodes, const int degree, const int groups,
-			  const int *num_degree, const int procs, const int chunk)
+			  const int *num_degrees, const int procs, const bool is_cpu)
 {
-  double edge_size   = (double)nodes * degree * sizeof(int);
-  double adj_size    = edge_size;
-  double degree_size = (num_degree)? (double)nodes * sizeof(int) : 0;
-  double normal_mem  = (double)nodes * ((double)nodes / (4 * groups * procs));
-  double saving_mem  = 16 * (double)nodes * chunk;
-  double in_apsp     = (kind == APSP_NORMAL)? normal_mem : saving_mem;
-  
-  return (edge_size + adj_size + degree_size + in_apsp)/1024/1024;
+  int Mbyte = 1024*1024;
+  int chunk = (is_cpu)? CPU_CHUNK : GPU_CHUNK;
+  double AB_mem = (kind == APSP_NORMAL)? (nodes*((double)nodes/(4*groups*procs))) : (double)16*nodes*chunk;
+
+  if(is_cpu){
+    return AB_mem/Mbyte;
+  }
+  else{ // on GPU
+    double res_mem = (double)sizeof(uint64_t)*BLOCKS;
+    double adj_mem = (double)sizeof(int)*(nodes/groups)*degree;
+    double deg_mem = (num_degrees)? (double)sizeof(int)*nodes : 0;
+    return (AB_mem+res_mem+adj_mem+deg_mem)/Mbyte;
+  }
 }
 
 int apsp_get_kind(const int nodes, const int degree, const int* num_degrees, const int groups,
-		  const int procs, const int chunk)
+		  const int procs, const int is_cpu)
 {
   char *val = getenv("APSP");
   int kind;
   if(val == NULL){
-    double normal_mem_usage = apsp_get_mem_usage(APSP_NORMAL, nodes, degree, groups, num_degrees, procs, chunk);
+    double normal_mem_usage = apsp_get_mem_usage(APSP_NORMAL, nodes, degree, groups, num_degrees, procs, is_cpu);
     if(normal_mem_usage <= MEM_THRESHOLD)
       kind = APSP_NORMAL;
     else

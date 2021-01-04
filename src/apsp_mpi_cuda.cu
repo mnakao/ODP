@@ -19,9 +19,9 @@ extern __global__ void matrix_op_chunk(const uint64_t* __restrict__ A, uint64_t*
 extern "C" void apsp_start_profile();
 extern "C" void apsp_end_profile(const char* name, const int kind, const int groups, const double mem_usage, const int procs);
 extern "C" int  apsp_get_kind(const int nodes, const int degree, const int* num_degrees, const int groups,
-			      const int procs, const int chunk);
+			      const int procs, const bool is_cpu);
 extern "C" double apsp_get_mem_usage(const int kind, const int nodes, const int degree, const int groups,
-				     const int *num_degree, const int procs, const int chunk);
+				     const int *num_degrees, const int procs, const bool is_cpu);
 
 static __global__ void init_buffers(uint64_t* __restrict__ A, uint64_t* __restrict__ B,
 				    const int nodes, const int groups, const int t, const int chunk)
@@ -135,8 +135,8 @@ extern "C" void apsp_mpi_cuda_init_s(const int nodes, const int degree,
 
   MPI_Comm_rank(comm, &_rank);
   MPI_Comm_size(comm, &_procs);
-  _kind = apsp_get_kind(nodes, degree, num_degrees, groups, _procs, GPU_CHUNK);
-  _mem_usage = apsp_get_mem_usage(_kind, nodes, degree, groups, num_degrees, _procs, GPU_CHUNK);
+  _kind = apsp_get_kind(nodes, degree, num_degrees, groups, _procs, false);
+  _mem_usage = apsp_get_mem_usage(_kind, nodes, degree, groups, num_degrees, _procs, false);
   size_t elements = (nodes/groups+(UINT64_BITS-1))/UINT64_BITS;
   size_t s = (_kind == APSP_NORMAL)? (elements+(_procs-1))/_procs : GPU_CHUNK;
   s *= nodes * sizeof(uint64_t);

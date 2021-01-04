@@ -9,9 +9,9 @@ static bool _enable_avx2 = false;
 extern void apsp_start_profile();
 extern void apsp_end_profile(const char* name, const int kind, const int groups, const double mem_usage, const int procs);
 extern int  apsp_get_kind(const int nodes, const int degree, const int* num_degrees, const int groups,
-			  const int procs, const int chunk);
+			  const int procs, const bool is_cpu);
 extern double apsp_get_mem_usage(const int kind, const int nodes, const int degree, const int groups,
-                                 const int *num_degree, const int procs, const int chunk);
+                                 const int *num_degrees, const int procs, const bool is_cpu);
 extern void matmul(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
 		   const int *num_degrees, const int *restrict adjacency, const bool enable_avx2, const int elements);
 extern void matmul_CHUNK(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
@@ -108,8 +108,8 @@ void apsp_init_s(const int nodes, const int degree, const int* num_degrees, cons
   else if(CPU_CHUNK % 4 != 0)
     ERROR("CPU_CHUNK(%d) in parameter.h must be multiple of 4\n", CPU_CHUNK);
 
-  _kind = apsp_get_kind(nodes, degree, num_degrees, groups, 1, CPU_CHUNK);
-  _mem_usage = apsp_get_mem_usage(_kind, nodes, degree, groups, num_degrees, 1, CPU_CHUNK);
+  _kind = apsp_get_kind(nodes, degree, num_degrees, groups, 1, true);
+  _mem_usage = apsp_get_mem_usage(_kind, nodes, degree, groups, num_degrees, 1, true);
   _elements = (nodes/groups+(UINT64_BITS-1))/UINT64_BITS;
 #ifdef __AVX2__
   if(_elements >= 4){ // For performance

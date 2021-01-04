@@ -8,12 +8,12 @@ static double _mem_usage;
 static bool _enable_avx2 = false;
 static MPI_Comm _comm;
 
-extern int  apsp_get_kind(const int nodes, const int degree, const int* num_degrees, const int groups,
-                          const int procs, const int chunk);
+extern int apsp_get_kind(const int nodes, const int degree, const int* num_degrees, const int groups,
+			 const int procs, const bool is_cpu);
 extern void apsp_start_profile();
 extern void apsp_end_profile(const char* name, const int kind, const int groups, const double mem_usage, const int procs);
 extern double apsp_get_mem_usage(const int kind, const int nodes, const int degree, const int groups,
-				 const int *num_degree, const int procs, const int chunk);
+				 const int *num_degrees, const int procs, const bool is_cpu);
 extern void matmul(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
 		   const int *num_degrees, const int *restrict adjacency, const bool enable_avx2, const int elements);
 extern void matmul_CHUNK(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
@@ -123,8 +123,8 @@ void apsp_mpi_init_s(const int nodes, const int degree,
   MPI_Comm_rank(comm, &_rank);
   MPI_Comm_size(comm, &_procs);
 
-  _kind = apsp_get_kind(nodes, degree, num_degrees, groups, _procs, CPU_CHUNK);
-  _mem_usage = apsp_get_mem_usage(_kind, nodes, degree, groups, num_degrees, _procs, CPU_CHUNK);
+  _kind = apsp_get_kind(nodes, degree, num_degrees, groups, _procs, true);
+  _mem_usage = apsp_get_mem_usage(_kind, nodes, degree, groups, num_degrees, _procs, true);
   _total_elements = (nodes/groups+(UINT64_BITS-1))/UINT64_BITS;
   _elements = (_total_elements+(_procs-1))/_procs;
 #ifdef __AVX2__
