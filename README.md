@@ -170,7 +170,7 @@ void apsp_random_grid   (int width, int height, int degree, int length, unsigned
 * [IN] length : Maximum length of a grid graph
 * [OUT] edge : Edge list of a graph
 
-### Read edge from a file
+### Read an edge from a file
 ```
 void apsp_read_edge_general(char* fname, int (*edge)[2])
 void apsp_read_edge_grid   (char *fname, int *width, int *height, int (*edge)[2])
@@ -180,7 +180,7 @@ void apsp_read_edge_grid   (char *fname, int *width, int *height, int (*edge)[2]
 * [OUT] width : Width of a grid graph
 * [OUT] height : Height of a grid graph
 
-### Write a graph to file
+### Write an edge to a file
 ```
 void apsp_write_edge_general(char *fname, int lines, int (*edge)[2])
 void apsp_write_edge_grid   (char *fname, int lines, int height, int (*edge)[2])
