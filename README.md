@@ -105,7 +105,7 @@ ASPL Gap     = 0.1833333333 (1.9166666667 - 1.7333333333)
 ```
 
 The meaning of each item in the profile is as follows.
-* Hostname : The name of the machine on which the program was run
+* Hostname : The name of the machine on which the program is run
 * Initialize Date : Time when the apsp\*_init function is executed
 * Finalize Date   : Time when the apsp\*_finalize function is executed
 * Number of Times : Number of times apsp\*_run function is executed
