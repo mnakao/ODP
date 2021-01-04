@@ -166,7 +166,7 @@ void apsp_mpi_finalize()
 
   if(_rank == 0 && _is_profile){
 #ifdef _OPENMP
-    apsp_profile("MPI+Threads", _kind, _groups, _mem_usage,
+    apsp_profile("MPI+THREADS", _kind, _groups, _mem_usage,
 		 _start_t, time(NULL), _elapsed_time, _times, _procs);
 #else
     apsp_profile("MPI", _kind, _groups, _mem_usage,
