@@ -14,10 +14,10 @@ extern void apsp_start_profile();
 extern void apsp_end_profile(const char* name, const int kind, const int groups, const double mem_usage, const int procs);
 extern double apsp_get_mem_usage(const int kind, const int nodes, const int degree, const int groups,
 				 const int *num_degrees, const int procs, const bool is_cpu);
-extern void matmul(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
-		   const int *num_degrees, const int *restrict adjacency, const bool enable_avx2, const int elements);
-extern void matmul_CHUNK(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
-                         const int *num_degrees, const int *restrict adjacency, const bool enable_avx2);
+extern void apsp_matmul(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
+			const int *num_degrees, const int *restrict adjacency, const bool enable_avx2, const int elements);
+extern void apsp_matmul_CHUNK(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
+			      const int *num_degrees, const int *restrict adjacency, const bool enable_avx2);
 extern void apsp_malloc(uint64_t **a, const size_t s, const bool enable_avx2);
 extern void apsp_free(uint64_t *a, const bool enable_avx2);
 
@@ -40,8 +40,8 @@ static void apsp_mpi_mat(const int* restrict adjacency,
     }
 
     for(kk=0;kk<_nodes;kk++){
-      matmul(_A, _B, _nodes, _degree, _num_degrees, adjacency,
-	     _enable_avx2, _elements);
+      apsp_matmul(_A, _B, _nodes, _degree, _num_degrees, adjacency,
+		  _enable_avx2, _elements);
 
       uint64_t num = 0;
 #pragma omp parallel for reduction(+:num)
@@ -86,7 +86,7 @@ static void apsp_mpi_mat_saving(const int* restrict adjacency,
     }
 
     for(kk=0;kk<_nodes;kk++){
-      matmul_CHUNK(_A, _B, _nodes, _degree, _num_degrees, adjacency, _enable_avx2);
+      apsp_matmul_CHUNK(_A, _B, _nodes, _degree, _num_degrees, adjacency, _enable_avx2);
 
       uint64_t num = 0;
 #pragma omp parallel for reduction(+:num)

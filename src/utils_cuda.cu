@@ -1,6 +1,6 @@
 #include "common.h"
 
-__global__ void clear_buffers(uint64_t* __restrict__ A, uint64_t* __restrict__ B, const int length)
+__global__ void apsp_clear_buffers(uint64_t* __restrict__ A, uint64_t* __restrict__ B, const int length)
 {
   int tid = threadIdx.x + blockIdx.x * blockDim.x;
   while (tid<length) {
@@ -9,8 +9,8 @@ __global__ void clear_buffers(uint64_t* __restrict__ A, uint64_t* __restrict__ B
   }
 }
 
-__global__ void popcnt(const uint64_t* __restrict__ B, const int nodes,
-		       const unsigned int elements, uint64_t* __restrict__ result)
+__global__ void apsp_popcnt(const uint64_t* __restrict__ B, const int nodes,
+			    const unsigned int elements, uint64_t* __restrict__ result)
 {
   __shared__ uint64_t cache[THREADS];
   int cacheIndex = threadIdx.x;
@@ -36,8 +36,8 @@ __global__ void popcnt(const uint64_t* __restrict__ B, const int nodes,
     result[blockIdx.x] = cache[0];
 }
 
-__global__ void matrix_op(const uint64_t* __restrict__ A, uint64_t* __restrict__ B, const int* __restrict__ adjacency,
-			  const int* __restrict__ num_degrees, const int nodes, const int degree, const unsigned int elements, const int based_nodes)
+__global__ void apsp_matmul_cuda(const uint64_t* __restrict__ A, uint64_t* __restrict__ B, const int* __restrict__ adjacency,
+				 const int* __restrict__ num_degrees, const int nodes, const int degree, const unsigned int elements, const int based_nodes)
 {
   int tid = threadIdx.x + blockIdx.x * blockDim.x;
   if(!num_degrees){
@@ -76,8 +76,8 @@ __global__ void matrix_op(const uint64_t* __restrict__ A, uint64_t* __restrict__
   }
 }
 
-__global__ void matrix_op_chunk(const uint64_t* __restrict__ A, uint64_t* __restrict__ B, const int* __restrict__ adjacency,
-				const int* __restrict__ num_degrees, const int nodes, const int degree, const int based_nodes)
+__global__ void apsp_matmul_CHUNK_cuda(const uint64_t* __restrict__ A, uint64_t* __restrict__ B, const int* __restrict__ adjacency,
+				       const int* __restrict__ num_degrees, const int nodes, const int degree, const int based_nodes)
 {
   int tid = threadIdx.x + blockIdx.x * blockDim.x;
   if(!num_degrees){

@@ -198,8 +198,8 @@ void apsp_free(uint64_t *a, const bool enable_avx2)
     free(a);
 }
 
-void matmul(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
-	    const int *num_degrees, const int *restrict adjacency, const bool enable_avx2, const int elements)
+void apsp_matmul(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
+		 const int *num_degrees, const int *restrict adjacency, const bool enable_avx2, const int elements)
 {
   if(enable_avx2){
     if(!num_degrees){
@@ -257,8 +257,8 @@ void matmul(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, c
   }
 }
 
-void matmul_CHUNK(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
-		  const int *num_degrees, const int *restrict adjacency, const bool enable_avx2)
+void apsp_matmul_CHUNK(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
+		       const int *num_degrees, const int *restrict adjacency, const bool enable_avx2)
 {
   if(enable_avx2){
     if(!num_degrees){
