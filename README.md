@@ -182,13 +182,13 @@ void apsp_read_edge_grid   (char *fname, int *width, int *height, int (*edge)[2]
 
 ### Write an edge to a file
 ```
-void apsp_write_edge_general(char *fname, int lines, int (*edge)[2])
-void apsp_write_edge_grid   (char *fname, int lines, int height, int (*edge)[2])
+void apsp_write_edge_general(int lines, int (*edge)[2], char *fname)
+void apsp_write_edge_grid   (int lines, int height, int (*edge)[2], char *fname)
 ```
-* [OUT] fname : File name of a graph
 * [IN] lines : Number of lines in an edge list
-* [IN] height : Height of a grid graph
 * [IN] edge : Edge list of a graph
+* [IN] height : Height of a grid graph
+* [OUT] fname : File name of a graph
 
 ### Calculate theoretical lower bounds
 ```

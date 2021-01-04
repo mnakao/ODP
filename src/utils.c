@@ -85,7 +85,7 @@ void apsp_random_general(const int nodes, const int degree, const unsigned int s
     simple_2opt_general(lines, (int (*)[2])edge);
 }
 
-void apsp_write_edge_general(char *fname, const int lines, const int edge[lines][2])
+void apsp_write_edge_general(const int lines, const int edge[lines][2], char *fname)
 {
   FILE *fp = NULL;
   
@@ -98,7 +98,7 @@ void apsp_write_edge_general(char *fname, const int lines, const int edge[lines]
   fclose(fp);
 }
 
-void apsp_write_edge_grid(char *fname, const int lines, const int height, const int edge[lines][2])
+void apsp_write_edge_grid(const int lines, const int height, const int edge[lines][2], char *fname)
 {
   FILE *fp = NULL;
 

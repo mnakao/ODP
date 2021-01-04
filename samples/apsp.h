@@ -58,6 +58,6 @@ extern void apsp_random_grid(int width, int height, int degree,
 			     int length, unsigned int seed, int (*edge)[2]);
 extern void apsp_read_edge_general(char* fname, int (*edge)[2]);
 extern void apsp_read_edge_grid(char *fname, int *w, int *h, int (*edge)[2]);
-extern void apsp_write_edge_general(char *fname, int lines, int (*edge)[2]);
-extern void apsp_write_edge_grid(char *fname, int lines, int height, int (*edge)[2]);
+extern void apsp_write_edge_general(int lines, int (*edge)[2], char *fname);
+extern void apsp_write_edge_grid(int lines, int height, int (*edge)[2], char *fname);
 #endif

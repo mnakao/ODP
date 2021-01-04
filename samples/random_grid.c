@@ -27,7 +27,7 @@ int main()
   printf("ASPL         = %.10f (%ld/%.0f)\n", ASPL, sum, (double)nodes*(nodes-1)/2);
   printf("ASPL Gap     = %.10f (%.10f - %.10f)\n", ASPL - low_ASPL, ASPL, low_ASPL);
 
-  apsp_write_edge_grid(fname, lines, height, edge);
+  apsp_write_edge_grid(lines, height, edge, fname);
   printf("Generate ./%s\n", fname);
   
   free(edge);
