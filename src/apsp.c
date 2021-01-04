@@ -2,14 +2,17 @@
 static uint64_t *_A, *_B;
 static int _nodes, _degree, _groups, _kind;
 static const int* _num_degrees;
-static unsigned int _elements;
-static double _mem_usage;
-static bool _enable_avx2 = false;
+static unsigned int _elements, _times;
+static double _mem_usage, _elapsed_time;
+static bool _enable_avx2 = false, _is_profile;
+static time_t _start_t;
 
-extern void apsp_start_profile();
-extern void apsp_end_profile(const char* name, const int kind, const int groups, const double mem_usage, const int procs);
-extern int  apsp_get_kind(const int nodes, const int degree, const int* num_degrees, const int groups,
-			  const int procs, const bool is_cpu);
+extern bool apsp_check_profile();
+extern double apsp_get_time();
+extern void apsp_profile(const char* name, const int kind, const int groups, const double mem_usage, const time_t start_t,
+                         const time_t end_t, const double elapsed_time, const unsigned int times, const int procs);
+extern int apsp_get_kind(const int nodes, const int degree, const int* num_degrees, const int groups,
+			 const int procs, const bool is_cpu);
 extern double apsp_get_mem_usage(const int kind, const int nodes, const int degree, const int groups,
                                  const int *num_degrees, const int procs, const bool is_cpu);
 extern void apsp_matmul(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
@@ -103,6 +106,8 @@ static void apsp_mat_saving(const int* restrict adjacency,
 
 void apsp_init_s(const int nodes, const int degree, const int* num_degrees, const int groups)
 {
+  _start_t = time(NULL);
+  
   if(nodes % groups != 0)
     ERROR("nodes(%d) must be divisible by group(%d)\n", nodes, groups);
   else if(CPU_CHUNK % 4 != 0)
@@ -126,6 +131,9 @@ void apsp_init_s(const int nodes, const int degree, const int* num_degrees, cons
   _degree = degree;
   _num_degrees = num_degrees;
   _groups = groups;
+  _is_profile = apsp_check_profile();
+  _elapsed_time = 0;
+  _times = 0;
 }
 
 void apsp_init(const int nodes, const int degree, const int* num_degrees)
@@ -137,23 +145,31 @@ void apsp_finalize()
 {
   apsp_free(_A, _enable_avx2);
   apsp_free(_B, _enable_avx2);
+
+  if(_is_profile){
+#ifdef _OPENMP
+    apsp_profile("THREADS", _kind, _groups, _mem_usage,
+		 _start_t, time(NULL), _elapsed_time, _times, 1);
+#else
+    apsp_profile("SERIAL",  _kind, _groups, _mem_usage,
+		 _start_t, time(NULL), _elapsed_time, _times, 1);
+#endif
+  }
 }
 
 void apsp_run(const int* restrict adjacency, int *diameter, long *sum, double *ASPL)
 {
-  apsp_start_profile();
+  double t = apsp_get_time();
   
   if(_kind == APSP_NORMAL)
     apsp_mat       (adjacency, diameter, sum, ASPL);
   else
     apsp_mat_saving(adjacency, diameter, sum, ASPL);
+
+  _elapsed_time += apsp_get_time() - t;
   
   if(*diameter > _nodes)
     ERROR("This graph is not connected graph.\n");
-
-#ifdef _OPENMP
-  apsp_end_profile("THREADS", _kind, _groups, _mem_usage, 1);
-#else
-  apsp_end_profile("SERIAL", _kind, _groups, _mem_usage, 1);
-#endif
+  
+  _times++;
 }

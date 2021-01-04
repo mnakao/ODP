@@ -3,15 +3,18 @@
 static uint64_t *_A, *_B;
 static int _nodes, _degree, _groups, _kind, _rank, _procs;
 static const int* _num_degrees;
-static unsigned int _elements, _total_elements;
-static double _mem_usage;
-static bool _enable_avx2 = false;
+static unsigned int _elements, _total_elements, _times;
+static double _mem_usage, _elapsed_time;
+static bool _enable_avx2 = false, _is_profile;
+static time_t _start_t;
 static MPI_Comm _comm;
 
+extern bool apsp_check_profile();
+extern double apsp_get_time();
+extern void apsp_profile(const char* name, const int kind, const int groups, const double mem_usage, const time_t start_t,
+                         const time_t end_t, const double elapsed_time, const unsigned int times, const int procs);
 extern int apsp_get_kind(const int nodes, const int degree, const int* num_degrees, const int groups,
 			 const int procs, const bool is_cpu);
-extern void apsp_start_profile();
-extern void apsp_end_profile(const char* name, const int kind, const int groups, const double mem_usage, const int procs);
 extern double apsp_get_mem_usage(const int kind, const int nodes, const int degree, const int groups,
 				 const int *num_degrees, const int procs, const bool is_cpu);
 extern void apsp_matmul(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
@@ -115,6 +118,8 @@ static void apsp_mpi_mat_saving(const int* restrict adjacency,
 void apsp_mpi_init_s(const int nodes, const int degree,
 		     const int* restrict num_degrees, const MPI_Comm comm, const int groups)
 {
+  _start_t = time(NULL);
+  
   if(nodes % groups != 0)
     ERROR("nodes(%d) must be divisible by group(%d)\n", nodes, groups);
   else if(CPU_CHUNK % 4 != 0)
@@ -143,6 +148,9 @@ void apsp_mpi_init_s(const int nodes, const int degree,
   _num_degrees = num_degrees;
   _groups = groups;
   _comm = comm;
+  _is_profile = apsp_check_profile();
+  _elapsed_time = 0;
+  _times = 0;
 }
 
 void apsp_mpi_init(const int nodes, const int degree,
@@ -155,27 +163,32 @@ void apsp_mpi_finalize()
 {
   apsp_free(_A, _enable_avx2);
   apsp_free(_B, _enable_avx2);
+
+  if(_rank == 0 && _is_profile){
+#ifdef _OPENMP
+    apsp_profile("MPI+Threads", _kind, _groups, _mem_usage,
+		 _start_t, time(NULL), _elapsed_time, _times, _procs);
+#else
+    apsp_profile("MPI", _kind, _groups, _mem_usage,
+		 _start_t, time(NULL), _elapsed_time, _times, _procs);
+#endif
+  }
 }
 
 void apsp_mpi_run(const int* restrict adjacency, int *diameter, long *sum, double *ASPL)
 {
-  MPI_Barrier(_comm);
-  if(_rank == 0)
-    apsp_start_profile();
+  if(_is_profile) MPI_Barrier(_comm);
+  double t = apsp_get_time();
   
   if(_kind == APSP_NORMAL)
     apsp_mpi_mat       (adjacency, diameter, sum, ASPL);
   else
     apsp_mpi_mat_saving(adjacency, diameter, sum, ASPL);
 
+  _elapsed_time += apsp_get_time() - t;
+    
   if(*diameter > _nodes)
     ERROR("This graph is not connected graph.\n");
 
-  if(_rank == 0){
-#ifdef _OPENMP
-    apsp_end_profile("MPI+Threads", _kind, _groups, _mem_usage, _procs);
-#else
-    apsp_end_profile("MPI", _kind, _groups, _mem_usage, _procs);
-#endif
-  }
+  _times++;
 }

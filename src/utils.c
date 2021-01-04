@@ -1,6 +1,21 @@
 #include "common.h"
-static time_t _start_t;
-static double _elapsed_time;
+
+double apsp_get_time()
+{
+  struct timeval t;
+  gettimeofday(&t, NULL);
+  return t.tv_sec + 1.0e-6 * t.tv_usec;
+}
+
+bool apsp_check_profile()
+{
+  char *val = getenv("APSP_PROFILE");
+  if(val){
+    if(atoi(val) == 1)
+      return true;
+  }
+  return false;
+}
 
 static void check_graph_parameters(const int nodes, const int degree)
 {
@@ -359,53 +374,30 @@ int apsp_get_kind(const int nodes, const int degree, const int* num_degrees, con
   return kind;
 }
 
-static bool check_profile()
+void apsp_profile(const char* name, const int kind, const int groups, const double mem_usage,
+		  const time_t start_t, const time_t end_t, const double elapsed_time,
+		  const unsigned int times, const int procs)
 {
-  char *val = getenv("APSP_PROFILE");
-  if(val){
-    if(atoi(val) == 1)
-      return true;
-  }
-  return false;
-}
-
-static double get_time()
-{
-  struct timeval t;
-  gettimeofday(&t, NULL);
-  return t.tv_sec + 1.0e-6 * t.tv_usec;
-}
-
-
-void apsp_start_profile()
-{
-  if(!check_profile()) return;
-  
-  _elapsed_time = get_time();
-  _start_t      = time(NULL);
-}
-
-void apsp_end_profile(const char* name, const int kind, const int groups, const double mem_usage, const int procs)
-{
-  if(!check_profile()) return;
-  
-  time_t end_t = time(NULL);
   char kind_name[7], hostname[MAX_HOSTNAME_LENGTH];
   if(kind == APSP_NORMAL) strcpy(kind_name, "NORMAL");
   else                    strcpy(kind_name, "SAVING");
   gethostname(hostname, sizeof(hostname));
   
   printf("------ Start of Profile ------\n");
-  printf("Hostname       = %s\n", hostname);
-  printf("Start Date     = %s", ctime(&_start_t));
-  printf("End Date       = %s", ctime(&end_t));
-  printf("Elapsed Time   = %f sec.\n", get_time() - _elapsed_time);
-  printf("Algorithm      = %s (%s)\n", kind_name, name);
-  printf("Symmetry       = %d\n", groups);
-  printf("Memory Usage   = %.3f MB\n", mem_usage);
-  if(procs != 1) printf("Procs          = %d\n", procs);
+  printf("Hostname        = %s\n", hostname);
+  printf("Initialize Date = %s", ctime(&start_t));
+  printf("Finalize Date   = %s", ctime(&end_t));
+  printf("Number of Times = %d\n", times);
+  printf("Total Time      = %f sec.\n", elapsed_time);
+  printf("Average Time    = %f sec.\n", elapsed_time/times);
+  printf("Algorithm       = %s (%s)\n", kind_name, name);
+  printf("Symmetries      = %d\n", groups);
+  printf("Memory Usage    = %.3f MB\n", mem_usage);
+  printf("Num of Procs    = %d\n", procs);
 #ifdef _OPENMP
-  printf("Num of Threads = %d\n", omp_get_max_threads());
+  printf("Num of Threads  = %d\n", omp_get_max_threads());
+#else
+  printf("Num of Threads  = %d\n", 1);
 #endif
   printf("------  End of Profile  ------\n");
 }

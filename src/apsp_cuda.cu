@@ -2,12 +2,16 @@
 static uint64_t *_A_dev, *_B_dev;
 static uint64_t *_result, *_result_dev;
 static int *_adjacency_dev, *_num_degrees_dev;
-static bool _num_degrees_flag = false;
+static bool _num_degrees_flag = false, _is_profile;
 static int _nodes, _degree, _groups, _kind;
-static double _mem_usage;
+static double _mem_usage, _elapsed_time;
+static unsigned int _times;
+static time_t _start_t;
 
-extern "C" void apsp_start_profile();
-extern "C" void apsp_end_profile(const char* name, const int kind, const int groups, const double mem_usage, const int procs);
+extern "C" bool apsp_check_profile();
+extern "C" double apsp_get_time();
+extern "C" void apsp_profile(const char* name, const int kind, const int groups, const double mem_usage, const time_t start_t,
+			     const time_t end_t, const double elapsed_time, const unsigned int times, const int procs);
 extern "C" double apsp_get_mem_usage(const int kind, const int nodes, const int degree, const int groups,
 				     const int *num_degrees, const int procs, const bool is_cpu);
 extern "C" int  apsp_get_kind(const int nodes, const int degree, const int* num_degrees, const int groups,
@@ -120,6 +124,7 @@ static void apsp_cuda_mat_saving(const int* __restrict__ adjacency,
 extern "C" void apsp_cuda_init_s(const int nodes, const int degree,
 				 const int* __restrict__ num_degrees, const int groups)
 {
+  _start_t = time(NULL);
   cuInit(0);
 
   if(nodes % groups != 0)
@@ -144,6 +149,9 @@ extern "C" void apsp_cuda_init_s(const int nodes, const int degree,
     cudaMemcpy(_num_degrees_dev, num_degrees, sizeof(int)*nodes, cudaMemcpyHostToDevice);
     _num_degrees_flag = true;
   }
+  _is_profile = apsp_check_profile();
+  _elapsed_time = 0;
+  _times = 0;
 }
 
 extern "C" void apsp_cuda_init(const int nodes, const int degree, const int* __restrict__ num_degrees)
@@ -160,12 +168,17 @@ extern "C" void apsp_cuda_finalize()
   cudaFree(_adjacency_dev);
   if(_num_degrees_flag)
     cudaFree(_num_degrees_dev);
+
+  if(_is_profile)
+    apsp_profile("CUDA", _kind, _groups, _mem_usage,
+		 _start_t, time(NULL), _elapsed_time, _times, 1);
 }
 
 extern "C" void apsp_cuda_run(const int* __restrict__ adjacency,
 			      int *diameter, long *sum, double *ASPL)
 {
-  apsp_start_profile();
+  double t = apsp_get_time();
+  
   cudaMemcpy(_adjacency_dev, adjacency, sizeof(int)*(_nodes/_groups)*_degree, cudaMemcpyHostToDevice);
   
   if(_kind == APSP_NORMAL)
@@ -173,8 +186,10 @@ extern "C" void apsp_cuda_run(const int* __restrict__ adjacency,
   else
     apsp_cuda_mat_saving(adjacency, diameter, sum, ASPL);
 
+  _elapsed_time += apsp_get_time() - t;
+    
   if(*diameter > _nodes)
     ERROR("This graph is not connected graph.\n");
 
-  apsp_end_profile("CUDA", _kind, _groups, _mem_usage, 1);
+  _times++;
 }

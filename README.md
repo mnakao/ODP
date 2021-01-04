@@ -85,13 +85,17 @@ Output the performance profile.
 ```
 $ APSP=SAVING APSP_PROFILE=1 ./general.x ./graphs/general/n16d4.edges
 ------ Start of Profile ------
-Hostname       = Pele.local
-Start Date     = Sun Dec 27 22:17:15 2020
-End Date       = Sun Dec 27 22:17:15 2020
-Elapsed Time   = 0.000980 sec.
-Algorithm      = SAVING (SERIAL)
-Symmetry       = 1
-Memory Usage   = 0.016 MB
+Hostname        = kiwi
+Initialize Date = Mon Jan  4 23:14:03 2021
+Finalize Date   = Mon Jan  4 23:14:03 2021
+Number of Times = 1
+Total Time      = 0.000005 sec.
+Average Time    = 0.000005 sec.
+Algorithm       = SAVING (SERIAL)
+Symmetries      = 1
+Memory Usage    = 0.006 MB
+Num of Procs    = 1
+Num of Threads  = 1
 ------  End of Profile  ------
 Nodes = 16, Degrees = 4
 Diameter     = 3
@@ -99,6 +103,19 @@ Diameter Gap = 1 (3 - 2)
 ASPL         = 1.9166666667 (230/120)
 ASPL Gap     = 0.1833333333 (1.9166666667 - 1.7333333333)
 ```
+
+The meaning of each item in the profile is as follows.
+* Hostname : The name of the machine on which the program was run
+* Initialize Date : Time when the apsp_\*_init function is executed
+* Finalize Date   : Time when the apsp_\*_finalize function is executed
+* Number of Times : Number of times apsp_\*_run function is executed
+* Total Time : Total execution time of apsp_\*_run function
+* Average Time : Average execution time of apsp_\*_run function
+* Algorithm : NORMAL or SAVING. Inside the parentheses are SERIAL, THREADS, MPI, MPI+THREADS, CUDA, or MPI+CUDA
+* Symmetries : The value of groups in apsp_\*init_s function
+* Memory Usage : Amount of memory used inside the library
+* Num of Procs : Number of processes used by the library
+* Num of Threads : Number of threads used by the library
 
 ## Functions
 Note that there are no special functions for the threaded versions.
@@ -118,7 +135,7 @@ void apsp_mpi_cuda_init(int nodes, int degree, int num_degrees[nodes], MPI_Comm 
 * [IN] comm : MPI communicator
 
 ### Finalize
-Release the resources allocated in apsp_\*init().
+Release the resources allocated in apsp_\*init() function.
 ```
 void apsp_finalize()
 void apsp_mpi_finalize()
@@ -127,7 +144,7 @@ void apsp_mpi_cuda_finalize()
 ```
 
 ### Run APSP
-Calculate APSP. Note that they must be executed between apsp_\*init() and apsp_\*finalize().
+Calculate APSP. Note that they must be executed between apsp_\*init() function and apsp_\*finalize() function.
 ```
 void apsp_run         (int adjacency[nodes][degree], int *diameter, long *sum, double *ASPL)
 void apsp_mpi_run     (int adjacency[nodes][degree], int *diameter, long *sum, double *ASPL)
@@ -288,7 +305,7 @@ void apsp_all_mpi_cuda_run_grid   (char *fname, MPI_Comm comm, int *width, int *
 * [OUT] length : Maximum length of a grid graph
 
 ### Initialize for a graph with symmetry
-These functions can be used instead of the apsp_init\* functions for only a general graph with symmetry.
+These functions can be used instead of the apsp_\*init functions for only a general graph with symmetry.
 
 ```
 void apsp_init_s         (int nodes, int degree, int num_degrees[nodes], int groups)
