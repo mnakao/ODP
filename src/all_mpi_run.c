@@ -9,7 +9,7 @@ void apsp_all_mpi_run_general(const char *fname, const MPI_Comm comm, int *nodes
 {
   int lines = apsp_get_lines(fname);
   int (*edge)[2] = malloc(sizeof(int)*lines*2); // int edge[lines][2];
-  apsp_set_edge_general(fname, edge);
+  apsp_read_edge_general(fname, edge);
   *nodes  = apsp_get_nodes(lines, edge);
   *degree = apsp_get_degree(*nodes, lines, edge);
 
@@ -34,7 +34,7 @@ void apsp_all_mpi_run_grid(const char *fname, const MPI_Comm comm, int *width, i
 {
   int lines = apsp_get_lines(fname);
   int (*edge)[2] = malloc(sizeof(int)*lines*2); // int edge[lines][2];
-  apsp_set_edge_grid(fname, width, height, edge);
+  apsp_read_edge_grid(fname, width, height, edge);
   int nodes  = apsp_get_nodes(lines, edge);
   *degree = apsp_get_degree(nodes, lines, edge);
 

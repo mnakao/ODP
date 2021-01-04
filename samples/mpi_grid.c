@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
   
   int lines = apsp_get_lines(argv[1]);
   int (*edge)[2] = malloc(sizeof(int)*lines*2); // int edge[lines][2];
-  apsp_set_edge_grid(argv[1], &width, &height, edge);
+  apsp_read_edge_grid(argv[1], &width, &height, edge);
   int nodes  = apsp_get_nodes(lines, edge);
   int degree = apsp_get_degree(nodes, lines, edge);
 

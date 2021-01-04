@@ -139,29 +139,6 @@ void apsp_mpi_cuda_run(int adjacency[nodes][degree], int *diameter, long *sum, d
 * [OUT] sum : Total value of the distances between each vertex in a graph
 * [OUT] ASPL : Average shortest path length of a graph (sum = ASPL*(nodes*(nodes-1)/2))
 
-### Calculate theoretical lower bounds
-```
-void apsp_set_lbounds_general(int nodes, int degree, int *low_diameter, double *low_ASPL)
-void apsp_set_lbounds_grid   (int width, int height, int degree, int length, int *low_diameter, double *low_ASPL)
-```
-* [IN] nodes : Number of nodes in a graph
-* [IN] degree : Degree in a graph
-* [OUT] low_diameter : Theoretical lower bound of diameter in a graph
-* [OUT] low_ASPL : Theoretical lower bound of ASPL in a graph
-* [IN] width : Width of a grid graph
-* [IN] height : Height of a grid graph
-* [IN] length : Maximum length of a grid graph
-
-### Set edge from a file
-```
-void apsp_set_edge_general(char* fname, int (*edge)[2])
-void apsp_set_edge_grid   (char *fname, int *width, int *height, int (*edge)[2])
-```
-* [IN] fname : File name of a graph
-* [OUT] edge : Edge list of a graph
-* [OUT] width : Width of a grid graph
-* [OUT] height : Height of a grid graph
-
 ### Create random graph
 Note that the graph created by the function may contain duplicate edges and loops.
 ```
@@ -176,15 +153,38 @@ void apsp_random_grid   (int width, int height, int degree, int length, unsigned
 * [IN] length : Maximum length of a grid graph
 * [OUT] edge : Edge list of a graph
 
-### Output a graph to file
+### Read edge from a file
 ```
-void apsp_output_edge_general(char *fname, int lines, int (*edge)[2])
-void apsp_output_edge_grid   (char *fname, int lines, int height, int (*edge)[2])
+void apsp_read_edge_general(char* fname, int (*edge)[2])
+void apsp_read_edge_grid   (char *fname, int *width, int *height, int (*edge)[2])
+```
+* [IN] fname : File name of a graph
+* [OUT] edge : Edge list of a graph
+* [OUT] width : Width of a grid graph
+* [OUT] height : Height of a grid graph
+
+### Write a graph to file
+```
+void apsp_write_edge_general(char *fname, int lines, int (*edge)[2])
+void apsp_write_edge_grid   (char *fname, int lines, int height, int (*edge)[2])
 ```
 * [IN] fname : File name of a graph
 * [IN] lines : Number of lines in an edge list
 * [IN] height : Height of a grid graph
 * [IN] edge : Edge list of a graph
+
+### Calculate theoretical lower bounds
+```
+void apsp_set_lbounds_general(int nodes, int degree, int *low_diameter, double *low_ASPL)
+void apsp_set_lbounds_grid   (int width, int height, int degree, int length, int *low_diameter, double *low_ASPL)
+```
+* [IN] nodes : Number of nodes in a graph
+* [IN] degree : Degree in a graph
+* [OUT] low_diameter : Theoretical lower bound of diameter in a graph
+* [OUT] low_ASPL : Theoretical lower bound of ASPL in a graph
+* [IN] width : Width of a grid graph
+* [IN] height : Height of a grid graph
+* [IN] length : Maximum length of a grid graph
 
 ### Set adjacency matrix from an edge list
 ```

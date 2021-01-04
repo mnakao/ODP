@@ -70,7 +70,7 @@ void apsp_random_general(const int nodes, const int degree, const unsigned int s
     simple_2opt_general(lines, (int (*)[2])edge);
 }
 
-void apsp_output_edge_general(char *fname, const int lines, const int edge[lines][2])
+void apsp_write_edge_general(char *fname, const int lines, const int edge[lines][2])
 {
   FILE *fp = NULL;
   
@@ -83,7 +83,7 @@ void apsp_output_edge_general(char *fname, const int lines, const int edge[lines
   fclose(fp);
 }
 
-void apsp_output_edge_grid(char *fname, const int lines, const int height, const int edge[lines][2])
+void apsp_write_edge_grid(char *fname, const int lines, const int height, const int edge[lines][2])
 {
   FILE *fp = NULL;
 
@@ -505,7 +505,7 @@ int apsp_get_lines(const char* fname)
   return lines;
 }
 
-void apsp_set_edge_general(const char* fname, int (*edge)[2])
+void apsp_read_edge_general(const char* fname, int (*edge)[2])
 {
   FILE *fp;
   if((fp = fopen(fname, "r")) == NULL)
@@ -521,7 +521,7 @@ void apsp_set_edge_general(const char* fname, int (*edge)[2])
   fclose(fp);
 }
 
-void apsp_set_edge_grid(const char *fname, int *w, int *h, int (*edge)[2])
+void apsp_read_edge_grid(const char *fname, int *w, int *h, int (*edge)[2])
 {
   FILE *fp;
   if((fp = fopen(fname, "r")) == NULL)
