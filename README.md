@@ -113,9 +113,9 @@ The meaning of each item in the profile is as follows.
 * Average Time : Average execution time of apsp\*_run function
 * Algorithm : NORMAL or SAVING. Inside the parentheses are SERIAL, THREADS, MPI, MPI+THREADS, CUDA, or MPI+CUDA
 * Symmetries : When using apsp\*_init function, the value is 1. When using apsp\*_init_s function, the value is groups
-* Memory Usage : Amount of memory used inside the library
-* Num of Procs : Number of processes used by the library
-* Num of Threads : Number of threads used by the library
+* Memory Usage : Amount of memory used in the library
+* Num of Procs : Number of processes used in the library
+* Num of Threads : Number of threads used in the library
 
 ## Functions
 Note that there are no special functions for the threaded versions.
