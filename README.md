@@ -190,6 +190,16 @@ void apsp_write_edge_grid   (int lines, int height, int (*edge)[2], char *fname)
 * [IN] height : Height of a grid graph
 * [OUT] fname : File name of a graph
 
+### Convert an edge list to an adjacency matrix
+```
+void apsp_conv_edge2adjacency(int nodes, int degree, int lines, int edge[lines][2], int adjacency[nodes][degree])
+```
+* [IN] nodes : Number of nodes in a graph
+* [IN] degree : Degree in a graph
+* [IN] lines : Number of lines in an edge list
+* [IN] edge[lines][2] : Edge list of a graph
+* [OUT] adjacency[nodes][degree] : Adjacency matrix of a graph
+
 ### Calculate theoretical lower bounds
 ```
 void apsp_set_lbounds_general(int nodes, int degree, int *low_diameter, double *low_ASPL)
@@ -202,16 +212,6 @@ void apsp_set_lbounds_grid   (int width, int height, int degree, int length, int
 * [IN] width : Width of a grid graph
 * [IN] height : Height of a grid graph
 * [IN] length : Maximum length of a grid graph
-
-### Set adjacency matrix from an edge list
-```
-void apsp_set_adjacency(int nodes, int degree, int lines, int edge[lines][2], int adjacency[nodes][degree])
-```
-* [IN] nodes : Number of nodes in a graph
-* [IN] degree : Degree in a graph
-* [IN] lines : Number of lines in an edge list
-* [IN] edge[lines][2] : Edge list of a graph
-* [OUT] adjacency[nodes][degree] : Adjacency matrix of a graph
 
 ### Set degrees for a non-regular graph
 ```

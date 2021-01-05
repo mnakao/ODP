@@ -44,7 +44,6 @@ extern void apsp_all_mpi_cuda_run_grid(char *fname, MPI_Comm comm, int *width, i
 // APSP utilities
 extern void apsp_set_lbounds_general(int nodes, int degree, int *low_diameter, double *low_ASPL);
 extern void apsp_set_lbounds_grid(int m, int n, int degree, int length, int *low_diameter, double *low_ASPL);
-extern void apsp_set_adjacency(int nodes, int degree, int lines, int edge[lines][2], int adjacency[nodes][degree]);
 extern void apsp_set_degrees(int nodes, int lines, int edge[lines][2], int* num_degrees);
 extern int  apsp_get_lines(char* fname);
 extern int  apsp_get_nodes(int lines, int edge[lines][2]);
@@ -60,4 +59,5 @@ extern void apsp_read_edge_general(char* fname, int (*edge)[2]);
 extern void apsp_read_edge_grid(char *fname, int *w, int *h, int (*edge)[2]);
 extern void apsp_write_edge_general(int lines, int (*edge)[2], char *fname);
 extern void apsp_write_edge_grid(int lines, int height, int (*edge)[2], char *fname);
+extern void apsp_conv_edge2adjacency(int nodes, int degree, int lines, int edge[lines][2], int adjacency[nodes][degree]);
 #endif

@@ -14,7 +14,7 @@ void apsp_all_run_general(const char *fname, int *nodes, int *degree,
   *degree = apsp_get_degree(*nodes, lines, edge);
 
   int (*adjacency)[*degree] = malloc(sizeof(int) * (*nodes) * (*degree)); // int adjacency[nodes][degree];
-  apsp_set_adjacency(*nodes, *degree, lines, edge, (int *)adjacency);
+  apsp_conv_edge2adjacency(*nodes, *degree, lines, edge, (int *)adjacency);
   apsp_set_lbounds_general(*nodes, *degree, low_diameter, low_ASPL);
 
   int *num_degrees = malloc(sizeof(int) * (*nodes));
@@ -39,7 +39,7 @@ void apsp_all_run_grid(const char *fname, int *width, int *height, int *degree, 
   *degree = apsp_get_degree(nodes, lines, edge);
 
   int (*adjacency)[*degree] = malloc(sizeof(int) * nodes * (*degree)); // int adjacency[nodes][degree];
-  apsp_set_adjacency(nodes, *degree, lines, edge, (int *)adjacency);
+  apsp_conv_edge2adjacency(nodes, *degree, lines, edge, (int *)adjacency);
   *length = apsp_get_length(lines, edge, *height);
   apsp_set_lbounds_grid(*width, *height, *degree, *length, low_diameter, low_ASPL);
 

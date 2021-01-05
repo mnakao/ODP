@@ -622,8 +622,8 @@ void apsp_set_lbounds_grid(const int m, const int n, const int degree, const int
   *low_ASPL     = sum/((double)mn*(mn-1));
 }
 
-void apsp_set_adjacency(const int nodes, const int degree, const int lines,
-			const int edge[lines][2], int *adjacency)
+void apsp_conv_edge2adjacency(const int nodes, const int degree, const int lines,
+			      const int edge[lines][2], int *adjacency)
 {
   int num_degrees[nodes];
   for(int i=0;i<nodes;i++)
