@@ -222,14 +222,14 @@ void apsp_set_degrees(int nodes, int lines, int edge[lines][2], int num_degrees[
 * [IN] edge[lines][2] :	Edge list of a graph
 * [OUT] num_degrees[nodes] : Degree in each vertex
 
-### Find out number of lines in a file
+### Get the number of lines in a file
 ```
 int apsp_get_lines(char* fname)
 ```
 * [RETURN] : Nnumber of lines in a file
 * [IN] fname : File name of a graph
 
-### Find out number of nodes in a graph
+### Get the number of nodes in a graph
 ```
 int apsp_get_nodes(int lines, int edge[lines][2])
 ```
@@ -237,7 +237,7 @@ int apsp_get_nodes(int lines, int edge[lines][2])
 * [IN] lines : Number of lines in an edge list
 * [IN] edge[lines][2] : Edge list of a graph
 
-### Find out degree in a graph
+### Get a degree in a graph
 ```
 int apsp_get_degree(int nodes, int lines, int edge[lines][2])
 ```
@@ -245,7 +245,7 @@ int apsp_get_degree(int nodes, int lines, int edge[lines][2])
 * [IN] nodes : Number of nodes in a graph
 * [IN] edge[lines][2] : Edge list of a graph
 
-### Find out maximum length for a grid graph
+### Get a maximum length for a grid graph
 ```
 int apsp_get_length(int lines, int edge[lines][2], int height)
 ```
@@ -261,7 +261,7 @@ bool apsp_check_general(char *fname)
 * [RETUREN] : When an input is a general graph, it returns true.
 * [IN] fname : File name of a graph
 
-### Find out whether a graph has duplicated edges
+### Check if a graph has duplicated edges
 ```
 bool apsp_check_duplicated_edge(int lines, int edge[lines][2])
 ```
@@ -269,7 +269,7 @@ bool apsp_check_duplicated_edge(int lines, int edge[lines][2])
 * [IN] lines : Number of lines in an edge list
 * [IN] edge[lines][2] : Edge list of a graph
 
-### Find out whether a graph has a self-loop
+### Check if a graph has a self-loop
 ```
 bool apsp_check_loop(int lines, int edge[lines][2])
 ```
