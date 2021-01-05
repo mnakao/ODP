@@ -200,7 +200,7 @@ void apsp_conv_edge2adjacency(int nodes, int degree, int lines, int edge[lines][
 * [IN] edge[lines][2] : Edge list of a graph
 * [OUT] adjacency[nodes][degree] : Adjacency matrix of a graph
 
-### Calculate theoretical lower bounds
+### Set theoretical lower bounds
 ```
 void apsp_set_lbounds_general(int nodes, int degree, int *low_diameter, double *low_ASPL)
 void apsp_set_lbounds_grid   (int width, int height, int degree, int length, int *low_diameter, double *low_ASPL)
