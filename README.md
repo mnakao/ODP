@@ -254,7 +254,7 @@ int apsp_get_length(int lines, int edge[lines][2], int height)
 * [IN] edge[lines][2] :	Edge list of a graph
 * [IN] height : Height of a grid graph
 
-### Find out whether input file is a general graph
+### Check if an input file is a general graph
 ```
 bool apsp_check_general(char *fname)
 ```
