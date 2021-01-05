@@ -25,7 +25,7 @@ static void check_graph_parameters(const int nodes, const int degree)
 
 static int get_random(const int max)
 {
-  return (int)(random()*((double)max)/(1.0+RAND_MAX));
+  return (int)(rand()*((double)max)/(1.0+RAND_MAX));
 }
 
 static void swap(int *a, int *b)
@@ -640,9 +640,10 @@ void apsp_conv_adjacency2edge(const int nodes, const int degree, const int *num_
       	if(tmp[u][i] == NOT_VISITED){
           edge[j][0] = u;
           edge[j][1] = v;
+	  tmp[u][i]  = VISITED;
           j++;
 	  for(int k=0;k<degree;k++)
-	    if(*(adjacency + v * degree + k) == u)
+	    if(*(adjacency +v*degree+k) == u && tmp[v][k] == NOT_VISITED)
 	      tmp[v][k] = VISITED;
         }
       }
@@ -655,9 +656,10 @@ void apsp_conv_adjacency2edge(const int nodes, const int degree, const int *num_
 	if(tmp[u][i] == NOT_VISITED){
 	  edge[j][0] = u;
 	  edge[j][1] = v;
+	  tmp[u][i]  = VISITED;
 	  j++;
 	  for(int k=0;k<num_degrees[v];k++)
-            if(*(adjacency + v * degree + k) == u)
+            if(*(adjacency + v*degree+k) == u && tmp[v][k] == NOT_VISITED)
               tmp[v][k] = VISITED;
 	}
       }
