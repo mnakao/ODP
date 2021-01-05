@@ -201,7 +201,7 @@ void apsp_conv_edge2adjacency(int nodes, int lines, int edge[lines][2], int adja
 
 ### Convert an adjacency matrix to an edge list
 ```
-void apsp_conv_adjacency2edge(int nodes, int degree, int num_degrees[nodes], int adjacency[nodes][degree], int edge[lines][2]);
+void apsp_conv_adjacency2edge(int nodes, int degree, int num_degrees[nodes], int adjacency[nodes][degree], int edge[lines][2])
 ```
 * [IN] nodes : Number of nodes in a graph
 * [IN] degree : Degree in a graph
