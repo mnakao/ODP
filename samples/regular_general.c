@@ -10,7 +10,7 @@ int main()
   // ../data/general/n12d3.random.edges
   
   int adjacency[nodes][degree];
-  apsp_conv_edge2adjacency(nodes, degree, lines, edge, adjacency);
+  apsp_conv_edge2adjacency(nodes, lines, edge, adjacency);
   // adjacency[][] = {{10,3,4}, {8,3,7}, {8,9,6}, {0,1,5}, {0,9,10}, {3,11,6}, {2,5,7}, {1,6,11}, {1,2,11}, {2,4,10}, {0,4,9}, {5,7,8}};
 
   apsp_init(nodes, degree, NULL);

@@ -42,9 +42,10 @@ extern void apsp_set_lbounds_grid(const int m, const int n, const int degree, co
 extern void apsp_set_degrees(const int nodes, const int lines, int (*edge)[2], int* num_degrees);
 extern void apsp_read_edge_general(const char* fname, int (*edge)[2]);
 extern void apsp_read_edge_grid(const char *fname, int *w, int *h, int (*edge)[2]);
-extern void apsp_conv_edge2adjacency(const int nodes, const int degree, const int lines, const int (*edge)[2], int *adjacency);
+extern void apsp_conv_edge2adjacency(const int nodes, const int lines, const int (*edge)[2], int *adjacency);
+extern void apsp_conv_adjacency2edge(const int nodes, const int degree, const int *num_degrees, const int *adjacency, int (*edge)[2]);
 extern int apsp_get_lines(const char* fname);
-extern int apsp_get_nodes(const int lines, int (*edge)[2]);
-extern int apsp_get_degree(const int nodes, const int lines, int (*edge)[2]);
-extern int apsp_get_length(const int lines, int (*edge)[2], const int height);
+extern int apsp_get_nodes(const int lines, const int (*edge)[2]);
+extern int apsp_get_degree(const int nodes, const int lines, const int (*edge)[2]);
+extern int apsp_get_length(const int lines, const int (*edge)[2], const int height);
 #endif

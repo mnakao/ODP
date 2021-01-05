@@ -131,7 +131,7 @@ void apsp_mpi_cuda_init(int nodes, int degree, int num_degrees[nodes], MPI_Comm 
 ```
 * [IN] nodes : Number of nodes in a graph
 * [IN] degree: Degree in a graph
-* [IN] num_degrees[nodes] : Specify NULL for a regular graph. Or specify the degrees in each vertex for a non-regular graph.
+* [IN] num_degrees : Specify NULL for a regular graph. Or specify the degrees in each vertex for a non-regular graph.
 * [IN] comm : MPI communicator
 
 ### Finalize
@@ -151,7 +151,7 @@ void apsp_mpi_run     (int adjacency[nodes][degree], int *diameter, long *sum, d
 void apsp_cuda_run    (int adjacency[nodes][degree], int *diameter, long *sum, double *ASPL)
 void apsp_mpi_cuda_run(int adjacency[nodes][degree], int *diameter, long *sum, double *ASPL)
 ```
-* [IN] adjacency[nodes][degree] : Adjacency matrix of a graph
+* [IN] adjacency : Adjacency matrix of a graph
 * [OUT] diameter : Diameter of a graph
 * [OUT] sum : Total value of the distances between each vertex in a graph
 * [OUT] ASPL : Average shortest path length of a graph (sum = ASPL*(nodes*(nodes-1)/2))
@@ -159,8 +159,8 @@ void apsp_mpi_cuda_run(int adjacency[nodes][degree], int *diameter, long *sum, d
 ### Create random graph
 Note that the graph created by the function may contain duplicate edges and loops.
 ```
-void apsp_random_general(int nodes, int degree, unsigned int seed, int (*edge)[2])
-void apsp_random_grid   (int width, int height, int degree, int length, unsigned int seed, int (*edge)[2])
+void apsp_random_general(int nodes, int degree, unsigned int seed, int edge[lines][2])
+void apsp_random_grid   (int width, int height, int degree, int length, unsigned int seed, int edge[lines][2])
 ```
 * [IN] nodes : Number of nodes in a graph
 * [IN] degree : Degree in a graph
@@ -172,8 +172,8 @@ void apsp_random_grid   (int width, int height, int degree, int length, unsigned
 
 ### Read an edge from a file
 ```
-void apsp_read_edge_general(char* fname, int (*edge)[2])
-void apsp_read_edge_grid   (char *fname, int *width, int *height, int (*edge)[2])
+void apsp_read_edge_general(char* fname, int edge[lines][2])
+void apsp_read_edge_grid   (char *fname, int *width, int *height, int edge[lines][2])
 ```
 * [IN] fname : File name of a graph
 * [OUT] edge : Edge list of a graph
@@ -182,8 +182,8 @@ void apsp_read_edge_grid   (char *fname, int *width, int *height, int (*edge)[2]
 
 ### Write an edge to a file
 ```
-void apsp_write_edge_general(int lines, int (*edge)[2], char *fname)
-void apsp_write_edge_grid   (int lines, int height, int (*edge)[2], char *fname)
+void apsp_write_edge_general(int lines, int edge[lines][2], char *fname)
+void apsp_write_edge_grid   (int lines, int height, int edge[lines][2], char *fname)
 ```
 * [IN] lines : Number of lines in an edge list
 * [IN] edge : Edge list of a graph
@@ -192,13 +192,22 @@ void apsp_write_edge_grid   (int lines, int height, int (*edge)[2], char *fname)
 
 ### Convert an edge list to an adjacency matrix
 ```
-void apsp_conv_edge2adjacency(int nodes, int degree, int lines, int edge[lines][2], int adjacency[nodes][degree])
+void apsp_conv_edge2adjacency(int nodes, int lines, int edge[lines][2], int adjacency[nodes][degree])
+```
+* [IN] nodes : Number of nodes in a graph
+* [IN] lines : Number of lines in an edge list
+* [IN] edge : Edge list of a graph
+* [OUT] adjacency : Adjacency matrix of a graph
+
+### Convert an adjacency matrix to an edge list
+```
+void apsp_conv_adjacency2edge(int nodes, int degree, int num_degrees[nodes], int adjacency[nodes][degree], int edge[lines][2]);
 ```
 * [IN] nodes : Number of nodes in a graph
 * [IN] degree : Degree in a graph
-* [IN] lines : Number of lines in an edge list
-* [IN] edge[lines][2] : Edge list of a graph
-* [OUT] adjacency[nodes][degree] : Adjacency matrix of a graph
+* [IN] num_degrees : Specify NULL for a regular graph. If not, specify the degrees for each vertex.
+* [IN] adjacency : Adjacency matrix of a graph
+* [OUT] edge : Edge list of a graph
 
 ### Set theoretical lower bounds
 ```
@@ -219,8 +228,8 @@ void apsp_set_degrees(int nodes, int lines, int edge[lines][2], int num_degrees[
 ```
 * [IN] nodes : Number of nodes in a graph
 * [IN] lines : Number of lines in an edge list
-* [IN] edge[lines][2] :	Edge list of a graph
-* [OUT] num_degrees[nodes] : Degree in each vertex
+* [IN] edge : Edge list of a graph
+* [OUT] num_degrees : Degree in each vertex
 
 ### Get the number of lines in a file
 ```
@@ -235,7 +244,7 @@ int apsp_get_nodes(int lines, int edge[lines][2])
 ```
 * [RETURN] : Nnumber of nodes in an edge list
 * [IN] lines : Number of lines in an edge list
-* [IN] edge[lines][2] : Edge list of a graph
+* [IN] edge : Edge list of a graph
 
 ### Get a degree in a graph
 ```
@@ -243,7 +252,7 @@ int apsp_get_degree(int nodes, int lines, int edge[lines][2])
 ```
 * [RETURN] : Degree in an edge list
 * [IN] nodes : Number of nodes in a graph
-* [IN] edge[lines][2] : Edge list of a graph
+* [IN] edge : Edge list of a graph
 
 ### Get a maximum length for a grid graph
 ```
@@ -251,7 +260,7 @@ int apsp_get_length(int lines, int edge[lines][2], int height)
 ```
 * [RETURN] : Maximum length in an edge list
 * [IN] lines : Number of lines in an edge list
-* [IN] edge[lines][2] :	Edge list of a graph
+* [IN] edge : Edge list of a graph
 * [IN] height : Height of a grid graph
 
 ### Check if an input file is a general graph
@@ -267,7 +276,7 @@ bool apsp_check_duplicated_edge(int lines, int edge[lines][2])
 ```
 * [RETURN] : If a graph has duplicated edge, it returns true
 * [IN] lines : Number of lines in an edge list
-* [IN] edge[lines][2] : Edge list of a graph
+* [IN] edge : Edge list of a graph
 
 ### Check if a graph has a self-loop
 ```
@@ -275,7 +284,7 @@ bool apsp_check_loop(int lines, int edge[lines][2])
 ```
 * [RETURN] : If a graph has a self-loop, it returns true
 * [IN] lines : Number of lines in an edge list
-* [IN] edge[lines][2] : Edge list of a graph
+* [IN] edge : Edge list of a graph
 
 ### Shortcut functions
 Return other values just by specifying fname and comm.
@@ -315,7 +324,7 @@ void apsp_mpi_cuda_init_s(int nodes, int degree, int num_degrees[nodes], MPI_Com
 ```
 * [IN] nodes : Number of nodes in a graph
 * [IN] degree: Degree in a graph
-* [IN] num_degrees[nodes] : Specify NULL for a regular graph. If not, specify the degrees for each vertex.
+* [IN] num_degrees : Specify NULL for a regular graph. If not, specify the degrees for each vertex.
 * [IN] comm : MPI communicator
 * [IN] groups : Numer of groups in a graph with symmetry. This value must be a divisor of nodes.
 

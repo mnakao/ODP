@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
   int degree = apsp_get_degree(nodes, lines, edge);
 
   int (*adjacency)[degree] = malloc(sizeof(int) * nodes * degree); // int adjacency[nodes][degree];
-  apsp_conv_edge2adjacency(nodes, degree, lines, edge, adjacency);
+  apsp_conv_edge2adjacency(nodes, lines, edge, adjacency);
   
   apsp_init(nodes, degree, NULL);
   apsp_run(adjacency, &diameter, &sum, &ASPL);
@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
   printf("Diameter Gap = %d (%d - %d)\n", diameter - low_diameter, diameter, low_diameter);
   printf("ASPL         = %.10f (%ld/%.0f)\n", ASPL, sum, (double)nodes*(nodes-1)/2);
   printf("ASPL Gap     = %.10f (%.10f - %.10f)\n", ASPL - low_ASPL, ASPL, low_ASPL);
-  
+
   free(edge);
   free(adjacency);
   return 0;

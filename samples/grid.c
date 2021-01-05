@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
   int degree = apsp_get_degree(nodes, lines, edge);
 
   int (*adjacency)[degree] = malloc(sizeof(int) * nodes * degree); // int adjacency[nodes][degree];
-  apsp_conv_edge2adjacency(nodes, degree, lines, edge, adjacency);
+  apsp_conv_edge2adjacency(nodes, lines, edge, adjacency);
 
   apsp_init(nodes, degree, NULL);
   apsp_run(adjacency, &diameter, &sum, &ASPL);

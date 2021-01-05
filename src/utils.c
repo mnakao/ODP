@@ -430,7 +430,7 @@ bool apsp_check_duplicated_edge(const int lines, int edge[lines][2])
   return true;
 }
 
-int apsp_get_length(const int lines, int edge[lines][2], const int height)
+int apsp_get_length(const int lines, const int edge[lines][2], const int height)
 {
   int length = 0;
   for(int i=0;i<lines;i++)
@@ -452,7 +452,7 @@ bool apsp_check_general(char *fname)
   return (n2 != -1)? true : false;
 }
 
-int apsp_get_degree(const int nodes, const int lines, int edge[lines][2])
+int apsp_get_degree(const int nodes, const int lines, const int edge[lines][2])
 {
   int node[nodes];
   for(int i=0;i<nodes;i++)
@@ -470,7 +470,7 @@ int apsp_get_degree(const int nodes, const int lines, int edge[lines][2])
   return degree;
 }
 
-int apsp_get_nodes(const int lines, int (*edge)[2])
+int apsp_get_nodes(const int lines, const int (*edge)[2])
 {
   int max = 0;
   for(int i=0;i<lines;i++){
@@ -622,9 +622,53 @@ void apsp_set_lbounds_grid(const int m, const int n, const int degree, const int
   *low_ASPL     = sum/((double)mn*(mn-1));
 }
 
-void apsp_conv_edge2adjacency(const int nodes, const int degree, const int lines,
-			      const int edge[lines][2], int *adjacency)
+#define NOT_VISITED 0
+#define VISITED     1
+void apsp_conv_adjacency2edge(const int nodes, const int degree, const int *num_degrees,
+			      const int *adjacency, int (*edge)[2])
 {
+  char tmp[nodes][degree];
+  for(int i=0;i<nodes;i++)
+    for(int j=0;j<degree;j++)
+      tmp[i][j] = NOT_VISITED;
+
+  int j = 0;
+  if(!num_degrees){
+    for(int u=0;u<nodes;u++){
+      for(int i=0;i<degree;i++){
+        int v = *(adjacency + u * degree + i);
+      	if(tmp[u][i] == NOT_VISITED){
+          edge[j][0] = u;
+          edge[j][1] = v;
+          j++;
+	  for(int k=0;k<degree;k++)
+	    if(*(adjacency + v * degree + k) == u)
+	      tmp[v][k] = VISITED;
+        }
+      }
+    }
+  }
+  else{
+    for(int u=0;u<nodes;u++){
+      for(int i=0;i<num_degrees[u];i++){
+	int v = *(adjacency + u * degree + i);
+	if(tmp[u][i] == NOT_VISITED){
+	  edge[j][0] = u;
+	  edge[j][1] = v;
+	  j++;
+	  for(int k=0;k<num_degrees[v];k++)
+            if(*(adjacency + v * degree + k) == u)
+              tmp[v][k] = VISITED;
+	}
+      }
+    }
+  }
+}
+
+void apsp_conv_edge2adjacency(const int nodes, const int lines, const int edge[lines][2],
+			      int *adjacency)
+{
+  int degree = apsp_get_degree(nodes, lines, edge);
   int num_degrees[nodes];
   for(int i=0;i<nodes;i++)
     num_degrees[i] = 0;

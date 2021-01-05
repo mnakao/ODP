@@ -14,7 +14,7 @@ int main()
   int (*edge)[2] = malloc(sizeof(int)*lines*2); // int edge[lines][2];
   apsp_random_grid(width, height, degree, length, seed, edge);
   int (*adjacency)[degree] = malloc(sizeof(int) * nodes * degree); // int adjacency[nodes][degree];
-  apsp_conv_edge2adjacency(nodes, degree, lines, edge, adjacency);
+  apsp_conv_edge2adjacency(nodes, lines, edge, adjacency);
 
   apsp_init(nodes, degree, NULL);
   apsp_run(adjacency, &diameter, &sum, &ASPL);
