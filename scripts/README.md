@@ -1,6 +1,6 @@
 ## Create random general and grid graphs
 ```
-python ./create_random.py [-l] [-W W] [-H H] nodes degree
+create_random.py [-l] [-W W] [-H H] nodes degree
 ```
 
 * -l : Create a grid graph
@@ -37,7 +37,7 @@ Output file  : w4h5d3.random.edges
 
 ## Draw general and grid graphs
 ```
-python ./draw_graph.py [-n] [-s S] edge
+draw_graph.py [-n] [-s S] edge
 ```
 
 * -n : Add number label
@@ -46,14 +46,14 @@ python ./draw_graph.py [-n] [-s S] edge
 
 ## Calculate ASPL and diameter for a general graph
 ```
-python verfy_general.py edge
+verfy_general.py edge
 ```
 
 * edge : Edge file
 
 ### Example
 ```
-$ python verfy_general.py n10d3.random.edges
+$ python ./verfy_general.py n10d3.random.edges
 Nodes = 10, Degrees = 3
 Diameter     = 3
 Diameter Gap = 1 (3 - 2)
