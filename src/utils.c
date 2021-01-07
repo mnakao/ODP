@@ -113,7 +113,7 @@ void apsp_write_edge_grid(const int lines, const int height, const int edge[line
   fclose(fp);
 }
 
-void apsp_random_general_s(const int nodes, const int degree, const int groups, const unsigned int seed, int *edge)
+void apsp_random_general_s(const int nodes, const int degree, const int symmetries, const unsigned int seed, int *edge)
 {
   check_graph_parameters(nodes, degree);
   srand(seed);
@@ -331,31 +331,31 @@ void apsp_matmul_CHUNK(const uint64_t *restrict A, uint64_t *restrict B, const i
   }
 }
 
-double apsp_get_mem_usage(const int kind, const int nodes, const int degree, const int groups,
+double apsp_get_mem_usage(const int kind, const int nodes, const int degree, const int symmetries,
 			  const int *num_degrees, const int procs, const bool is_cpu)
 {
   int Mbyte = 1024*1024;
   int chunk = (is_cpu)? CPU_CHUNK : GPU_CHUNK;
-  double AB_mem = (kind == APSP_NORMAL)? (nodes*((double)nodes/(4*groups*procs))) : (double)16*nodes*chunk;
+  double AB_mem = (kind == APSP_NORMAL)? (nodes*((double)nodes/(4*symmetries*procs))) : (double)16*nodes*chunk;
 
   if(is_cpu){
     return AB_mem/Mbyte;
   }
   else{ // on GPU
     double res_mem = (double)sizeof(uint64_t)*BLOCKS;
-    double adj_mem = (double)sizeof(int)*(nodes/groups)*degree;
+    double adj_mem = (double)sizeof(int)*(nodes/symmetries)*degree;
     double deg_mem = (num_degrees)? (double)sizeof(int)*nodes : 0;
     return (AB_mem+res_mem+adj_mem+deg_mem)/Mbyte;
   }
 }
 
-int apsp_get_kind(const int nodes, const int degree, const int* num_degrees, const int groups,
+int apsp_get_kind(const int nodes, const int degree, const int* num_degrees, const int symmetries,
 		  const int procs, const int is_cpu)
 {
   char *val = getenv("APSP");
   int kind;
   if(val == NULL){
-    double normal_mem_usage = apsp_get_mem_usage(APSP_NORMAL, nodes, degree, groups, num_degrees, procs, is_cpu);
+    double normal_mem_usage = apsp_get_mem_usage(APSP_NORMAL, nodes, degree, symmetries, num_degrees, procs, is_cpu);
     if(normal_mem_usage <= MEM_THRESHOLD)
       kind = APSP_NORMAL;
     else
@@ -374,7 +374,7 @@ int apsp_get_kind(const int nodes, const int degree, const int* num_degrees, con
   return kind;
 }
 
-void apsp_profile(const char* name, const int kind, const int groups, const double mem_usage,
+void apsp_profile(const char* name, const int kind, const int symmetries, const double mem_usage,
 		  const time_t start_t, const time_t end_t, const double elapsed_time,
 		  const unsigned int times, const int procs)
 {
@@ -391,7 +391,7 @@ void apsp_profile(const char* name, const int kind, const int groups, const doub
   printf("Total Time      = %f sec.\n", elapsed_time);
   printf("Average Time    = %f sec.\n", elapsed_time/times);
   printf("Algorithm       = %s (%s)\n", kind_name, name);
-  printf("Symmetries      = %d\n", groups);
+  printf("Symmetries      = %d\n", symmetries);
   printf("Memory Usage    = %.3f MB\n", mem_usage);
   printf("Num of Procs    = %d\n", procs);
 #ifdef _OPENMP

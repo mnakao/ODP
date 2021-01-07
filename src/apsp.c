@@ -1,6 +1,6 @@
 #include "common.h"
 static uint64_t *_A, *_B;
-static int _nodes, _degree, _groups, _kind;
+static int _nodes, _degree, _symmetries, _kind;
 static const int* _num_degrees;
 static unsigned int _elements, _times;
 static double _mem_usage, _elapsed_time;
@@ -9,11 +9,11 @@ static time_t _start_t;
 
 extern bool apsp_check_profile();
 extern double apsp_get_time();
-extern void apsp_profile(const char* name, const int kind, const int groups, const double mem_usage, const time_t start_t,
+extern void apsp_profile(const char* name, const int kind, const int symmetries, const double mem_usage, const time_t start_t,
                          const time_t end_t, const double elapsed_time, const unsigned int times, const int procs);
-extern int apsp_get_kind(const int nodes, const int degree, const int* num_degrees, const int groups,
+extern int apsp_get_kind(const int nodes, const int degree, const int* num_degrees, const int symmetries,
 			 const int procs, const bool is_cpu);
-extern double apsp_get_mem_usage(const int kind, const int nodes, const int degree, const int groups,
+extern double apsp_get_mem_usage(const int kind, const int nodes, const int degree, const int symmetries,
                                  const int *num_degrees, const int procs, const bool is_cpu);
 extern void apsp_matmul(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
 			const int *num_degrees, const int *restrict adjacency, const bool enable_avx2, const int elements);
@@ -30,7 +30,7 @@ static void apsp_mat(const int* restrict adjacency,
     _A[i] = _B[i] = 0;
 
 #pragma omp parallel for
-  for(int i=0;i<_nodes/_groups;i++){
+  for(int i=0;i<_nodes/_symmetries;i++){
     unsigned int offset = i*_elements+i/UINT64_BITS;
     _A[offset] = _B[offset] = (0x1ULL << (i%UINT64_BITS));
   }
@@ -46,7 +46,7 @@ static void apsp_mat(const int* restrict adjacency,
     for(int i=0;i<_elements*_nodes;i++)
       num += POPCNT(_B[i]);
 
-    num *= _groups;
+    num *= _symmetries;
     if(num == (uint64_t)_nodes*_nodes) break;
 
     // swap A <-> B
@@ -75,7 +75,7 @@ static void apsp_mat_saving(const int* restrict adjacency,
     for(int i=0;i<_nodes*CPU_CHUNK;i++)
       _A[i] = _B[i] = 0;
     
-    for(l=0; l<UINT64_BITS*CPU_CHUNK && UINT64_BITS*t*CPU_CHUNK+l<_nodes/_groups; l++){
+    for(l=0; l<UINT64_BITS*CPU_CHUNK && UINT64_BITS*t*CPU_CHUNK+l<_nodes/_symmetries; l++){
       unsigned int offset = (UINT64_BITS*t*CPU_CHUNK+l)*CPU_CHUNK+l/UINT64_BITS;
       _A[offset] = _B[offset] = (0x1ULL<<(l%UINT64_BITS));
     }
@@ -95,7 +95,7 @@ static void apsp_mat_saving(const int* restrict adjacency,
       _A = _B;
       _B = tmp;
 
-      *sum += ((long)_nodes * l - num) * _groups;
+      *sum += ((long)_nodes * l - num) * _symmetries;
     }
     *diameter = MAX(*diameter, kk+1);
   }
@@ -104,18 +104,18 @@ static void apsp_mat_saving(const int* restrict adjacency,
   *sum /= 2.0;
 }
 
-void apsp_init_s(const int nodes, const int degree, const int* num_degrees, const int groups)
+void apsp_init_s(const int nodes, const int degree, const int* num_degrees, const int symmetries)
 {
   _start_t = time(NULL);
   
-  if(nodes % groups != 0)
-    ERROR("nodes(%d) must be divisible by group(%d)\n", nodes, groups);
+  if(nodes % symmetries != 0)
+    ERROR("nodes(%d) must be divisible by symmetries(%d)\n", nodes, symmetries);
   else if(CPU_CHUNK % 4 != 0)
     ERROR("CPU_CHUNK(%d) in parameter.h must be multiple of 4\n", CPU_CHUNK);
 
-  _kind = apsp_get_kind(nodes, degree, num_degrees, groups, 1, true);
-  _mem_usage = apsp_get_mem_usage(_kind, nodes, degree, groups, num_degrees, 1, true);
-  _elements = (nodes/groups+(UINT64_BITS-1))/UINT64_BITS;
+  _kind = apsp_get_kind(nodes, degree, num_degrees, symmetries, 1, true);
+  _mem_usage = apsp_get_mem_usage(_kind, nodes, degree, symmetries, num_degrees, 1, true);
+  _elements = (nodes/symmetries+(UINT64_BITS-1))/UINT64_BITS;
 #ifdef __AVX2__
   if(_elements >= 4){ // For performance
     _enable_avx2 = true;
@@ -130,7 +130,7 @@ void apsp_init_s(const int nodes, const int degree, const int* num_degrees, cons
   _nodes = nodes;
   _degree = degree;
   _num_degrees = num_degrees;
-  _groups = groups;
+  _symmetries = symmetries;
   _is_profile = apsp_check_profile();
   _elapsed_time = 0;
   _times = 0;
@@ -148,10 +148,10 @@ void apsp_finalize()
 
   if(_is_profile){
 #ifdef _OPENMP
-    apsp_profile("THREADS", _kind, _groups, _mem_usage,
+    apsp_profile("THREADS", _kind, _symmetries, _mem_usage,
 		 _start_t, time(NULL), _elapsed_time, _times, 1);
 #else
-    apsp_profile("SERIAL",  _kind, _groups, _mem_usage,
+    apsp_profile("SERIAL",  _kind, _symmetries, _mem_usage,
 		 _start_t, time(NULL), _elapsed_time, _times, 1);
 #endif
   }

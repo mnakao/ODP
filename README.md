@@ -112,7 +112,7 @@ The meaning of each item in the profile is as follows.
 * Total Time : Total execution time of apsp\*_run function
 * Average Time : Average execution time of apsp\*_run function
 * Algorithm : NORMAL or SAVING. Inside the parentheses are SERIAL, THREADS, MPI, MPI+THREADS, CUDA, or MPI+CUDA
-* Symmetries : When using apsp\*_init function, the value is 1. When using apsp\*_init_s function, the value is groups
+* Symmetries : When using apsp\*_init function, the value is 1. When using apsp\*_init_s function, the value is symmetries
 * Memory Usage : Amount of memory used in the library
 * Num of Procs : Number of processes used in the library
 * Num of Threads : Number of threads used in the library
@@ -317,35 +317,32 @@ void apsp_all_mpi_cuda_run_grid   (char *fname, MPI_Comm comm, int *width, int *
 These functions can be used instead of the apsp\*_init functions for only a general graph with symmetry.
 
 ```
-void apsp_init_s         (int nodes, int degree, int num_degrees[nodes], int groups)
-void apsp_mpi_init_s     (int nodes, int degree, int num_degrees[nodes], MPI_Comm comm, int groups)
-void apsp_cuda_init_s    (int nodes, int degree, int num_degrees[nodes], int groups)
-void apsp_mpi_cuda_init_s(int nodes, int degree, int num_degrees[nodes], MPI_Comm comm, int groups)
+void apsp_init_s         (int nodes, int degree, int num_degrees[nodes], int symmetries)
+void apsp_mpi_init_s     (int nodes, int degree, int num_degrees[nodes], MPI_Comm comm, int symmetries)
+void apsp_cuda_init_s    (int nodes, int degree, int num_degrees[nodes], int symmetries)
+void apsp_mpi_cuda_init_s(int nodes, int degree, int num_degrees[nodes], MPI_Comm comm, int symmetries)
 ```
 * [IN] nodes : Number of nodes in a graph
 * [IN] degree: Degree in a graph
 * [IN] num_degrees : Specify NULL for a regular graph. If not, specify the degrees for each vertex.
 * [IN] comm : MPI communicator
-* [IN] groups : Numer of groups in a graph with symmetry. This value must be a divisor of nodes.
+* [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes.
 
 Symmetry in this software means that when the vertices are arranged on a circle,
-the graph when rotated by `360/groups` degrees and the graph before rotation match.
+the graph when rotated by `360/symmetries` degrees and the graph before rotation match.
 
 ![](./misc/img/symmetry.png)
 
-The above image is an example of a graph with (nodes, degree, groups) = (24, 4, 4).
+The above image is an example of a graph with (nodes, degree, symmetries) = (24, 4, 4).
 This image is created from `samples/graphs/general/n24d4g4.png` and `samples/graphs/general/n24d4g4.edges`.
 It also shows the adjacency matrix created from the edge list.
-The adjacency matrix can be divided into four groups.
+The adjacency matrix can be divided into four groups (`= symmetries`).
 The values on the 1st row are 19, 9, and 2.
 It means that the vertex number 0 has three edges, 0-19, 0-9, and 0-2.
-The edges plus 6 ( `= nodes/groups`) matches the 1st row in the next group (in line 7).
+The edges plus 6 (`= nodes/symmetries`) matches the 1st row in the next group (in line 7).
 2 + 6 = 8 and 9 + 6 = 15.
 Here, 19 + 6 = 25, but the number of nodes is 24, so it goes around and becomes 25 - 24 = 1.
 This rule holds for all groups.
-
-In other words,
-a graph with symmetry is defined if all elements of the adjacency matrix can be computed using up to the first `nodes/groups` rows of the adjacency matrix.
 
 ## Note
 The software also supports non-regular graphs, but usage of memory may be not efficient.

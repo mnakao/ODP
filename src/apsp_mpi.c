@@ -1,7 +1,7 @@
 #include "common.h"
 #include <mpi.h>
 static uint64_t *_A, *_B;
-static int _nodes, _degree, _groups, _kind, _rank, _procs;
+static int _nodes, _degree, _symmetries, _kind, _rank, _procs;
 static const int* _num_degrees;
 static unsigned int _elements, _total_elements, _times;
 static double _mem_usage, _elapsed_time;
@@ -11,11 +11,11 @@ static MPI_Comm _comm;
 
 extern bool apsp_check_profile();
 extern double apsp_get_time();
-extern void apsp_profile(const char* name, const int kind, const int groups, const double mem_usage, const time_t start_t,
+extern void apsp_profile(const char* name, const int kind, const int symmetries, const double mem_usage, const time_t start_t,
                          const time_t end_t, const double elapsed_time, const unsigned int times, const int procs);
-extern int apsp_get_kind(const int nodes, const int degree, const int* num_degrees, const int groups,
+extern int apsp_get_kind(const int nodes, const int degree, const int* num_degrees, const int symmetries,
 			 const int procs, const bool is_cpu);
-extern double apsp_get_mem_usage(const int kind, const int nodes, const int degree, const int groups,
+extern double apsp_get_mem_usage(const int kind, const int nodes, const int degree, const int symmetries,
 				 const int *num_degrees, const int procs, const bool is_cpu);
 extern void apsp_matmul(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
 			const int *num_degrees, const int *restrict adjacency, const bool enable_avx2, const int elements);
@@ -37,7 +37,7 @@ static void apsp_mpi_mat(const int* restrict adjacency,
     for(int i=0;i<_nodes*_elements;i++)
       _A[i] = _B[i] = 0;
 
-    for(l=0; l<UINT64_BITS*_elements && UINT64_BITS*t*_elements+l<_nodes/_groups; l++){
+    for(l=0; l<UINT64_BITS*_elements && UINT64_BITS*t*_elements+l<_nodes/_symmetries; l++){
       unsigned int offset = (UINT64_BITS*t*_elements+l)*_elements+l/UINT64_BITS;
       _A[offset] = _B[offset] = (0x1ULL<<(l%UINT64_BITS));
     }
@@ -58,7 +58,7 @@ static void apsp_mpi_mat(const int* restrict adjacency,
       _A = _B;
       _B = tmp;
 
-      *sum += ((long)_nodes * l - num) * _groups;
+      *sum += ((long)_nodes * l - num) * _symmetries;
     }
     *diameter = MAX(*diameter, kk+1);
   }
@@ -83,7 +83,7 @@ static void apsp_mpi_mat_saving(const int* restrict adjacency,
     for(int i=0;i<_nodes*CPU_CHUNK;i++)
       _A[i] = _B[i] = 0;
     
-    for(l=0; l<UINT64_BITS*CPU_CHUNK && UINT64_BITS*t*CPU_CHUNK+l<_nodes/_groups; l++){
+    for(l=0; l<UINT64_BITS*CPU_CHUNK && UINT64_BITS*t*CPU_CHUNK+l<_nodes/_symmetries; l++){
       unsigned int offset = (UINT64_BITS*t*CPU_CHUNK+l)*CPU_CHUNK+l/UINT64_BITS;
       _A[offset] = _B[offset] = (0x1ULL<<(l%UINT64_BITS));
     }
@@ -103,7 +103,7 @@ static void apsp_mpi_mat_saving(const int* restrict adjacency,
       _A = _B;
       _B = tmp;
 
-      *sum += ((long)_nodes * l - num) * _groups;
+      *sum += ((long)_nodes * l - num) * _symmetries;
     }
     *diameter = MAX(*diameter, kk+1);
   }
@@ -116,21 +116,21 @@ static void apsp_mpi_mat_saving(const int* restrict adjacency,
 }
 
 void apsp_mpi_init_s(const int nodes, const int degree,
-		     const int* restrict num_degrees, const MPI_Comm comm, const int groups)
+		     const int* restrict num_degrees, const MPI_Comm comm, const int symmetries)
 {
   _start_t = time(NULL);
   
-  if(nodes % groups != 0)
-    ERROR("nodes(%d) must be divisible by group(%d)\n", nodes, groups);
+  if(nodes % symmetries != 0)
+    ERROR("nodes(%d) must be divisible by symmetries(%d)\n", nodes, symmetries);
   else if(CPU_CHUNK % 4 != 0)
     ERROR("CPU_CHUNK(%d) in parameter.h must be multiple of 4\n", CPU_CHUNK);
 
   MPI_Comm_rank(comm, &_rank);
   MPI_Comm_size(comm, &_procs);
 
-  _kind = apsp_get_kind(nodes, degree, num_degrees, groups, _procs, true);
-  _mem_usage = apsp_get_mem_usage(_kind, nodes, degree, groups, num_degrees, _procs, true);
-  _total_elements = (nodes/groups+(UINT64_BITS-1))/UINT64_BITS;
+  _kind = apsp_get_kind(nodes, degree, num_degrees, symmetries, _procs, true);
+  _mem_usage = apsp_get_mem_usage(_kind, nodes, degree, symmetries, num_degrees, _procs, true);
+  _total_elements = (nodes/symmetries+(UINT64_BITS-1))/UINT64_BITS;
   _elements = (_total_elements+(_procs-1))/_procs;
 #ifdef __AVX2__
   if(_elements >= 4){ // For performance
@@ -146,7 +146,7 @@ void apsp_mpi_init_s(const int nodes, const int degree,
   _nodes = nodes;
   _degree = degree;
   _num_degrees = num_degrees;
-  _groups = groups;
+  _symmetries = symmetries;
   _comm = comm;
   _is_profile = apsp_check_profile();
   _elapsed_time = 0;
@@ -166,10 +166,10 @@ void apsp_mpi_finalize()
 
   if(_rank == 0 && _is_profile){
 #ifdef _OPENMP
-    apsp_profile("MPI+THREADS", _kind, _groups, _mem_usage,
+    apsp_profile("MPI+THREADS", _kind, _symmetries, _mem_usage,
 		 _start_t, time(NULL), _elapsed_time, _times, _procs);
 #else
-    apsp_profile("MPI", _kind, _groups, _mem_usage,
+    apsp_profile("MPI", _kind, _symmetries, _mem_usage,
 		 _start_t, time(NULL), _elapsed_time, _times, _procs);
 #endif
   }
