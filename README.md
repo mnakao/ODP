@@ -84,7 +84,7 @@ This environment variable can specify the algorithm to use.
 Output the performance profile.
 ```
 $ APSP=SAVING APSP_PROFILE=1 ./general.x ./graphs/general/n16d4.edges
------- Start of Profile ------
+------ Profile for APSP_RUN ------
 Hostname        = kiwi
 Initialize Date = Mon Jan  4 23:14:03 2021
 Finalize Date   = Mon Jan  4 23:14:03 2021
@@ -96,7 +96,7 @@ Symmetries      = 1
 Memory Usage    = 0.006 MB
 Num of Procs    = 1
 Num of Threads  = 1
-------  End of Profile  ------
+--------- End of Profile ---------
 Nodes = 16, Degrees = 4
 Diameter     = 3
 Diameter Gap = 1 (3 - 2)
@@ -129,10 +129,10 @@ void apsp_mpi_init     (int nodes, int degree, int num_degrees[nodes], MPI_Comm 
 void apsp_cuda_init    (int nodes, int degree, int num_degrees[nodes])
 void apsp_mpi_cuda_init(int nodes, int degree, int num_degrees[nodes], MPI_Comm comm)
 ```
-* [IN] nodes : Number of nodes in a graph
-* [IN] degree: Degree in a graph
+* [IN] nodes : Number of nodes in a graph.
+* [IN] degree: Degree in a graph.
 * [IN] num_degrees : Specify NULL for a regular graph. Or specify the degrees in each vertex for a non-regular graph.
-* [IN] comm : MPI communicator
+* [IN] comm : MPI communicator.
 
 ### Finalize
 Release the resources allocated in apsp\*_init() function.
@@ -151,10 +151,10 @@ void apsp_mpi_run     (int adjacency[nodes][degree], int *diameter, long *sum, d
 void apsp_cuda_run    (int adjacency[nodes][degree], int *diameter, long *sum, double *ASPL)
 void apsp_mpi_cuda_run(int adjacency[nodes][degree], int *diameter, long *sum, double *ASPL)
 ```
-* [IN] adjacency : Adjacency matrix of a graph
-* [OUT] diameter : Diameter of a graph
-* [OUT] sum : Total value of the distances between each vertex in a graph
-* [OUT] ASPL : Average shortest path length of a graph (sum = ASPL*(nodes*(nodes-1)/2))
+* [IN] adjacency : Adjacency matrix of a graph.
+* [OUT] diameter : Diameter of a graph.
+* [OUT] sum : Total value of the distances between each vertex in a graph.
+* [OUT] ASPL : Average shortest path length of a graph (sum = ASPL*(nodes*(nodes-1)/2)).
 
 ### Create random graph
 Note that the graph created by the function may contain duplicate edges and loops.
@@ -162,129 +162,129 @@ Note that the graph created by the function may contain duplicate edges and loop
 void apsp_random_general(int nodes, int degree, unsigned int seed, int edge[lines][2])
 void apsp_random_grid   (int width, int height, int degree, int length, unsigned int seed, int edge[lines][2])
 ```
-* [IN] nodes : Number of nodes in a graph
-* [IN] degree : Degree in a graph
-* [IN] seed   : Seed for random
-* [IN] width : Width of a grid graph
-* [IN] height : Height of a grid graph
-* [IN] length : Maximum length of a grid graph
-* [OUT] edge : Edge list of a graph
+* [IN] nodes : Number of nodes in a graph.
+* [IN] degree : Degree in a graph.
+* [IN] seed   : Seed for random,
+* [IN] width : Width of a grid graph.
+* [IN] height : Height of a grid graph.
+* [IN] length : Maximum length of a grid graph.
+* [OUT] edge : Edge list of a graph.
 
 ### Read an edge from a file
 ```
 void apsp_read_edge_general(char* fname, int edge[lines][2])
 void apsp_read_edge_grid   (char *fname, int *width, int *height, int edge[lines][2])
 ```
-* [IN] fname : File name of a graph
-* [OUT] edge : Edge list of a graph
-* [OUT] width : Width of a grid graph
-* [OUT] height : Height of a grid graph
+* [IN] fname : File name of a graph.
+* [OUT] edge : Edge list of a graph.
+* [OUT] width : Width of a grid graph.
+* [OUT] height : Height of a grid graph.
 
 ### Write an edge to a file
 ```
 void apsp_write_edge_general(int lines, int edge[lines][2], char *fname)
 void apsp_write_edge_grid   (int lines, int height, int edge[lines][2], char *fname)
 ```
-* [IN] lines : Number of lines in an edge list
-* [IN] edge : Edge list of a graph
-* [IN] height : Height of a grid graph
-* [OUT] fname : File name of a graph
+* [IN] lines : Number of lines in an edge list.
+* [IN] edge : Edge list of a graph.
+* [IN] height : Height of a grid graph.
+* [OUT] fname : File name of a graph.
 
 ### Convert an edge list to an adjacency matrix
 ```
 void apsp_conv_edge2adjacency(int nodes, int lines, int edge[lines][2], int adjacency[nodes][degree])
 ```
-* [IN] nodes : Number of nodes in a graph
-* [IN] lines : Number of lines in an edge list
-* [IN] edge : Edge list of a graph
-* [OUT] adjacency : Adjacency matrix of a graph
+* [IN] nodes : Number of nodes in a graph.
+* [IN] lines : Number of lines in an edge list.
+* [IN] edge : Edge list of a graph.
+* [OUT] adjacency : Adjacency matrix of a graph.
 
 ### Convert an adjacency matrix to an edge list
 ```
 void apsp_conv_adjacency2edge(int nodes, int degree, int num_degrees[nodes], int adjacency[nodes][degree], int edge[lines][2])
 ```
-* [IN] nodes : Number of nodes in a graph
-* [IN] degree : Degree in a graph
+* [IN] nodes : Number of nodes in a graph.
+* [IN] degree : Degree in a graph.
 * [IN] num_degrees : Specify NULL for a regular graph. If not, specify the degrees for each vertex.
-* [IN] adjacency : Adjacency matrix of a graph
-* [OUT] edge : Edge list of a graph
+* [IN] adjacency : Adjacency matrix of a graph.
+* [OUT] edge : Edge list of a graph.
 
 ### Set theoretical lower bounds
 ```
 void apsp_set_lbounds_general(int nodes, int degree, int *low_diameter, double *low_ASPL)
 void apsp_set_lbounds_grid   (int width, int height, int degree, int length, int *low_diameter, double *low_ASPL)
 ```
-* [IN] nodes : Number of nodes in a graph
-* [IN] degree : Degree in a graph
-* [OUT] low_diameter : Theoretical lower bound of diameter in a graph
-* [OUT] low_ASPL : Theoretical lower bound of ASPL in a graph
-* [IN] width : Width of a grid graph
-* [IN] height : Height of a grid graph
-* [IN] length : Maximum length of a grid graph
+* [IN] nodes : Number of nodes in a graph.
+* [IN] degree : Degree in a graph.
+* [OUT] low_diameter : Theoretical lower bound of diameter in a graph.
+* [OUT] low_ASPL : Theoretical lower bound of ASPL in a graph.
+* [IN] width : Width of a grid graph.
+* [IN] height : Height of a grid graph.
+* [IN] length : Maximum length of a grid graph.
 
 ### Set degrees for a non-regular graph
 ```
 void apsp_set_degrees(int nodes, int lines, int edge[lines][2], int num_degrees[nodes])
 ```
-* [IN] nodes : Number of nodes in a graph
-* [IN] lines : Number of lines in an edge list
-* [IN] edge : Edge list of a graph
-* [OUT] num_degrees : Degree in each vertex
+* [IN] nodes : Number of nodes in a graph.
+* [IN] lines : Number of lines in an edge list.
+* [IN] edge : Edge list of a graph.
+* [OUT] num_degrees : Degree in each vertex.
 
 ### Get the number of lines in a file
 ```
 int apsp_get_lines(char* fname)
 ```
-* [RETURN] : Nnumber of lines in a file
-* [IN] fname : File name of a graph
+* [RETURN] : Nnumber of lines in a file.
+* [IN] fname : File name of a graph.
 
 ### Get the number of nodes in a graph
 ```
 int apsp_get_nodes(int lines, int edge[lines][2])
 ```
-* [RETURN] : Nnumber of nodes in an edge list
-* [IN] lines : Number of lines in an edge list
-* [IN] edge : Edge list of a graph
+* [RETURN] : Nnumber of nodes in an edge list.
+* [IN] lines : Number of lines in an edge list.
+* [IN] edge : Edge list of a graph.
 
 ### Get a degree in a graph
 ```
 int apsp_get_degree(int nodes, int lines, int edge[lines][2])
 ```
-* [RETURN] : Degree in an edge list
-* [IN] nodes : Number of nodes in a graph
-* [IN] edge : Edge list of a graph
+* [RETURN] : Degree in an edge list.
+* [IN] nodes : Number of nodes in a graph.
+* [IN] edge : Edge list of a graph.
 
 ### Get a maximum length for a grid graph
 ```
 int apsp_get_length(int lines, int edge[lines][2], int height)
 ```
-* [RETURN] : Maximum length in an edge list
-* [IN] lines : Number of lines in an edge list
-* [IN] edge : Edge list of a graph
-* [IN] height : Height of a grid graph
+* [RETURN] : Maximum length in an edge list.
+* [IN] lines : Number of lines in an edge list.
+* [IN] edge : Edge list of a graph.
+* [IN] height : Height of a grid graph.
 
 ### Check if an input file is a general graph
 ```
 bool apsp_check_general(char *fname)
 ```
 * [RETUREN] : When an input is a general graph, it returns true.
-* [IN] fname : File name of a graph
+* [IN] fname : File name of a graph.
 
 ### Check if a graph has duplicated edges
 ```
 bool apsp_check_duplicated_edge(int lines, int edge[lines][2])
 ```
-* [RETURN] : If a graph has duplicated edge, it returns true
-* [IN] lines : Number of lines in an edge list
-* [IN] edge : Edge list of a graph
+* [RETURN] : If a graph has duplicated edge, it returns true.
+* [IN] lines : Number of lines in an edge list.
+* [IN] edge : Edge list of a graph.
 
 ### Check if a graph has a self-loop
 ```
 bool apsp_check_loop(int lines, int edge[lines][2])
 ```
-* [RETURN] : If a graph has a self-loop, it returns true
-* [IN] lines : Number of lines in an edge list
-* [IN] edge : Edge list of a graph
+* [RETURN] : If a graph has a self-loop, it returns true.
+* [IN] lines : Number of lines in an edge list.
+* [IN] edge : Edge list of a graph.
 
 ### Shortcut functions
 Return other values just by specifying fname and comm.
@@ -300,18 +300,18 @@ void apsp_all_cuda_run_grid       (char *fname, int *width, int *height, int *de
 void apsp_all_mpi_cuda_run_general(char *fname, MPI_Comm comm, int *nodes, int *degree, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
 void apsp_all_mpi_cuda_run_grid   (char *fname, MPI_Comm comm, int *width, int *height, int *degree, int *length, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
 ```
-* [IN] fname : File name of a graph
-* [IN] comm : MPI communicator
-* [OUT] nodes : Number of nodes in a graph
-* [OUT] degree : Degree in a graph
-* [OUT] low_diameter : Theoretical lower bound of diameter in a graph
-* [OUT] low_ASPL : Theoretical lower bound of ASPL in a graph
-* [OUT] diameter : Diameter of a graph
-* [OUT] sum : Total value of the distances between each vertex in a graph
-* [OUT] ASPL : Average shortest path length of a graph (sum = ASPL*(nodes*(nodes-1)/2))
-* [OUT] width : Width of a grid graph
-* [OUT] height : Height of a grid graph
-* [OUT] length : Maximum length of a grid graph
+* [IN] fname : File name of a graph.
+* [IN] comm : MPI communicator.
+* [OUT] nodes : Number of nodes in a graph.
+* [OUT] degree : Degree in a graph.
+* [OUT] low_diameter : Theoretical lower bound of diameter in a graph.
+* [OUT] low_ASPL : Theoretical lower bound of ASPL in a graph.
+* [OUT] diameter : Diameter of a graph.
+* [OUT] sum : Total value of the distances between each vertex in a graph.
+* [OUT] ASPL : Average shortest path length of a graph (sum = ASPL*(nodes*(nodes-1)/2)).
+* [OUT] width : Width of a grid graph.
+* [OUT] height : Height of a grid graph.
+* [OUT] length : Maximum length of a grid graph.
 
 ### Initialize for a graph with symmetry
 These functions can be used instead of the apsp\*_init functions for only a general graph with symmetry.
@@ -322,11 +322,11 @@ void apsp_mpi_init_s     (int nodes, int degree, int num_degrees[nodes], MPI_Com
 void apsp_cuda_init_s    (int nodes, int degree, int num_degrees[nodes], int symmetries)
 void apsp_mpi_cuda_init_s(int nodes, int degree, int num_degrees[nodes], MPI_Comm comm, int symmetries)
 ```
-* [IN] nodes : Number of nodes in a graph
-* [IN] degree: Degree in a graph
+* [IN] nodes : Number of nodes in a graph.
+* [IN] degree: Degree in a graph.
 * [IN] num_degrees : Specify NULL for a regular graph. If not, specify the degrees for each vertex.
-* [IN] comm : MPI communicator
-* [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes.
+* [IN] comm : MPI communicator.
+* [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes. If it is 1, it works the same as apsp\*_init functions.
 
 Symmetry in this software means that when the vertices are arranged on a circle,
 the graph when rotated by `360/symmetries` degrees and the graph before rotation match.

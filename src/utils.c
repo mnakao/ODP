@@ -590,7 +590,7 @@ void apsp_profile(const char* name, const int kind, const int symmetries, const 
   else                    strcpy(kind_name, "SAVING");
   gethostname(hostname, sizeof(hostname));
   
-  printf("------ Start of Profile ------\n");
+  printf("------ Profile for APSP_RUN ------\n");
   printf("Hostname        = %s\n", hostname);
   printf("Initialize Date = %s", ctime(&start_t));
   printf("Finalize Date   = %s", ctime(&end_t));
@@ -606,7 +606,7 @@ void apsp_profile(const char* name, const int kind, const int symmetries, const 
 #else
   printf("Num of Threads  = %d\n", 1);
 #endif
-  printf("------  End of Profile  ------\n");
+  printf("--------- End of Profile ---------\n");
 }
 
 bool apsp_check_loop(const int lines, int edge[lines][2])
