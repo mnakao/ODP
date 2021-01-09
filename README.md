@@ -81,7 +81,7 @@ This environment variable can specify the algorithm to use.
 
 ### APSP_PROFILE=1
 
-Output the performance profile.
+Output the performance profile for apsp\*_run() functions.
 ```
 $ APSP=SAVING APSP_PROFILE=1 ./general.x ./graphs/general/n16d4.edges
 ------ Profile for APSP_RUN ------
