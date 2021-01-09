@@ -1,4 +1,7 @@
 #include "common.h"
+static int *_n = NULL;
+static int *_d = NULL;
+static int _r, _nodes, _degree;
 
 double apsp_get_time()
 {
@@ -40,53 +43,9 @@ static bool check_multiple_vertices(const int e00, const int e01, const int e10,
   return (e00 == e10 || e01 == e11 || e00 == e11 || e01 == e10);
 }
 
-static void simple_2opt_general(const int lines, int edge[lines][2])
-{
-  int e0, e1;
-  do{
-    e0 = get_random(lines);
-    e1 = get_random(lines);
-  } while(check_multiple_vertices(edge[e0][0], edge[e0][1], edge[e1][0], edge[e1][1]));
-
-  if(get_random(2) == 0)
-    swap(&edge[e0][1], &edge[e1][1]);
-  else
-    swap(&edge[e0][1], &edge[e1][0]);
-}
-
 void apsp_srand(const unsigned int seed)
 {
   srand(seed);
-}
-
-void apsp_generate_random_general(const int nodes, const int degree, int (*edge)[2])
-{
-  check_graph_parameters(nodes, degree);
-
-  int half_degree = degree/2;
-  for(int i=0;i<nodes-1;i++){
-    for(int j=0;j<half_degree;j++){
-      edge[i*half_degree+j][0] = i;
-      edge[i*half_degree+j][1] = i+1;
-    }
-  }
-  for(int j=0;j<half_degree;j++){
-    int i = nodes - 1;
-    edge[i*half_degree+j][0] = i;
-    edge[i*half_degree+j][1] = 0;
-  }
-
-  if(degree%2 == 1){
-    int half_node = nodes/2; // half_nodes must be a multiple of 2
-    for(int i=0;i<half_node;i++){
-      edge[half_degree*nodes+i][0] = i;
-      edge[half_degree*nodes+i][1] = i+half_node;
-    }
-  }
-
-  int lines = (nodes*degree)/2;
-  for(int i=0;i<lines*GEN_GRAPH_ITERS;i++) // Give randomness
-    simple_2opt_general(lines, edge);
 }
 
 void apsp_write_edge_general(const int lines, const int edge[lines][2], char *fname)
@@ -917,6 +876,115 @@ void apsp_set_degrees(const int nodes, const int lines, int edge[lines][2],
   }
 }
 
+void apsp_mutate_adjacency(const int nodes, const int degree, const int *restrict num_degrees,
+			   int adjacency[nodes][degree])
+{
+  int elements = 4; 
+  int n[elements], d[elements];
+  do{
+    n[0] = get_random(nodes);
+    n[1] = get_random(nodes);
+  } while(n[0] == n[1]);
+  
+  do{
+    d[0] = (!num_degrees)? get_random(degree) : get_random(num_degrees[n[0]]);
+    n[2] = adjacency[n[0]][d[0]];
+  } while(n[2] == n[1]);
+  
+  do{
+    d[1] = (!num_degrees)? get_random(degree) : get_random(num_degrees[n[1]]);
+    n[3] = adjacency[n[1]][d[1]];
+  } while(n[3] == n[0]);
+
+  if(n[0] == n[2]){ // loop
+    for(int i=0;i<degree;i++)
+      if(adjacency[n[2]][i] == n[0] && i != d[0])
+	d[2] = i;
+  }
+  else{
+    for(int i=0;i<degree;i++)
+      if(adjacency[n[2]][i] == n[0])
+	d[2] = i;
+  }
+
+  if(n[1] == n[3]){ // loop
+    for(int i=0;i<degree;i++)
+      if(adjacency[n[3]][i] == n[1] && i != d[1])
+        d[3] = i;
+  }
+  else{
+    for(int i=0;i<degree;i++)
+      if(adjacency[n[3]][i] == n[1])
+	d[3] = i;
+  }
+
+  if(!_n) _n = malloc(sizeof(int)*elements);
+  if(!_d) _d = malloc(sizeof(int)*elements);
+  memcpy(_n, n, sizeof(int)*elements);
+  memcpy(_d, d, sizeof(int)*elements);
+  _r = get_random(2);
+  _nodes = nodes;
+  _degree = degree;
+
+  if(_r == 0){
+    swap(&adjacency[n[0]][d[0]], &adjacency[n[1]][d[1]]);
+    swap(&adjacency[n[2]][d[2]], &adjacency[n[3]][d[3]]);
+  }
+  else{
+    swap(&adjacency[n[0]][d[0]], &adjacency[n[3]][d[3]]);
+    swap(&adjacency[n[2]][d[2]], &adjacency[n[1]][d[1]]);
+  }
+}
+
+void apsp_restore_adjacency(int adjacency[_nodes][_degree])
+{
+  if(_r == 0){
+    swap(&adjacency[_n[0]][_d[0]], &adjacency[_n[1]][_d[1]]);
+    swap(&adjacency[_n[2]][_d[2]], &adjacency[_n[3]][_d[3]]);
+  }
+  else{
+    swap(&adjacency[_n[0]][_d[0]], &adjacency[_n[3]][_d[3]]);
+    swap(&adjacency[_n[2]][_d[2]], &adjacency[_n[1]][_d[1]]);
+  }
+}
+
+void apsp_generate_random_general(const int nodes, const int degree, int (*edge)[2])
+{
+  check_graph_parameters(nodes, degree);
+
+  int half_degree = degree/2;
+  for(int i=0;i<nodes-1;i++){
+    for(int j=0;j<half_degree;j++){
+      edge[i*half_degree+j][0] = i;
+      edge[i*half_degree+j][1] = i+1;
+    }
+  }
+  for(int j=0;j<half_degree;j++){
+    int i = nodes - 1;
+    edge[i*half_degree+j][0] = i;
+    edge[i*half_degree+j][1] = 0;
+  }
+
+  if(degree%2 == 1){
+    int half_node = nodes/2; // half_nodes must be a multiple of 2
+    for(int i=0;i<half_node;i++){
+      edge[half_degree*nodes+i][0] = i;
+      edge[half_degree*nodes+i][1] = i+half_node;
+    }
+  }
+
+  int lines = (nodes*degree)/2;
+  int *adjacency = malloc(sizeof(int)*nodes*degree);
+  apsp_conv_edge2adjacency(nodes, lines, edge, adjacency);
+
+  for(int i=0;i<lines*GEN_GRAPH_ITERS;i++) // Give randomness
+    apsp_mutate_adjacency(nodes, degree, NULL, (int (*)[degree])adjacency);
+
+  apsp_conv_adjacency2edge(nodes, degree, NULL, adjacency, edge);
+
+  free(adjacency);
+}
+
 void apsp_generate_random_general_s(const int nodes, const int degree, const int symmetries, int (*edge)[2])
 {
   if(nodes % symmetries != 0)
@@ -929,8 +997,8 @@ void apsp_generate_random_general_s(const int nodes, const int degree, const int
   for(int i=1;i<symmetries;i++){
     for(int j=0;j<based_lines;j++){
       for(int k=0;k<2;k++){
-	int v = edge[j][k] + based_nodes * i;
-	edge[i*based_lines+j][k] = (v < nodes)? v : v-nodes;
+        int v = edge[j][k] + based_nodes * i;
+        edge[i*based_lines+j][k] = (v < nodes)? v : v-nodes;
       }
     }
   }
@@ -940,9 +1008,4 @@ void apsp_generate_random_general_s(const int nodes, const int degree, const int
   // mutate_s x 100
   // adj 2 edge
   free(adjacency);
-}
-
-void apsp_mutate_adjacency(const int nodes, const int degree, const int num_degrees, int adjacency[nodes][degree])
-{
-  
 }

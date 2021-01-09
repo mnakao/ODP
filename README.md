@@ -238,6 +238,24 @@ void apsp_generate_random_grid   (int width, int height, int degree, int length,
 * [IN] length : Maximum length of a grid graph.
 * [OUT] edge : Edge list of a graph.
 
+### Mutate an adjacency matrix
+Mutate an adjacency matrix slightly. It is the same as applying the 2-opt method to the edge list corresponding to the adjacency matrix.
+```
+void apsp_mutate_adjacency(int nodes, int degree, int num_degrees[nodes], int adjacency[nodes][degree])
+```
+* [IN] nodes : Number of nodes in a graph.
+* [IN] degree : Degree in a graph.
+* [IN] num_degrees : Specify NULL for a regular graph. Or specify the degrees in each vertex for a non-regular graph.
+* [OUT] adjacency : Adjacency matrix of a graph.
+
+### Restore an adjacency matrix
+Resore an adjacency matrix to the state it was in before the previous apsp_mutate_adjacency() was executed.
+However, only if the adjacency matrix has not been changed by an operation other than apsp_mutate_adjacency().
+```
+void apsp_restore_adjacency(int adjacency[nodes][degree])
+```
+* [OUT] adjacency : Adjacency matrix of a graph.
+
 ### Get the number of lines in a file
 ```
 int apsp_get_lines(char* fname)
