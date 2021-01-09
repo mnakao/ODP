@@ -35,7 +35,7 @@ static void swap(int *a, int *b)
   *b = tmp;
 }
 
-static bool check_duplicated_vertex(const int e00, const int e01, const int e10, const int e11)
+static bool check_multiple_vertices(const int e00, const int e01, const int e10, const int e11)
 {
   return (e00 == e10 || e01 == e11 || e00 == e11 || e01 == e10);
 }
@@ -46,7 +46,7 @@ static void simple_2opt_general(const int lines, int edge[lines][2])
   do{
     e0 = get_random(lines);
     e1 = get_random(lines);
-  } while(check_duplicated_vertex(edge[e0][0], edge[e0][1], edge[e1][0], edge[e1][1]));
+  } while(check_multiple_vertices(edge[e0][0], edge[e0][1], edge[e1][0], edge[e1][1]));
 
   if(get_random(2) == 0)
     swap(&edge[e0][1], &edge[e1][1]);
@@ -54,7 +54,7 @@ static void simple_2opt_general(const int lines, int edge[lines][2])
     swap(&edge[e0][1], &edge[e1][0]);
 }
 
-void apsp_random_general(const int nodes, const int degree, const unsigned int seed, int (*edge)[2])
+void apsp_generate_random_general(const int nodes, const int degree, const unsigned int seed, int (*edge)[2])
 {
   check_graph_parameters(nodes, degree);
   srand(seed);
@@ -131,7 +131,7 @@ static void simple_2opt_grid(const int height, const int length, const int lines
     do{
       e0 = get_random(lines);
       e1 = get_random(lines);
-    } while(check_duplicated_vertex(edge[e0][0], edge[e0][1], edge[e1][0], edge[e1][1]));
+    } while(check_multiple_vertices(edge[e0][0], edge[e0][1], edge[e1][0], edge[e1][1]));
 
     if(get_random(2) == 0){
       if(check_length(edge[e0][0], edge[e1][1], height, length) && check_length(edge[e0][1], edge[e1][0], height, length)){
@@ -149,8 +149,8 @@ static void simple_2opt_grid(const int height, const int length, const int lines
 }
 
 // Inherited from http://research.nii.ac.jp/graphgolf/c/create-lattice.c
-void apsp_random_grid(const int width, const int height, const int degree,
-		      const int length, const unsigned int seed, int (*edge)[2])
+void apsp_generate_random_grid(const int width, const int height, const int degree,
+			       const int length, const unsigned int seed, int (*edge)[2])
 {
   int nodes = width * height;
   check_graph_parameters(nodes, degree);
@@ -613,17 +613,17 @@ bool apsp_check_loop(const int lines, int edge[lines][2])
   return true;
 }
 
-static bool has_duplicated_edge(const int e00, const int e01, const int e10, const int e11)
+static bool has_multiple_edges(const int e00, const int e01, const int e10, const int e11)
 {
   return ((e00 == e10 && e01 == e11) || (e00 == e11 && e01 == e10));
 }
 
-bool apsp_check_duplicated_edge(const int lines, int edge[lines][2])
+bool apsp_check_multiple_edges(const int lines, int edge[lines][2])
 {
   for(int i=0;i<lines;i++)
     for(int j=i+1;j<lines;j++)
-      if(has_duplicated_edge(edge[i][0], edge[i][1], edge[j][0], edge[j][1])){
-	printf("Duplicate edeges are found in lines %d %d\n", i+1, j+1);
+      if(has_multiple_edges(edge[i][0], edge[i][1], edge[j][0], edge[j][1])){
+	printf("Multiple edeges are found in lines %d %d\n", i+1, j+1);
 	return false;
       }
   
@@ -915,13 +915,13 @@ void apsp_set_degrees(const int nodes, const int lines, int edge[lines][2],
   }
 }
 
-void apsp_random_general_s(const int nodes, const int degree, const unsigned int seed, const int symmetries, int (*edge)[2])
+void apsp_generate_random_general_s(const int nodes, const int degree, const unsigned int seed, const int symmetries, int (*edge)[2])
 {
   if(nodes % symmetries != 0)
     ERROR("nodes(%d) must be divisible by symmetries(%d)\n", nodes, symmetries);
 
   int based_nodes = nodes/symmetries;
-  apsp_random_general(based_nodes, degree, seed, edge);
+  apsp_generate_random_general(based_nodes, degree, seed, edge);
   int based_lines = (based_nodes * degree) / 2;
 
   for(int i=1;i<symmetries;i++){
