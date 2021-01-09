@@ -22,9 +22,9 @@ int main(int argc, char *argv[])
   int (*adjacency)[degree] = malloc(sizeof(int) * nodes * degree); // int adjacency[nodes][degree];
   apsp_conv_edge2adjacency(nodes, lines, edge, adjacency);
 
-  apsp_cuda_init(nodes, degree, NULL);
+  apsp_cuda_run_init(nodes, degree, NULL);
   apsp_cuda_run(adjacency, &diameter, &sum, &ASPL);
-  apsp_cuda_finalize();
+  apsp_cuda_run_finalize();
   
   apsp_set_lbounds_general(nodes, degree, &low_diameter, &low_ASPL);
   printf("Nodes = %d, Degrees = %d\n", nodes, degree);

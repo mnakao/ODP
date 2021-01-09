@@ -115,8 +115,8 @@ static void apsp_mpi_mat_saving(const int* restrict adjacency,
   *sum /= 2.0;
 }
 
-void apsp_mpi_init_s(const int nodes, const int degree,
-		     const int* restrict num_degrees, const MPI_Comm comm, const int symmetries)
+void apsp_mpi_run_init_s(const int nodes, const int degree,
+			 const int* restrict num_degrees, const MPI_Comm comm, const int symmetries)
 {
   _start_t = time(NULL);
   
@@ -153,13 +153,13 @@ void apsp_mpi_init_s(const int nodes, const int degree,
   _times = 0;
 }
 
-void apsp_mpi_init(const int nodes, const int degree,
-		   const int* restrict num_degrees, MPI_Comm comm)
+void apsp_mpi_run_init(const int nodes, const int degree,
+		       const int* restrict num_degrees, MPI_Comm comm)
 {
-  apsp_mpi_init_s(nodes, degree, num_degrees, comm, 1);
+  apsp_mpi_run_init_s(nodes, degree, num_degrees, comm, 1);
 }
 
-void apsp_mpi_finalize()
+void apsp_mpi_run_finalize()
 {
   apsp_free(_A, _enable_avx2);
   apsp_free(_B, _enable_avx2);

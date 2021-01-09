@@ -128,8 +128,8 @@ static void apsp_mpi_cuda_mat_saving(const int* __restrict__ adjacency,
   *sum /= 2.0;
 }
 
-extern "C" void apsp_mpi_cuda_init_s(const int nodes, const int degree,
-				     const int* __restrict__ num_degrees, MPI_Comm comm, const int symmetries)
+extern "C" void apsp_mpi_cuda_run_init_s(const int nodes, const int degree,
+					 const int* __restrict__ num_degrees, MPI_Comm comm, const int symmetries)
 {
   _start_t = time(NULL);
   cuInit(0);
@@ -165,13 +165,13 @@ extern "C" void apsp_mpi_cuda_init_s(const int nodes, const int degree,
   _times = 0;
 }
 
-extern "C" void apsp_mpi_cuda_init(const int nodes, const int degree,
-				   const int* __restrict__ num_degrees, MPI_Comm comm)
+extern "C" void apsp_mpi_cuda_run_init(const int nodes, const int degree,
+				       const int* __restrict__ num_degrees, MPI_Comm comm)
 {
-  apsp_mpi_cuda_init_s(nodes, degree, num_degrees, comm, 1);
+  apsp_mpi_cuda_run_init_s(nodes, degree, num_degrees, comm, 1);
 }
 
-extern "C" void apsp_mpi_cuda_finalize()
+extern "C" void apsp_mpi_cuda_run_finalize()
 {
   cudaFree(_A_dev);
   cudaFree(_B_dev);

@@ -106,13 +106,13 @@ ASPL Gap     = 0.1833333333 (1.9166666667 - 1.7333333333)
 
 The meaning of each item in the profile is as follows.
 * Hostname : Name of the machine on which the program was run.
-* Initialize Date : Time when the apsp\*_init() was executed.
-* Finalize Date   : Time when the apsp\*_finalize() was executed.
+* Initialize Date : Time when the apsp\*_run_init() was executed.
+* Finalize Date   : Time when the apsp\*_run_finalize() was executed.
 * Number of Times : Number of times apsp\*_run() was executed.
 * Total Time : Total execution time of apsp\*_run()
 * Average Time : Average execution time of apsp\*_run()
 * Algorithm : NORMAL or SAVING. The parentheses are the types of libraries used. That is, SERIAL, THREADS, MPI, MPI+THREADS, CUDA, or MPI+CUDA.
-* Symmetries : When using apsp\*_init(), the value is 1. When using apsp\*_init_s(), the value is symmetries.
+* Symmetries : When using apsp\*_run_init(), the value is 1. When using apsp\*_run_init_s(), the value is symmetries.
 * Memory Usage : Amount of memory used in the library.
 * Num of Procs : Number of processes used in the library.
 * Num of Threads : Number of threads used in the library.
@@ -124,10 +124,10 @@ Thread parallelization is performed automatically depending on the library to be
 ### Initialize
 Perform the initialization process before running APSP.
 ```
-void apsp_init         (int nodes, int degree, int num_degrees[nodes])
-void apsp_mpi_init     (int nodes, int degree, int num_degrees[nodes], MPI_Comm comm)
-void apsp_cuda_init    (int nodes, int degree, int num_degrees[nodes])
-void apsp_mpi_cuda_init(int nodes, int degree, int num_degrees[nodes], MPI_Comm comm)
+void apsp_run_init         (int nodes, int degree, int num_degrees[nodes])
+void apsp_mpi_run_init     (int nodes, int degree, int num_degrees[nodes], MPI_Comm comm)
+void apsp_cuda_run_init    (int nodes, int degree, int num_degrees[nodes])
+void apsp_mpi_cuda_run_init(int nodes, int degree, int num_degrees[nodes], MPI_Comm comm)
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] degree: Degree in a graph.
@@ -135,16 +135,16 @@ void apsp_mpi_cuda_init(int nodes, int degree, int num_degrees[nodes], MPI_Comm 
 * [IN] comm : MPI communicator.
 
 ### Finalize
-Release the resources allocated in apsp\*_init().
+Release the resources allocated in apsp\*_run_init().
 ```
-void apsp_finalize()
-void apsp_mpi_finalize()
-void apsp_cuda_finalize()
-void apsp_mpi_cuda_finalize()
+void apsp_run_finalize()
+void apsp_mpi_run_finalize()
+void apsp_cuda_run_finalize()
+void apsp_mpi_cuda_run_finalize()
 ```
 
 ### Run APSP
-Calculate APSP. Note that they must be executed between apsp\*_init() and apsp\*_finalize().
+Calculate APSP. Note that they must be executed between apsp\*_run_init() and apsp\*_run_finalize().
 ```
 void apsp_run         (int adjacency[nodes][degree], int *diameter, long *sum, double *ASPL)
 void apsp_mpi_run     (int adjacency[nodes][degree], int *diameter, long *sum, double *ASPL)
@@ -241,7 +241,7 @@ void apsp_generate_random_grid   (int width, int height, int degree, int length,
 ### Mutate an adjacency matrix
 Mutate an adjacency matrix slightly. It is the same as applying the 2-opt method to the edge list corresponding to the adjacency matrix.
 ```
-void apsp_mutate_adjacency(int nodes, int degree, int num_degrees[nodes], int adjacency[nodes][degree])
+void apsp_mutate_adjacency_general(int nodes, int degree, int num_degrees[nodes], int adjacency[nodes][degree])
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] degree : Degree in a graph.
@@ -249,8 +249,8 @@ void apsp_mutate_adjacency(int nodes, int degree, int num_degrees[nodes], int ad
 * [OUT] adjacency : Adjacency matrix of a graph.
 
 ### Restore an adjacency matrix
-Restore an adjacency matrix to the state it was in before the previous apsp_mutate_adjacency() was executed.
-However, only if the adjacency matrix has not been changed by an operation other than apsp_mutate_adjacency().
+Restore an adjacency matrix to the state it was in before the previous apsp_mutate_adjacency\*() was executed.
+However, only if the adjacency matrix has not been changed by an operation other than apsp_mutate_adjacency\*().
 ```
 void apsp_restore_adjacency(int adjacency[nodes][degree])
 ```
@@ -356,21 +356,21 @@ Here, 19 + 6 = 25, but the number of nodes is 24, so it goes around and becomes 
 This rule holds for all groups.
 
 ### Initialize
-These functions can be used instead of the apsp\*_init() for only a general graph with symmetry.
+These functions can be used instead of the apsp\*_run_init() for only a general graph with symmetry.
 
 ```
-void apsp_init_s         (int nodes, int degree, int num_degrees[nodes], int symmetries)
-void apsp_mpi_init_s     (int nodes, int degree, int num_degrees[nodes], MPI_Comm comm, int symmetries)
-void apsp_cuda_init_s    (int nodes, int degree, int num_degrees[nodes], int symmetries)
-void apsp_mpi_cuda_init_s(int nodes, int degree, int num_degrees[nodes], MPI_Comm comm, int symmetries)
+void apsp_run_init_s         (int nodes, int degree, int num_degrees[nodes], int symmetries)
+void apsp_mpi_run_init_s     (int nodes, int degree, int num_degrees[nodes], MPI_Comm comm, int symmetries)
+void apsp_cuda_run_init_s    (int nodes, int degree, int num_degrees[nodes], int symmetries)
+void apsp_mpi_cuda_run_init_s(int nodes, int degree, int num_degrees[nodes], MPI_Comm comm, int symmetries)
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] degree: Degree in a graph.
 * [IN] num_degrees : Specify NULL for a regular graph. If not, specify the degrees for each vertex.
 * [IN] comm : MPI communicator.
-* [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes. If it is 1, it works the same as apsp\*_init().
+* [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes. If it is 1, it works the same as apsp\*_run_init().
 
-Note that the apsp\*_finalize() can be used in common.
+Note that the apsp\*_run_finalize() can be used in common.
 
 ### Convert an edge list to an adjacency matrix
 ```

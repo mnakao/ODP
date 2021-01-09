@@ -104,7 +104,7 @@ static void apsp_mat_saving(const int* restrict adjacency,
   *sum /= 2.0;
 }
 
-void apsp_init_s(const int nodes, const int degree, const int* num_degrees, const int symmetries)
+void apsp_run_init_s(const int nodes, const int degree, const int* num_degrees, const int symmetries)
 {
   _start_t = time(NULL);
   
@@ -136,12 +136,12 @@ void apsp_init_s(const int nodes, const int degree, const int* num_degrees, cons
   _times = 0;
 }
 
-void apsp_init(const int nodes, const int degree, const int* num_degrees)
+void apsp_run_init(const int nodes, const int degree, const int* num_degrees)
 {
-  apsp_init_s(nodes, degree, num_degrees, 1);
+  apsp_run_init_s(nodes, degree, num_degrees, 1);
 }
 
-void apsp_finalize()
+void apsp_run_finalize()
 {
   apsp_free(_A, _enable_avx2);
   apsp_free(_B, _enable_avx2);

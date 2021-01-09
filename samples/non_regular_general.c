@@ -16,9 +16,9 @@ int main()
 
   // In a regular graph, the third argument is NULL.
   // In a non-regular graph, the third argument is the number of edges that each vertex has.
-  apsp_init(nodes, degree, num_degrees);
+  apsp_run_init(nodes, degree, num_degrees);
   apsp_run(adjacency, &diameter, &sum, &ASPL);
-  apsp_finalize();
+  apsp_run_finalize();
   
   apsp_set_lbounds_general(nodes, degree, &low_diameter, &low_ASPL);
   printf("Nodes = %d, Degrees = %d\n", nodes, degree);

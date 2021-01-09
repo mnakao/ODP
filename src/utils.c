@@ -876,8 +876,8 @@ void apsp_set_degrees(const int nodes, const int lines, int edge[lines][2],
   }
 }
 
-void apsp_mutate_adjacency(const int nodes, const int degree, const int *restrict num_degrees,
-			   int adjacency[nodes][degree])
+void apsp_mutate_adjacency_general(const int nodes, const int degree, const int *restrict num_degrees,
+				   int adjacency[nodes][degree])
 {
   int elements = 4; 
   int n[elements], d[elements];
@@ -978,7 +978,7 @@ void apsp_generate_random_general(const int nodes, const int degree, int (*edge)
   apsp_conv_edge2adjacency(nodes, lines, edge, adjacency);
 
   for(int i=0;i<lines*GEN_GRAPH_ITERS;i++) // Give randomness
-    apsp_mutate_adjacency(nodes, degree, NULL, (int (*)[degree])adjacency);
+    apsp_mutate_adjacency_general(nodes, degree, NULL, (int (*)[degree])adjacency);
 
   apsp_conv_adjacency2edge(nodes, degree, NULL, adjacency, edge);
 

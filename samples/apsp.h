@@ -2,18 +2,18 @@
 #define APSP_H_INCLUDED
 #include <stdbool.h>
 
-extern void apsp_init(int nodes, int degree, int* num_degrees);
-extern void apsp_init_s(int nodes, int degree, int* num_degrees, int symmetries);
-extern void apsp_finalize();
+extern void apsp_run_init(int nodes, int degree, int* num_degrees);
+extern void apsp_run_init_s(int nodes, int degree, int* num_degrees, int symmetries);
+extern void apsp_run_finalize();
 extern void apsp_run(void *adjacency, int *diameter, long *sum, double *ASPL);
 extern void apsp_all_run_general(char *fname, int *nodes, int *degree,
 				 int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL);
 extern void apsp_all_run_grid(char *fname, int *width, int *height, int *degree, int *length,
 			      int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL);
 
-extern void apsp_cuda_init(int nodes, int degree, int* num_degrees);
-extern void apsp_cuda_init_s(int nodes, int degree, int* num_degrees, int symmetries);
-extern void apsp_cuda_finalize();
+extern void apsp_cuda_run_init(int nodes, int degree, int* num_degrees);
+extern void apsp_cuda_run_init_s(int nodes, int degree, int* num_degrees, int symmetries);
+extern void apsp_cuda_run_finalize();
 extern void apsp_cuda_run(void *adjacency, int *diameter, long *sum, double *ASPL);
 extern void apsp_all_cuda_run_general(char *fname, int *nodes, int *degree, int *low_diameter,
 				      double *low_ASPL, int *diameter, long *sum, double *ASPL);
@@ -22,18 +22,18 @@ extern void apsp_all_cuda_run_grid(char *fname, int *width, int *height, int *de
 
 #ifdef MPI_VERSION
 #include <mpi.h>
-extern void apsp_mpi_init(int nodes, int degree, int* num_degrees, MPI_Comm comm);
-extern void apsp_mpi_init_s(int nodes, int degree, int* num_degrees, MPI_Comm comm, int symmetries);
-extern void apsp_mpi_finalize();
+extern void apsp_mpi_run_init(int nodes, int degree, int* num_degrees, MPI_Comm comm);
+extern void apsp_mpi_run_init_s(int nodes, int degree, int* num_degrees, MPI_Comm comm, int symmetries);
+extern void apsp_mpi_run_finalize();
 extern void apsp_mpi_run(void *adjacency, int *diameter, long *sum, double *ASPL);
 extern void apsp_all_mpi_run_general(char *fname, MPI_Comm comm, int *nodes, int *degree,
 				     int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL);
 extern void apsp_all_mpi_run_grid(char *fname, MPI_Comm comm, int *width, int *height, int *degree, int *length,
 				  int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL);
 
-extern void apsp_mpi_cuda_init(int nodes, int degree, int* num_degrees, MPI_Comm comm);
-extern void apsp_mpi_cuda_init_s(int nodes, int degree, int* num_degrees, MPI_Comm comm, int symmetries);
-extern void apsp_mpi_cuda_finalize();
+extern void apsp_mpi_cuda_run_init(int nodes, int degree, int* num_degrees, MPI_Comm comm);
+extern void apsp_mpi_cuda_run_init_s(int nodes, int degree, int* num_degrees, MPI_Comm comm, int symmetries);
+extern void apsp_mpi_cuda_run_finalize();
 extern void apsp_mpi_cuda_run(void *adjacency, int *diameter, long *sum, double *ASPL);
 extern void apsp_all_mpi_cuda_run_general(char *fname, MPI_Comm comm, int *nodes, int *degree,
 					  int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL);
@@ -62,6 +62,6 @@ extern void apsp_conv_edge2adjacency_s(int nodes, int lines, int (*edge)[2], int
 extern void apsp_generate_random_general(int nodes, int degree, int (*edge)[2]);
 extern void apsp_generate_random_grid(int width, int height, int degree, int length, int (*edge)[2]);
 extern void apsp_srand(unsigned int seed);
-extern void apsp_mutate_adjacency(int nodes, int degree, int *num_degrees, void* adjacency);
+extern void apsp_mutate_adjacency_general(int nodes, int degree, int *num_degrees, void* adjacency);
 extern void apsp_restore_adjacency(void *adjacency);
 #endif

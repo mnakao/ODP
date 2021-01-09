@@ -17,9 +17,9 @@ int main()
   int (*adjacency)[degree] = malloc(sizeof(int) * nodes * degree); // int adjacency[nodes][degree];
   apsp_conv_edge2adjacency(nodes, lines, edge, adjacency);
 
-  apsp_init(nodes, degree, NULL);
+  apsp_run_init(nodes, degree, NULL);
   apsp_run(adjacency, &diameter, &sum, &ASPL);
-  apsp_finalize();
+  apsp_run_finalize();
 
   apsp_set_lbounds_grid(width, height, degree, length, &low_diameter, &low_ASPL);
   printf("Width = %d, Height = %d, Length = %d, Degrees = %d\n", width, height, length, degree);

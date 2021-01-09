@@ -25,9 +25,9 @@ int main(int argc, char *argv[])
   int (*adjacency)[degree] = malloc(sizeof(int) * nodes * degree); // int adjacency[nodes][degree];
   apsp_conv_edge2adjacency(nodes, lines, edge, adjacency);
 
-  apsp_mpi_init(nodes, degree, NULL, MPI_COMM_WORLD);
+  apsp_mpi_run_init(nodes, degree, NULL, MPI_COMM_WORLD);
   apsp_mpi_run(adjacency, &diameter, &sum, &ASPL);
-  apsp_mpi_finalize();
+  apsp_mpi_run_finalize();
 
   if(rank == 0){
     int length = apsp_get_length(lines, edge, height);

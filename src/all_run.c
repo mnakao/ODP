@@ -1,8 +1,8 @@
 #include "common.h"
 
-extern void apsp_init(const int nodes, const int degree, const int* num_degrees);
+extern void apsp_run_init(const int nodes, const int degree, const int* num_degrees);
 extern void apsp_run(const int* restrict adjacency, int *diameter, long *sum, double *ASPL);
-extern void apsp_finalize();
+extern void apsp_run_finalize();
 
 void apsp_all_run_general(const char *fname, int *nodes, int *degree,
                           int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
@@ -20,9 +20,9 @@ void apsp_all_run_general(const char *fname, int *nodes, int *degree,
   int *num_degrees = malloc(sizeof(int) * (*nodes));
   apsp_set_degrees(*nodes, lines, edge, num_degrees);
   
-  apsp_init(*nodes, *degree, num_degrees);
+  apsp_run_init(*nodes, *degree, num_degrees);
   apsp_run((int*)adjacency, diameter, sum, ASPL);
-  apsp_finalize();
+  apsp_run_finalize();
 
   free(num_degrees);
   free(adjacency);
@@ -46,9 +46,9 @@ void apsp_all_run_grid(const char *fname, int *width, int *height, int *degree, 
   int *num_degrees = malloc(sizeof(int) * nodes);
   apsp_set_degrees(nodes, lines, edge, num_degrees);
 
-  apsp_init(nodes, *degree, num_degrees);
+  apsp_run_init(nodes, *degree, num_degrees);
   apsp_run((int*)adjacency, diameter, sum, ASPL);
-  apsp_finalize();
+  apsp_run_finalize();
 
   free(num_degrees);
   free(adjacency);
