@@ -54,10 +54,14 @@ static void simple_2opt_general(const int lines, int edge[lines][2])
     swap(&edge[e0][1], &edge[e1][0]);
 }
 
-void apsp_generate_random_general(const int nodes, const int degree, const unsigned int seed, int (*edge)[2])
+void apsp_srand(const unsigned int seed)
+{
+  srand(seed);
+}
+
+void apsp_generate_random_general(const int nodes, const int degree, int (*edge)[2])
 {
   check_graph_parameters(nodes, degree);
-  srand(seed);
 
   int half_degree = degree/2;
   for(int i=0;i<nodes-1;i++){
@@ -149,12 +153,10 @@ static void simple_2opt_grid(const int height, const int length, const int lines
 }
 
 // Inherited from http://research.nii.ac.jp/graphgolf/c/create-lattice.c
-void apsp_generate_random_grid(const int width, const int height, const int degree,
-			       const int length, const unsigned int seed, int (*edge)[2])
+void apsp_generate_random_grid(const int width, const int height, const int degree, const int length, int (*edge)[2])
 {
   int nodes = width * height;
   check_graph_parameters(nodes, degree);
-  srand(seed);
 
   int i = 0;
   for(int x=0;x<width/2;x++){
@@ -915,13 +917,13 @@ void apsp_set_degrees(const int nodes, const int lines, int edge[lines][2],
   }
 }
 
-void apsp_generate_random_general_s(const int nodes, const int degree, const unsigned int seed, const int symmetries, int (*edge)[2])
+void apsp_generate_random_general_s(const int nodes, const int degree, const int symmetries, int (*edge)[2])
 {
   if(nodes % symmetries != 0)
     ERROR("nodes(%d) must be divisible by symmetries(%d)\n", nodes, symmetries);
 
   int based_nodes = nodes/symmetries;
-  apsp_generate_random_general(based_nodes, degree, seed, edge);
+  apsp_generate_random_general(based_nodes, degree, edge);
   int based_lines = (based_nodes * degree) / 2;
 
   for(int i=1;i<symmetries;i++){
@@ -938,4 +940,9 @@ void apsp_generate_random_general_s(const int nodes, const int degree, const uns
   // mutate_s x 100
   // adj 2 edge
   free(adjacency);
+}
+
+void apsp_mutate_adjacency(const int nodes, const int degree, const int num_degrees, int adjacency[nodes][degree])
+{
+  
 }

@@ -157,20 +157,6 @@ void apsp_mpi_cuda_run(int adjacency[nodes][degree], int *diameter, long *sum, d
 * [OUT] ASPL : Average shortest path length of a graph (sum = ASPL*(nodes*(nodes-1)/2)).
 
 ## Utility
-### Generate a random graph
-Generate a regular graph with randomly connected vertices. Note that the graph may contain multiple edges and loops.
-```
-void apsp_generate_random_general(int nodes, int degree, unsigned int seed, int edge[lines][2])
-void apsp_generate_random_grid   (int width, int height, int degree, int length, unsigned int seed, int edge[lines][2])
-```
-* [IN] nodes : Number of nodes in a graph.
-* [IN] degree : Degree in a graph.
-* [IN] seed   : Seed for random,
-* [IN] width : Width of a grid graph.
-* [IN] height : Height of a grid graph.
-* [IN] length : Maximum length of a grid graph.
-* [OUT] edge : Edge list of a graph.
-
 ### Read an edge from a file
 ```
 void apsp_read_edge_general(char* fname, int edge[lines][2])
@@ -231,6 +217,26 @@ void apsp_set_degrees(int nodes, int lines, int edge[lines][2], int num_degrees[
 * [IN] lines : Number of lines in an edge list.
 * [IN] edge : Edge list of a graph.
 * [OUT] num_degrees : Degree in each vertex.
+
+### Set the seed value for random number generation
+This function is executed before apsp_generate_random\*() and apsp_mutate_adjencency\*() that uses random numbers internally.
+```
+void apsp_srand(unsigned int seed)
+```
+* [IN] seed : Seed for random.
+
+### Generate a random graph
+Generate a regular graph with randomly connected vertices. Note that the graph may contain multiple edges and loops.
+```
+void apsp_generate_random_general(int nodes, int degree, int edge[lines][2])
+void apsp_generate_random_grid   (int width, int height, int degree, int length, int edge[lines][2])
+```
+* [IN] nodes : Number of nodes in a graph.
+* [IN] degree : Degree in a graph.
+* [IN] width : Width of a grid graph.
+* [IN] height : Height of a grid graph.
+* [IN] length : Maximum length of a grid graph.
+* [OUT] edge : Edge list of a graph.
 
 ### Get the number of lines in a file
 ```
