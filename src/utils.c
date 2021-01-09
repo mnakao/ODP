@@ -54,7 +54,7 @@ static void simple_2opt_general(const int lines, int edge[lines][2])
     swap(&edge[e0][1], &edge[e1][0]);
 }
 
-void apsp_random_general(const int nodes, const int degree, const unsigned int seed, int *edge)
+void apsp_random_general(const int nodes, const int degree, const unsigned int seed, int (*edge)[2])
 {
   check_graph_parameters(nodes, degree);
   srand(seed);
@@ -62,27 +62,27 @@ void apsp_random_general(const int nodes, const int degree, const unsigned int s
   int half_degree = degree/2;
   for(int i=0;i<nodes-1;i++){
     for(int j=0;j<half_degree;j++){
-      edge[(i*half_degree+j)*2  ] = i;
-      edge[(i*half_degree+j)*2+1] = i+1;
+      edge[i*half_degree+j][0] = i;
+      edge[i*half_degree+j][1] = i+1;
     }
   }
   for(int j=0;j<half_degree;j++){
     int i = nodes - 1;
-    edge[(i*half_degree+j)*2  ] = i;
-    edge[(i*half_degree+j)*2+1] = 0;
+    edge[i*half_degree+j][0] = i;
+    edge[i*half_degree+j][1] = 0;
   }
 
   if(degree%2 == 1){
     int half_node = nodes/2; // half_nodes must be a multiple of 2
     for(int i=0;i<half_node;i++){
-      edge[(half_degree*nodes+i)*2  ] = i;
-      edge[(half_degree*nodes+i)*2+1] = i+half_node;
+      edge[half_degree*nodes+i][0] = i;
+      edge[half_degree*nodes+i][1] = i+half_node;
     }
   }
 
   int lines = (nodes*degree)/2;
   for(int i=0;i<lines*GEN_GRAPH_ITERS;i++) // Give randomness
-    simple_2opt_general(lines, (int (*)[2])edge);
+    simple_2opt_general(lines, edge);
 }
 
 void apsp_write_edge_general(const int lines, const int edge[lines][2], char *fname)
@@ -111,13 +111,6 @@ void apsp_write_edge_grid(const int lines, const int height, const int edge[line
             WIDTH(edge[i][1], height), HEIGHT(edge[i][1], height));
     
   fclose(fp);
-}
-
-void apsp_random_general_s(const int nodes, const int degree, const int symmetries, const unsigned int seed, int *edge)
-{
-  check_graph_parameters(nodes, degree);
-  srand(seed);
-  ERROR("Not implemented yet\n");
 }
 
 static bool check_length(const int v, const int w, const int height, const int length)
@@ -157,7 +150,7 @@ static void simple_2opt_grid(const int height, const int length, const int lines
 
 // Inherited from http://research.nii.ac.jp/graphgolf/c/create-lattice.c
 void apsp_random_grid(const int width, const int height, const int degree,
-		      const int length, const unsigned int seed, int *edge)
+		      const int length, const unsigned int seed, int (*edge)[2])
 {
   int nodes = width * height;
   check_graph_parameters(nodes, degree);
@@ -167,8 +160,8 @@ void apsp_random_grid(const int width, const int height, const int degree,
   for(int x=0;x<width/2;x++){
     for(int y=0;y<height;y++){
       for(int k=0;k<degree;k++){
-        edge[i*2]   = y + 2 * x * height;
-        edge[i*2+1] = edge[i*2] + height;
+        edge[i][0] = y + 2 * x * height;
+        edge[i][1] = edge[i][0] + height;
         i++;
       }
     }
@@ -177,8 +170,8 @@ void apsp_random_grid(const int width, const int height, const int degree,
   if(width%2 == 1){
     for(int y=0;y<height/2;y++){
       for(int k=0;k<degree;k++){
-        edge[i*2]   = (width - 1) * height + 2 * y;
-        edge[i*2+1] = edge[i*2] + 1;
+        edge[i][0] = (width - 1) * height + 2 * y;
+        edge[i][1] = edge[i][0] + 1;
         i++;
       }
     }
@@ -186,7 +179,7 @@ void apsp_random_grid(const int width, const int height, const int degree,
     /* add self-loop */
     if(height%2 == 1){
       for(int k=0;k<degree/2;k++){
-        edge[i*2] = edge[i*2+1] = nodes - 1;
+        edge[i][0] = edge[i][1] = nodes - 1;
         i++;
       }
     }
@@ -194,7 +187,7 @@ void apsp_random_grid(const int width, const int height, const int degree,
 
   int lines = (nodes*degree)/2;
   for(int i=0;i<lines*GEN_GRAPH_ITERS;i++)  // Give randomness
-    simple_2opt_grid(height, length, lines, (int (*)[2])edge);
+    simple_2opt_grid(height, length, lines, edge);
 }
 
 void apsp_malloc(uint64_t **a, const size_t s, const bool enable_avx2)
@@ -891,6 +884,9 @@ void apsp_conv_edge2adjacency(const int nodes, const int lines, const int edge[l
 void apsp_conv_edge2adjacency_s(const int nodes, const int lines, const int edge[lines][2],
 				const int symmetries, int *adjacency) // int adjacency[nodes/adjacency][degree]
 {
+  if(nodes % symmetries != 0)
+    ERROR("nodes(%d) must be divisible by symmetries(%d)\n", nodes, symmetries);
+  
   int based_nodes = nodes/symmetries;
   int num_degrees[based_nodes];
   for(int i=0;i<based_nodes;i++)
@@ -917,4 +913,29 @@ void apsp_set_degrees(const int nodes, const int lines, int edge[lines][2],
     num_degrees[edge[i][0]]++;
     num_degrees[edge[i][1]]++;
   }
+}
+
+void apsp_random_general_s(const int nodes, const int degree, const unsigned int seed, const int symmetries, int (*edge)[2])
+{
+  if(nodes % symmetries != 0)
+    ERROR("nodes(%d) must be divisible by symmetries(%d)\n", nodes, symmetries);
+
+  int based_nodes = nodes/symmetries;
+  apsp_random_general(based_nodes, degree, seed, edge);
+  int based_lines = (based_nodes * degree) / 2;
+
+  for(int i=1;i<symmetries;i++){
+    for(int j=0;j<based_lines;j++){
+      for(int k=0;k<2;k++){
+	int v = edge[j][k] + based_nodes * i;
+	edge[i*based_lines+j][k] = (v < nodes)? v : v-nodes;
+      }
+    }
+  }
+
+  int *adjacency = malloc(sizeof(int) * based_nodes * degree);
+  apsp_conv_edge2adjacency_s(nodes, (based_lines*symmetries), edge, symmetries, adjacency);
+  // mutate_s x 100
+  // adj 2 edge
+  free(adjacency);
 }

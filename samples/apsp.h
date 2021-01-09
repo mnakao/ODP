@@ -53,6 +53,7 @@ extern bool apsp_check_general(char *fname);
 extern bool apsp_check_duplicated_edge(int lines, int (*edge)[2]);
 extern bool apsp_check_loop(int lines, int (*edge)[2]);
 extern void apsp_random_general(int nodes, int degree, unsigned int seed, int (*edge)[2]);
+extern void apsp_random_general_s(int nodes, int degree, unsigned int seed, int symmetries, int (*edge)[2]);
 extern void apsp_random_grid(int width, int height, int degree,
 			     int length, unsigned int seed, int (*edge)[2]);
 extern void apsp_read_edge_general(char* fname, int (*edge)[2]);
