@@ -249,7 +249,7 @@ void apsp_mutate_adjacency(int nodes, int degree, int num_degrees[nodes], int ad
 * [OUT] adjacency : Adjacency matrix of a graph.
 
 ### Restore an adjacency matrix
-Resore an adjacency matrix to the state it was in before the previous apsp_mutate_adjacency() was executed.
+Restore an adjacency matrix to the state it was in before the previous apsp_mutate_adjacency() was executed.
 However, only if the adjacency matrix has not been changed by an operation other than apsp_mutate_adjacency().
 ```
 void apsp_restore_adjacency(int adjacency[nodes][degree])
