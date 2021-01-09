@@ -157,11 +157,11 @@ void apsp_mpi_cuda_run(int adjacency[nodes][degree], int *diameter, long *sum, d
 * [OUT] ASPL : Average shortest path length of a graph (sum = ASPL*(nodes*(nodes-1)/2)).
 
 ## Utility
-### Create random graph
-Note that the graph created by the function may contain duplicate edges and loops.
+### Generate a random graph
+Generate a regular graph with randomly connected vertices. Note that the graph may contain multiple edges and loops.
 ```
-void apsp_random_general(int nodes, int degree, unsigned int seed, int edge[lines][2])
-void apsp_random_grid   (int width, int height, int degree, int length, unsigned int seed, int edge[lines][2])
+void apsp_generate_random_general(int nodes, int degree, unsigned int seed, int edge[lines][2])
+void apsp_generate_random_grid   (int width, int height, int degree, int length, unsigned int seed, int edge[lines][2])
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] degree : Degree in a graph.
@@ -271,11 +271,11 @@ bool apsp_check_general(char *fname)
 * [RETUREN] : When an input is a general graph, it returns true.
 * [IN] fname : File name of a graph.
 
-### Check if a graph has duplicated edges
+### Check if a graph has multiple edges
 ```
-bool apsp_check_duplicated_edge(int lines, int edge[lines][2])
+bool apsp_check_multiple_edges(int lines, int edge[lines][2])
 ```
-* [RETURN] : If a graph has duplicated edge, it returns true.
+* [RETURN] : If a graph has multiple edges, it returns true.
 * [IN] lines : Number of lines in an edge list.
 * [IN] edge : Edge list of a graph.
 

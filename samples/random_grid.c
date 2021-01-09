@@ -12,7 +12,7 @@ int main()
   char *fname="grid.edges";
 
   int (*edge)[2] = malloc(sizeof(int)*lines*2); // int edge[lines][2];
-  apsp_random_grid(width, height, degree, length, seed, edge);
+  apsp_generate_random_grid(width, height, degree, length, seed, edge);
   int (*adjacency)[degree] = malloc(sizeof(int) * nodes * degree); // int adjacency[nodes][degree];
   apsp_conv_edge2adjacency(nodes, lines, edge, adjacency);
 

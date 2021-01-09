@@ -50,12 +50,8 @@ extern int  apsp_get_nodes(int lines, int (*edge)[2]);
 extern int  apsp_get_degree(int nodes, int lines, int (*edge)[2]);
 extern int  apsp_get_length(int lines, int (*edge)[2], int height);
 extern bool apsp_check_general(char *fname);
-extern bool apsp_check_duplicated_edge(int lines, int (*edge)[2]);
+extern bool apsp_check_mulitple_edges(int lines, int (*edge)[2]);
 extern bool apsp_check_loop(int lines, int (*edge)[2]);
-extern void apsp_random_general(int nodes, int degree, unsigned int seed, int (*edge)[2]);
-extern void apsp_random_general_s(int nodes, int degree, unsigned int seed, int symmetries, int (*edge)[2]);
-extern void apsp_random_grid(int width, int height, int degree,
-			     int length, unsigned int seed, int (*edge)[2]);
 extern void apsp_read_edge_general(char* fname, int (*edge)[2]);
 extern void apsp_read_edge_grid(char *fname, int *w, int *h, int (*edge)[2]);
 extern void apsp_write_edge_general(int lines, int (*edge)[2], char *fname);
@@ -63,4 +59,6 @@ extern void apsp_write_edge_grid(int lines, int height, int (*edge)[2], char *fn
 extern void apsp_conv_edge2adjacency(int nodes, int lines, int (*edge)[2], void *adjacency);
 extern void apsp_conv_adjacency2edge(int nodes, int degree, int *num_degrees, void *adjacency, int (*edge)[2]);
 extern void apsp_conv_edge2adjacency_s(int nodes, int lines, int (*edge)[2], int symmetries, void *adjacency);
+extern void apsp_generate_random_general(int nodes, int degree, unsigned int seed, int (*edge)[2]);
+extern void apsp_generate_random_grid(int width, int height, int degree, int length, unsigned int seed, int (*edge)[2]);
 #endif
