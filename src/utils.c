@@ -829,8 +829,6 @@ void apsp_set_lbounds_grid(const int m, const int n, const int degree, const int
   *low_ASPL     = sum/((double)mn*(mn-1));
 }
 
-#define NOT_VISITED 0
-#define VISITED     1
 void apsp_conv_adjacency2edge(const int nodes, const int degree, const int *num_degrees,
 			      const int *adjacency, int (*edge)[2])
 {
@@ -875,18 +873,37 @@ void apsp_conv_adjacency2edge(const int nodes, const int degree, const int *num_
 }
 
 void apsp_conv_edge2adjacency(const int nodes, const int lines, const int edge[lines][2],
-			      int *adjacency)
+			      int *adjacency) // int adjacency[nodes][degree]
 {
-  int degree = apsp_get_degree(nodes, lines, edge);
   int num_degrees[nodes];
   for(int i=0;i<nodes;i++)
     num_degrees[i] = 0;
-  
+
+  int degree = apsp_get_degree(nodes, lines, edge);
   for(int i=0;i<lines;i++){
     int n1 = edge[i][0];
     int n2 = edge[i][1];
     *(adjacency + n1 * degree + (num_degrees[n1]++)) = n2; //  adjacency[n1][num_degrees[n1]++] = n2;
     *(adjacency + n2 * degree + (num_degrees[n2]++)) = n1; //  adjacency[n2][num_degrees[n2]++] = n1;
+  }
+}
+
+void apsp_conv_edge2adjacency_s(const int nodes, const int lines, const int edge[lines][2],
+				const int symmetries, int *adjacency) // int adjacency[nodes/adjacency][degree]
+{
+  int based_nodes = nodes/symmetries;
+  int num_degrees[based_nodes];
+  for(int i=0;i<based_nodes;i++)
+    num_degrees[i] = 0;
+
+  int degree = apsp_get_degree(nodes, lines, edge);
+  for(int i=0;i<lines;i++){
+    int n1 = edge[i][0];
+    int n2 = edge[i][1];
+    if(n1 < based_nodes)
+      *(adjacency + n1 * degree + (num_degrees[n1]++)) = n2; //  adjacency[n1][num_degrees[n1]++] = n2;
+    if(n2 < based_nodes)
+      *(adjacency + n2 * degree + (num_degrees[n2]++)) = n1; //  adjacency[n2][num_degrees[n2]++] = n1;
   }
 }
 

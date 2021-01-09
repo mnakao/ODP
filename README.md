@@ -81,7 +81,7 @@ This environment variable can specify the algorithm to use.
 
 ### APSP_PROFILE=1
 
-Output the performance profile for apsp\*_run() functions.
+Output the performance profile for apsp\*_run().
 ```
 $ APSP=SAVING APSP_PROFILE=1 ./general.x ./graphs/general/n16d4.edges
 ------ Profile for APSP_RUN ------
@@ -106,18 +106,18 @@ ASPL Gap     = 0.1833333333 (1.9166666667 - 1.7333333333)
 
 The meaning of each item in the profile is as follows.
 * Hostname : Name of the machine on which the program was run.
-* Initialize Date : Time when the apsp\*_init function was executed.
-* Finalize Date   : Time when the apsp\*_finalize function was executed.
-* Number of Times : Number of times apsp\*_run function was executed.
-* Total Time : Total execution time of apsp\*_run function.
-* Average Time : Average execution time of apsp\*_run function.
+* Initialize Date : Time when the apsp\*_init() was executed.
+* Finalize Date   : Time when the apsp\*_finalize() was executed.
+* Number of Times : Number of times apsp\*_run() was executed.
+* Total Time : Total execution time of apsp\*_run()
+* Average Time : Average execution time of apsp\*_run()
 * Algorithm : NORMAL or SAVING. The parentheses are the types of libraries used. That is, SERIAL, THREADS, MPI, MPI+THREADS, CUDA, or MPI+CUDA.
-* Symmetries : When using apsp\*_init function, the value is 1. When using apsp\*_init_s function, the value is symmetries.
+* Symmetries : When using apsp\*_init(), the value is 1. When using apsp\*_init_s(), the value is symmetries.
 * Memory Usage : Amount of memory used in the library.
 * Num of Procs : Number of processes used in the library.
 * Num of Threads : Number of threads used in the library.
 
-## Functions
+## Basic Function
 Note that there are no special functions for the threaded versions.
 Thread parallelization is performed automatically depending on the library to be linked.
 
@@ -135,7 +135,7 @@ void apsp_mpi_cuda_init(int nodes, int degree, int num_degrees[nodes], MPI_Comm 
 * [IN] comm : MPI communicator.
 
 ### Finalize
-Release the resources allocated in apsp\*_init() function.
+Release the resources allocated in apsp\*_init().
 ```
 void apsp_finalize()
 void apsp_mpi_finalize()
@@ -144,7 +144,7 @@ void apsp_mpi_cuda_finalize()
 ```
 
 ### Run APSP
-Calculate APSP. Note that they must be executed between apsp\*_init() function and apsp\*_finalize() function.
+Calculate APSP. Note that they must be executed between apsp\*_init() and apsp\*_finalize().
 ```
 void apsp_run         (int adjacency[nodes][degree], int *diameter, long *sum, double *ASPL)
 void apsp_mpi_run     (int adjacency[nodes][degree], int *diameter, long *sum, double *ASPL)
@@ -156,6 +156,7 @@ void apsp_mpi_cuda_run(int adjacency[nodes][degree], int *diameter, long *sum, d
 * [OUT] sum : Total value of the distances between each vertex in a graph.
 * [OUT] ASPL : Average shortest path length of a graph (sum = ASPL*(nodes*(nodes-1)/2)).
 
+## Utility
 ### Create random graph
 Note that the graph created by the function may contain duplicate edges and loops.
 ```
@@ -313,21 +314,7 @@ void apsp_all_mpi_cuda_run_grid   (char *fname, MPI_Comm comm, int *width, int *
 * [OUT] height : Height of a grid graph.
 * [OUT] length : Maximum length of a grid graph.
 
-### Initialize for a graph with symmetry
-These functions can be used instead of the apsp\*_init functions for only a general graph with symmetry.
-
-```
-void apsp_init_s         (int nodes, int degree, int num_degrees[nodes], int symmetries)
-void apsp_mpi_init_s     (int nodes, int degree, int num_degrees[nodes], MPI_Comm comm, int symmetries)
-void apsp_cuda_init_s    (int nodes, int degree, int num_degrees[nodes], int symmetries)
-void apsp_mpi_cuda_init_s(int nodes, int degree, int num_degrees[nodes], MPI_Comm comm, int symmetries)
-```
-* [IN] nodes : Number of nodes in a graph.
-* [IN] degree: Degree in a graph.
-* [IN] num_degrees : Specify NULL for a regular graph. If not, specify the degrees for each vertex.
-* [IN] comm : MPI communicator.
-* [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes. If it is 1, it works the same as apsp\*_init functions.
-
+## Function for a graph with symmetry
 Symmetry in this software means that when the vertices are arranged on a circle,
 the graph when rotated by `360/symmetries` degrees and the graph before rotation match.
 
@@ -343,6 +330,33 @@ The edges plus 6 (`= nodes/symmetries`) matches the 1st row in the next group (i
 2 + 6 = 8 and 9 + 6 = 15.
 Here, 19 + 6 = 25, but the number of nodes is 24, so it goes around and becomes 25 - 24 = 1.
 This rule holds for all groups.
+
+### Initialize
+These functions can be used instead of the apsp\*_init() for only a general graph with symmetry.
+
+```
+void apsp_init_s         (int nodes, int degree, int num_degrees[nodes], int symmetries)
+void apsp_mpi_init_s     (int nodes, int degree, int num_degrees[nodes], MPI_Comm comm, int symmetries)
+void apsp_cuda_init_s    (int nodes, int degree, int num_degrees[nodes], int symmetries)
+void apsp_mpi_cuda_init_s(int nodes, int degree, int num_degrees[nodes], MPI_Comm comm, int symmetries)
+```
+* [IN] nodes : Number of nodes in a graph.
+* [IN] degree: Degree in a graph.
+* [IN] num_degrees : Specify NULL for a regular graph. If not, specify the degrees for each vertex.
+* [IN] comm : MPI communicator.
+* [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes. If it is 1, it works the same as apsp\*_init().
+
+Note that the apsp\*_finalize() can be used in common.
+
+### Convert an edge list to an adjacency matrix
+```
+void apsp_conv_edge2adjacency_s(int nodes, int lines, int edge[lines][2], int symmetries, int adjacency[nodes/symmetries][degree])
+```
+* [IN] nodes : Number of nodes in a graph.
+* [IN] lines : Number of lines in an edge list.
+* [IN] edge : Edge list of a graph.
+* [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes. If it is 1, it works the same as apsp_conv_edge2adjacency().
+* [OUT] adjacency : Adjacency matrix of a graph.
 
 ## Note
 The software also supports non-regular graphs, but usage of memory may be not efficient.

@@ -30,6 +30,8 @@
 #define UINT64_BITS 64
 #define APSP_NORMAL 1
 #define APSP_SAVING 2
+#define NOT_VISITED 0
+#define VISITED     1
 
 #ifdef __NVCC__
 #define POPCNT(a) __popcll(a)

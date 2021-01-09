@@ -44,14 +44,14 @@ extern void apsp_all_mpi_cuda_run_grid(char *fname, MPI_Comm comm, int *width, i
 // APSP utilities
 extern void apsp_set_lbounds_general(int nodes, int degree, int *low_diameter, double *low_ASPL);
 extern void apsp_set_lbounds_grid(int m, int n, int degree, int length, int *low_diameter, double *low_ASPL);
-extern void apsp_set_degrees(int nodes, int lines, int edge[lines][2], int* num_degrees);
+extern void apsp_set_degrees(int nodes, int lines, int (*edge)[2], int* num_degrees);
 extern int  apsp_get_lines(char *fname);
-extern int  apsp_get_nodes(int lines, int edge[lines][2]);
-extern int  apsp_get_degree(int nodes, int lines, int edge[lines][2]);
-extern int  apsp_get_length(int lines, int edge[lines][2], int height);
+extern int  apsp_get_nodes(int lines, int (*edge)[2]);
+extern int  apsp_get_degree(int nodes, int lines, int (*edge)[2]);
+extern int  apsp_get_length(int lines, int (*edge)[2], int height);
 extern bool apsp_check_general(char *fname);
-extern bool apsp_check_duplicated_edge(int lines, int edge[lines][2]);
-extern bool apsp_check_loop(int lines, int edge[lines][2]);
+extern bool apsp_check_duplicated_edge(int lines, int (*edge)[2]);
+extern bool apsp_check_loop(int lines, int (*edge)[2]);
 extern void apsp_random_general(int nodes, int degree, unsigned int seed, int (*edge)[2]);
 extern void apsp_random_grid(int width, int height, int degree,
 			     int length, unsigned int seed, int (*edge)[2]);
@@ -59,6 +59,7 @@ extern void apsp_read_edge_general(char* fname, int (*edge)[2]);
 extern void apsp_read_edge_grid(char *fname, int *w, int *h, int (*edge)[2]);
 extern void apsp_write_edge_general(int lines, int (*edge)[2], char *fname);
 extern void apsp_write_edge_grid(int lines, int height, int (*edge)[2], char *fname);
-extern void apsp_conv_edge2adjacency(int nodes, int lines, int edge[lines][2], void *adjacency);
+extern void apsp_conv_edge2adjacency(int nodes, int lines, int (*edge)[2], void *adjacency);
 extern void apsp_conv_adjacency2edge(int nodes, int degree, int *num_degrees, void *adjacency, int (*edge)[2]);
+extern void apsp_conv_edge2adjacency_s(int nodes, int lines, int (*edge)[2], int symmetries, void *adjacency);
 #endif
