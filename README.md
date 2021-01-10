@@ -397,6 +397,17 @@ void apsp_conv_edge2adjacency_s(int nodes, int lines, int edge[lines][2], int sy
 * [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes. If it is 1, it works the same as apsp_conv_edge2adjacency().
 * [OUT] adjacency : Adjacency matrix of a graph.
 
+### Convert an adjacency matrix to an edge list
+```
+void apsp_conv_adjacency2edge_s(int nodes, int degree, int num_degrees[nodes], int adjacency[nodes/symmetries][degree], int symmetries, int edge[lines][2])
+```
+* [IN] nodes : Number of nodes in a graph.
+* [IN] degree: Degree in a graph.
+* [IN] num_degrees : Specify NULL for a regular graph. If not, specify the degrees for each vertex.
+* [IN] adjacency : Adjacency matrix of a graph.
+* [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes. If it is 1, it works the same as apsp_conv_adjacency2edge().
+* [OUT] edge : Edge list of a graph.
+
 ## Note
 The software also supports non-regular graphs, but usage of memory may be not efficient.
 Because the format of the adjacency matrix is `int adjacency[nodes][degree]`, which is commanly used in regular and non-regular graphs.

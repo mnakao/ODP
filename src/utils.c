@@ -811,7 +811,7 @@ void apsp_set_lbounds_grid(const int m, const int n, const int degree, const int
 void apsp_conv_adjacency2edge(const int nodes, const int degree, const int *num_degrees,
 			      const int *adjacency, int (*edge)[2])
 {
-  char tmp[nodes][degree];
+  char (*tmp)[degree] = malloc(sizeof(char) * nodes * degree);
   for(int i=0;i<nodes;i++)
     for(int j=0;j<degree;j++)
       tmp[i][j] = NOT_VISITED;
@@ -849,6 +849,8 @@ void apsp_conv_adjacency2edge(const int nodes, const int degree, const int *num_
       }
     }
   }
+  
+  free(tmp);
 }
 
 void apsp_conv_edge2adjacency(const int nodes, const int lines, const int edge[lines][2],
@@ -887,6 +889,39 @@ void apsp_conv_edge2adjacency_s(const int nodes, const int lines, const int edge
     if(n2 < based_nodes)
       *(adjacency + n2 * degree + (num_degrees[n2]++)) = n1; //  adjacency[n2][num_degrees[n2]++] = n1;
   }
+}
+
+void apsp_conv_adjacency2edge_s(const int nodes, const int degree, const int *num_degrees,
+				const int *adjacency, const int symmetries, int (*edge)[2])
+{
+  if(nodes % symmetries != 0)
+    ERROR("nodes(%d) must be divisible by symmetries(%d)\n", nodes, symmetries);
+
+  int (*tmp_adjacency)[degree] = malloc(sizeof(int) * nodes * degree);
+  int based_nodes = nodes/symmetries;
+  if(!num_degrees){
+    for(int i=0;i<symmetries;i++){
+      for(int j=0;j<based_nodes;j++){
+	for(int k=0;k<degree;k++){
+	  int v = *(adjacency + j * degree + k) + i * based_nodes;
+	  tmp_adjacency[i*based_nodes+j][k] = (v >= nodes)? v-nodes : v;
+	}
+      }
+    }
+  }
+  else{
+    for(int i=0;i<symmetries;i++){
+      for(int j=0;j<based_nodes;j++){
+        for(int k=0;k<num_degrees[j];k++){
+	  int v = *(adjacency + j * degree + k) + i * based_nodes;
+	  tmp_adjacency[i*based_nodes+j][k] = (v >= nodes)? v-nodes : v;
+      	}
+      }
+    }
+  }
+
+  apsp_conv_adjacency2edge(nodes, degree, num_degrees, (int *)tmp_adjacency, edge);
+  free(tmp_adjacency);
 }
 
 void apsp_set_degrees(const int nodes, const int lines, int edge[lines][2],

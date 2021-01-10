@@ -59,6 +59,7 @@ extern void apsp_write_edge_grid(int lines, int height, int (*edge)[2], char *fn
 extern void apsp_conv_edge2adjacency(int nodes, int lines, int (*edge)[2], void *adjacency);
 extern void apsp_conv_adjacency2edge(int nodes, int degree, int *num_degrees, void *adjacency, int (*edge)[2]);
 extern void apsp_conv_edge2adjacency_s(int nodes, int lines, int (*edge)[2], int symmetries, void *adjacency);
+extern void apsp_conv_adjacency2edge_s(int nodes, int degree,int *num_degrees, void *adjacency, int symmetries, int (*edge)[2]);
 extern void apsp_generate_random_general(int nodes, int degree, int (*edge)[2]);
 extern void apsp_generate_random_grid(int width, int height, int degree, int length, int (*edge)[2]);
 extern void apsp_srand(unsigned int seed);
