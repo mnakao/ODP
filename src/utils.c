@@ -3,6 +3,22 @@ static int *_n = NULL;
 static int *_d = NULL;
 static int _r, _nodes, _degree;
 
+void apsp_print_adjacency(const int nodes, const int degree, const int adjacency[nodes][degree])
+{
+  for(int i=0;i<nodes;i++){
+    for(int j=0;j<degree;j++){
+      printf("%3d", adjacency[i][j]);
+    }
+    printf("\n");
+  }
+}
+
+void apsp_print_edge(const int lines, const int edge[lines][2])
+{
+  for(int i=0;i<lines;i++)
+    printf("%d %d\n", edge[i][0], edge[i][1]);
+}
+
 double apsp_get_time()
 {
   struct timeval t;
@@ -567,10 +583,10 @@ bool apsp_check_loop(const int lines, int edge[lines][2])
   for(int i=0;i<lines;i++)
     if(edge[i][0] == edge[i][1]){
       printf("Loop is found in line %d\n", i+1);
-      return false;
+      return true;
     }
   
-  return true;
+  return false;
 }
 
 static bool has_multiple_edges(const int e00, const int e01, const int e10, const int e11)
@@ -584,10 +600,10 @@ bool apsp_check_multiple_edges(const int lines, int edge[lines][2])
     for(int j=i+1;j<lines;j++)
       if(has_multiple_edges(edge[i][0], edge[i][1], edge[j][0], edge[j][1])){
 	printf("Multiple edeges are found in lines %d %d\n", i+1, j+1);
-	return false;
+	return true;
       }
   
-  return true;
+  return false;
 }
 
 int apsp_get_length(const int lines, const int edge[lines][2], const int height)
@@ -875,64 +891,25 @@ void apsp_set_degrees(const int nodes, const int lines, int edge[lines][2],
   }
 }
 
-void apsp_mutate_adjacency_general(const int nodes, const int degree, const int *restrict num_degrees,
-				   int adjacency[nodes][degree])
+static bool has_multiple_vertices(const int e00, const int e01, const int e10, const int e11)
 {
-  int elements = 4; 
-  int n[elements], d[elements];
-  do{
-    n[0] = get_random(nodes);
-    n[1] = get_random(nodes);
-  } while(n[0] == n[1]);
-  
-  do{
-    d[0] = (!num_degrees)? get_random(degree) : get_random(num_degrees[n[0]]);
-    n[2] = adjacency[n[0]][d[0]];
-  } while(n[2] == n[1]);
-  
-  do{
-    d[1] = (!num_degrees)? get_random(degree) : get_random(num_degrees[n[1]]);
-    n[3] = adjacency[n[1]][d[1]];
-  } while(n[3] == n[0]);
+  return (e00 == e10 || e01 == e11 || e00 == e11 || e01 == e10);
+}
 
-  if(n[0] == n[2]){ // loop
-    for(int i=0;i<degree;i++)
-      if(adjacency[n[2]][i] == n[0] && i != d[0])
-	d[2] = i;
+static bool check_isolated_vertex(const int n[4], const int degree, const int (*adjacency)[degree])
+{
+  for(int i=0;i<4;i++){
+    bool flag = true;
+    for(int j=1;j<degree;j++){
+      if(adjacency[n[i]][0] != adjacency[n[i]][j]){
+	flag = false;
+	break;
+      }
+    }
+    if(flag) return true;
   }
-  else{
-    for(int i=0;i<degree;i++)
-      if(adjacency[n[2]][i] == n[0])
-	d[2] = i;
-  }
-
-  if(n[1] == n[3]){ // loop
-    for(int i=0;i<degree;i++)
-      if(adjacency[n[3]][i] == n[1] && i != d[1])
-        d[3] = i;
-  }
-  else{
-    for(int i=0;i<degree;i++)
-      if(adjacency[n[3]][i] == n[1])
-	d[3] = i;
-  }
-
-  if(!_n) _n = malloc(sizeof(int)*elements);
-  if(!_d) _d = malloc(sizeof(int)*elements);
-  memcpy(_n, n, sizeof(int)*elements);
-  memcpy(_d, d, sizeof(int)*elements);
-  _r = get_random(2);
-  _nodes = nodes;
-  _degree = degree;
-
-  if(_r == 0){
-    swap(&adjacency[n[0]][d[0]], &adjacency[n[1]][d[1]]);
-    swap(&adjacency[n[2]][d[2]], &adjacency[n[3]][d[3]]);
-  }
-  else{
-    swap(&adjacency[n[0]][d[0]], &adjacency[n[3]][d[3]]);
-    swap(&adjacency[n[2]][d[2]], &adjacency[n[1]][d[1]]);
-  }
+      
+  return false;
 }
 
 void apsp_restore_adjacency(int adjacency[_nodes][_degree])
@@ -944,6 +921,87 @@ void apsp_restore_adjacency(int adjacency[_nodes][_degree])
   else{
     swap(&adjacency[_n[0]][_d[0]], &adjacency[_n[3]][_d[3]]);
     swap(&adjacency[_n[2]][_d[2]], &adjacency[_n[1]][_d[1]]);
+  }
+}
+
+void apsp_mutate_adjacency_general(const int nodes, const int degree, const int *restrict num_degrees,
+				   int adjacency[nodes][degree])
+{
+  int elements = 4; 
+  int n[elements], d[elements];
+  while(1){
+    while(1){
+      do{
+	n[0] = get_random(nodes);
+	n[1] = get_random(nodes);
+      } while(n[0] == n[1]);
+      
+      do{
+	d[0] = (!num_degrees)? get_random(degree) : get_random(num_degrees[n[0]]);
+	n[2] = adjacency[n[0]][d[0]];
+      } while(n[2] == n[1]);
+      
+      do{
+	d[1] = (!num_degrees)? get_random(degree) : get_random(num_degrees[n[1]]);
+	n[3] = adjacency[n[1]][d[1]];
+      } while(n[3] == n[0]);
+      
+      bool flag[2] = {false, false};
+      if(n[0] == n[2]){ // loop
+	for(int i=0;i<degree;i++)
+	  if(adjacency[n[2]][i] == n[0] && i != d[0]){
+	    d[2] = i;
+	    flag[0] = true;
+	  }
+      }
+      else{
+	for(int i=0;i<degree;i++)
+	  if(adjacency[n[2]][i] == n[0]){
+	    d[2] = i;
+	    flag[0] = true;
+	  }
+      }
+      
+      if(n[1] == n[3]){ // loop
+	for(int i=0;i<degree;i++)
+	  if(adjacency[n[3]][i] == n[1] && i != d[1]){
+	    d[3] = i;
+	    flag[1] = true;
+	  }
+      }
+      else{
+	for(int i=0;i<degree;i++)
+	  if(adjacency[n[3]][i] == n[1]){
+	    d[3] = i;
+	    flag[1] = true;
+	  }
+      }
+      
+      if(!flag[0] || !flag[1]) ERROR("Something wrong!\n");
+      if(!has_multiple_vertices(n[0], n[2], n[1], n[3])) break;
+    }
+
+    if(!_n) _n = malloc(sizeof(int)*elements);
+    if(!_d) _d = malloc(sizeof(int)*elements);
+    memcpy(_n, n, sizeof(int)*elements);
+    memcpy(_d, d, sizeof(int)*elements);
+    _r = get_random(2);
+    _nodes = nodes;
+    _degree = degree;
+    
+    if(_r == 0){
+      swap(&adjacency[n[0]][d[0]], &adjacency[n[1]][d[1]]);
+      swap(&adjacency[n[2]][d[2]], &adjacency[n[3]][d[3]]);
+    }
+    else{
+      swap(&adjacency[n[0]][d[0]], &adjacency[n[3]][d[3]]);
+      swap(&adjacency[n[2]][d[2]], &adjacency[n[1]][d[1]]);
+    }
+    
+    if(check_isolated_vertex(n, degree, adjacency))
+      apsp_restore_adjacency(adjacency);
+    else
+      break;
   }
 }
 

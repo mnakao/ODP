@@ -25,7 +25,7 @@ TEST_GENERAL=n12d3.edges n16d4.edges n72d4.edges n100d10.edges n256d5.edges n256
 TEST_GRID=w4h4d3r2.edges w5h5d4r2.edges w10h10d6r3.edges w10h10d8r4.edges
 TMP := $(shell mktemp)
 ##############
-serial:      general.x grid.x non_regular_general.x regular_general.x simple_general.x simple_grid.x random_general.x  random_grid.x
+serial:      general.x grid.x non_regular_general.x regular_general.x simple_general.x simple_grid.x random_general.x random_grid.x sa_general.x
 threads:     threads_general.x threads_grid.x threads_simple_general.x threads_simple_grid.x
 mpi:         mpi_general.x mpi_grid.x  mpi_simple_general.x mpi_simple_grid.x
 mpi_threads: mpi_threads_general.x mpi_threads_grid.x mpi_threads_simple_general.x mpi_threads_simple_grid.x
@@ -48,6 +48,8 @@ random_grid.x: random_grid.c apsp.h
 simple_general.x: simple_general.c apsp.h
 	$(CC) $(CFLAGS) -o $@ $< $(LIBS)
 simple_grid.x: simple_grid.c apsp.h
+	$(CC) $(CFLAGS) -o $@ $< $(LIBS)
+sa_general.x: sa_general.c apsp.h
 	$(CC) $(CFLAGS) -o $@ $< $(LIBS)
 ##############
 threads_general.x: general.c apsp.h
