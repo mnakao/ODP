@@ -6,12 +6,11 @@ static bool _num_degrees_flag = false, _is_profile;
 static int _nodes, _degree, _symmetries, _kind;
 static double _mem_usage, _elapsed_time;
 static unsigned int _times;
-static time_t _start_t;
 
 extern "C" bool apsp_check_profile();
 extern "C" double apsp_get_time();
-extern "C" void apsp_profile(const char* name, const int kind, const int symmetries, const double mem_usage, const time_t start_t,
-			     const time_t end_t, const double elapsed_time, const unsigned int times, const int procs);
+extern "C" void apsp_profile(const char* name, const int kind, const int symmetries, const double mem_usage,
+			     const double elapsed_time, const unsigned int times, const int procs);
 extern "C" double apsp_get_mem_usage(const int kind, const int nodes, const int degree, const int symmetries,
 				     const int *num_degrees, const int procs, const bool is_cpu);
 extern "C" int  apsp_get_kind(const int nodes, const int degree, const int* num_degrees, const int symmetries,
@@ -124,7 +123,6 @@ static void apsp_cuda_mat_saving(const int* __restrict__ adjacency,
 extern "C" void apsp_cuda_run_init_s(const int nodes, const int degree,
 				     const int* __restrict__ num_degrees, const int symmetries)
 {
-  _start_t = time(NULL);
   cuInit(0);
 
   if(nodes % symmetries != 0)
@@ -171,7 +169,7 @@ extern "C" void apsp_cuda_run_finalize()
 
   if(_is_profile)
     apsp_profile("CUDA", _kind, _symmetries, _mem_usage,
-		 _start_t, time(NULL), _elapsed_time, _times, 1);
+		 _elapsed_time, _times, 1);
 }
 
 extern "C" void apsp_cuda_run(const int* __restrict__ adjacency,

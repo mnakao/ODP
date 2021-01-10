@@ -81,13 +81,13 @@ This environment variable can specify the algorithm to use.
 
 ### APSP_PROFILE=1
 
-Output the performance profile for apsp\*_run().
+Output the performance profile for apsp\*_run(). 
+This profile is output when apsp\*_run_finalize() is executed.
 ```
 $ APSP=SAVING APSP_PROFILE=1 ./general.x ./graphs/general/n16d4.edges
 ------ Profile for APSP_RUN ------
+Date            = Mon Jan  4 23:14:03 2021
 Hostname        = kiwi
-Initialize Date = Mon Jan  4 23:14:03 2021
-Finalize Date   = Mon Jan  4 23:14:03 2021
 Number of Times = 1
 Total Time      = 0.000005 sec.
 Average Time    = 0.000005 sec.
@@ -105,9 +105,8 @@ ASPL Gap     = 0.1833333333 (1.9166666667 - 1.7333333333)
 ```
 
 The meaning of each item in the profile is as follows.
+* Date : The time when the profile was output.
 * Hostname : Name of the machine on which the program was run.
-* Initialize Date : Time when the apsp\*_run_init() was executed.
-* Finalize Date   : Time when the apsp\*_run_finalize() was executed.
 * Number of Times : Number of times apsp\*_run() was executed.
 * Total Time : Total execution time of apsp\*_run()
 * Average Time : Average execution time of apsp\*_run()

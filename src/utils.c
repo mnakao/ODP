@@ -536,18 +536,17 @@ int apsp_get_kind(const int nodes, const int degree, const int* num_degrees, con
 }
 
 void apsp_profile(const char* name, const int kind, const int symmetries, const double mem_usage,
-		  const time_t start_t, const time_t end_t, const double elapsed_time,
-		  const unsigned int times, const int procs)
+		  const double elapsed_time, const unsigned int times, const int procs)
 {
   char kind_name[7], hostname[MAX_HOSTNAME_LENGTH];
   if(kind == APSP_NORMAL) strcpy(kind_name, "NORMAL");
   else                    strcpy(kind_name, "SAVING");
   gethostname(hostname, sizeof(hostname));
+  time_t t = time(NULL);
   
   printf("------ Profile for APSP_RUN ------\n");
+  printf("Date            = %s", ctime(&t));
   printf("Hostname        = %s\n", hostname);
-  printf("Initialize Date = %s", ctime(&start_t));
-  printf("Finalize Date   = %s", ctime(&end_t));
   printf("Number of Times = %d\n", times);
   printf("Total Time      = %f sec.\n", elapsed_time);
   printf("Average Time    = %f sec.\n", elapsed_time/times);

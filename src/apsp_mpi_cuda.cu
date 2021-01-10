@@ -7,13 +7,12 @@ static bool _num_degrees_flag = false, _is_profile;
 static int _nodes, _degree, _symmetries, _rank, _procs, _kind;
 static double _mem_usage, _elapsed_time;
 static unsigned int _times;
-static time_t _start_t;
 static MPI_Comm _comm;
 
 extern "C" bool apsp_check_profile();
 extern "C" double apsp_get_time();
-extern "C" void apsp_profile(const char* name, const int kind, const int symmetries, const double mem_usage, const time_t start_t,
-                             const time_t end_t, const double elapsed_time, const unsigned int times, const int procs);
+extern "C" void apsp_profile(const char* name, const int kind, const int symmetries, const double mem_usage,
+                             const double elapsed_time, const unsigned int times, const int procs);
 extern "C" int  apsp_get_kind(const int nodes, const int degree, const int* num_degrees, const int symmetries,
                               const int procs, const bool is_cpu);
 extern "C" double apsp_get_mem_usage(const int kind, const int nodes, const int degree, const int symmetries,
@@ -131,7 +130,6 @@ static void apsp_mpi_cuda_mat_saving(const int* __restrict__ adjacency,
 extern "C" void apsp_mpi_cuda_run_init_s(const int nodes, const int degree,
 					 const int* __restrict__ num_degrees, MPI_Comm comm, const int symmetries)
 {
-  _start_t = time(NULL);
   cuInit(0);
   
   if(nodes % symmetries != 0)
@@ -183,13 +181,12 @@ extern "C" void apsp_mpi_cuda_run_finalize()
 
   if(_rank == 0 && _is_profile)
     apsp_profile("MPI+CUDA", _kind, _symmetries, _mem_usage,
-		 _start_t, time(NULL), _elapsed_time, _times, _procs);
+		 _elapsed_time, _times, _procs);
 }
 
 extern "C" void apsp_mpi_cuda_run(const int* __restrict__ adjacency,
 				  int *diameter, long *sum, double *ASPL)
 {
-  if(_is_profile) MPI_Barrier(_comm);
   double t = apsp_get_time();
   
   cudaMemcpy(_adjacency_dev, adjacency, sizeof(int)*(_nodes/_symmetries)*_degree, cudaMemcpyHostToDevice);

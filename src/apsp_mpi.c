@@ -6,13 +6,12 @@ static const int* _num_degrees;
 static unsigned int _elements, _total_elements, _times;
 static double _mem_usage, _elapsed_time;
 static bool _enable_avx2 = false, _is_profile;
-static time_t _start_t;
 static MPI_Comm _comm;
 
 extern bool apsp_check_profile();
 extern double apsp_get_time();
-extern void apsp_profile(const char* name, const int kind, const int symmetries, const double mem_usage, const time_t start_t,
-                         const time_t end_t, const double elapsed_time, const unsigned int times, const int procs);
+extern void apsp_profile(const char* name, const int kind, const int symmetries, const double mem_usage,
+                         const double elapsed_time, const unsigned int times, const int procs);
 extern int apsp_get_kind(const int nodes, const int degree, const int* num_degrees, const int symmetries,
 			 const int procs, const bool is_cpu);
 extern double apsp_get_mem_usage(const int kind, const int nodes, const int degree, const int symmetries,
@@ -118,8 +117,6 @@ static void apsp_mpi_mat_saving(const int* restrict adjacency,
 void apsp_mpi_run_init_s(const int nodes, const int degree,
 			 const int* restrict num_degrees, const MPI_Comm comm, const int symmetries)
 {
-  _start_t = time(NULL);
-  
   if(nodes % symmetries != 0)
     ERROR("nodes(%d) must be divisible by symmetries(%d)\n", nodes, symmetries);
   else if(CPU_CHUNK % 4 != 0)
@@ -167,17 +164,16 @@ void apsp_mpi_run_finalize()
   if(_rank == 0 && _is_profile){
 #ifdef _OPENMP
     apsp_profile("MPI+THREADS", _kind, _symmetries, _mem_usage,
-		 _start_t, time(NULL), _elapsed_time, _times, _procs);
+		 _elapsed_time, _times, _procs);
 #else
     apsp_profile("MPI", _kind, _symmetries, _mem_usage,
-		 _start_t, time(NULL), _elapsed_time, _times, _procs);
+		 _elapsed_time, _times, _procs);
 #endif
   }
 }
 
 void apsp_mpi_run(const int* restrict adjacency, int *diameter, long *sum, double *ASPL)
 {
-  if(_is_profile) MPI_Barrier(_comm);
   double t = apsp_get_time();
   
   if(_kind == APSP_NORMAL)

@@ -5,12 +5,11 @@ static const int* _num_degrees;
 static unsigned int _elements, _times;
 static double _mem_usage, _elapsed_time;
 static bool _enable_avx2 = false, _is_profile;
-static time_t _start_t;
 
 extern bool apsp_check_profile();
 extern double apsp_get_time();
-extern void apsp_profile(const char* name, const int kind, const int symmetries, const double mem_usage, const time_t start_t,
-                         const time_t end_t, const double elapsed_time, const unsigned int times, const int procs);
+extern void apsp_profile(const char* name, const int kind, const int symmetries, const double mem_usage,
+                         const double elapsed_time, const unsigned int times, const int procs);
 extern int apsp_get_kind(const int nodes, const int degree, const int* num_degrees, const int symmetries,
 			 const int procs, const bool is_cpu);
 extern double apsp_get_mem_usage(const int kind, const int nodes, const int degree, const int symmetries,
@@ -106,8 +105,6 @@ static void apsp_mat_saving(const int* restrict adjacency,
 
 void apsp_run_init_s(const int nodes, const int degree, const int* num_degrees, const int symmetries)
 {
-  _start_t = time(NULL);
-  
   if(nodes % symmetries != 0)
     ERROR("nodes(%d) must be divisible by symmetries(%d)\n", nodes, symmetries);
   else if(CPU_CHUNK % 4 != 0)
@@ -149,10 +146,10 @@ void apsp_run_finalize()
   if(_is_profile){
 #ifdef _OPENMP
     apsp_profile("THREADS", _kind, _symmetries, _mem_usage,
-		 _start_t, time(NULL), _elapsed_time, _times, 1);
+		 _elapsed_time, _times, 1);
 #else
     apsp_profile("SERIAL",  _kind, _symmetries, _mem_usage,
-		 _start_t, time(NULL), _elapsed_time, _times, 1);
+		 _elapsed_time, _times, 1);
 #endif
   }
 }
