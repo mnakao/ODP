@@ -117,7 +117,6 @@ int main(int argc, char *argv[])
   
   apsp_srand(seed);
   apsp_generate_random_general(nodes, degree, edge);
-  //  apsp_read_edge_general("./n72d4.random.edges", edge);
   apsp_conv_edge2adjacency(nodes, lines, edge, adjacency);
   
   apsp_run_init(nodes, degree, NULL);
