@@ -1,7 +1,7 @@
 #include "common.h"
 static int *_n = NULL;
 static int *_d = NULL;
-static int _r, _nodes, _degree;
+static int _r, _degree;
 
 void apsp_print_adjacency(const int nodes, const int degree, const int num_degrees[nodes], const int adjacency[nodes][degree])
 {
@@ -64,11 +64,6 @@ static void swap(int *a, int *b)
   *b = tmp;
 }
 
-static bool check_multiple_vertices(const int e00, const int e01, const int e10, const int e11)
-{
-  return (e00 == e10 || e01 == e11 || e00 == e11 || e01 == e10);
-}
-
 void apsp_srand(const unsigned int seed)
 {
   srand(seed);
@@ -109,72 +104,8 @@ static bool check_length(const int v, const int w, const int height, const int l
   int w1 = WIDTH(w,height);
   int h1 = HEIGHT(w,height);
   int distance = abs(w0 - w1) + abs(h0 - h1);
-  
+
   return (distance <= length);
-}
-
-static void simple_2opt_grid(const int height, const int length, const int lines, int edge[lines][2])
-{
-  while(1){
-    int e0, e1;
-    do{
-      e0 = get_random(lines);
-      e1 = get_random(lines);
-    } while(check_multiple_vertices(edge[e0][0], edge[e0][1], edge[e1][0], edge[e1][1]));
-
-    if(get_random(2) == 0){
-      if(check_length(edge[e0][0], edge[e1][1], height, length) && check_length(edge[e0][1], edge[e1][0], height, length)){
-	swap(&edge[e0][1], &edge[e1][1]);
-	break;
-      }
-    }
-    else{
-      if(check_length(edge[e0][0], edge[e1][0], height, length) && check_length(edge[e0][1], edge[e1][1], height, length)){
-	swap(&edge[e0][1], &edge[e1][0]);
-	break;
-      }
-    }
-  }
-}
-
-// Inherited from http://research.nii.ac.jp/graphgolf/c/create-lattice.c
-void apsp_generate_random_grid(const int width, const int height, const int degree, const int length, int (*edge)[2])
-{
-  int nodes = width * height;
-  check_graph_parameters(nodes, degree);
-
-  int i = 0;
-  for(int x=0;x<width/2;x++){
-    for(int y=0;y<height;y++){
-      for(int k=0;k<degree;k++){
-        edge[i][0] = y + 2 * x * height;
-        edge[i][1] = edge[i][0] + height;
-        i++;
-      }
-    }
-  }
-
-  if(width%2 == 1){
-    for(int y=0;y<height/2;y++){
-      for(int k=0;k<degree;k++){
-        edge[i][0] = (width - 1) * height + 2 * y;
-        edge[i][1] = edge[i][0] + 1;
-        i++;
-      }
-    }
-
-    /* add self-loop */
-    if(height%2 == 1){
-      for(int k=0;k<degree/2;k++){
-        edge[i][0] = edge[i][1] = nodes - 1;
-        i++;
-      }
-    }
-  }
-
-  int lines = (nodes*degree)/2;
-  for(int i=0;i<lines*GEN_GRAPH_ITERS;i++)  // Give randomness
-    simple_2opt_grid(height, length, lines, edge);
 }
 
 void apsp_malloc(uint64_t **a, const size_t s, const bool enable_avx2)
@@ -957,7 +888,7 @@ static bool check_isolated_vertex(const int n[4], const int degree, const int (*
   return false;
 }
 
-void apsp_restore_adjacency(int adjacency[_nodes][_degree])
+void apsp_restore_adjacency(int (*adjacency)[_degree])
 {
   if(_r == 0){
     swap(&adjacency[_n[0]][_d[0]], &adjacency[_n[1]][_d[1]]);
@@ -974,22 +905,23 @@ void apsp_mutate_adjacency_general(const int nodes, const int degree, const int 
 {
   int elements = 4; 
   int n[elements], d[elements];
+  _degree = degree;
   while(1){
     while(1){
-      do{
+      while(1){
 	n[0] = get_random(nodes);
 	n[1] = get_random(nodes);
-      } while(n[0] == n[1]);
+	if(n[0] == n[1]) continue;
       
-      do{
 	d[0] = (!num_degrees)? get_random(degree) : get_random(num_degrees[n[0]]);
 	n[2] = adjacency[n[0]][d[0]];
-      } while(n[2] == n[1]);
+	if(n[2] == n[1]) continue;
       
-      do{
 	d[1] = (!num_degrees)? get_random(degree) : get_random(num_degrees[n[1]]);
 	n[3] = adjacency[n[1]][d[1]];
-      } while(n[3] == n[0]);
+	if(n[3] == n[0]) continue;
+	break;
+      }
       
       bool flag[2] = {false, false};
       if(n[0] == n[2]){ // loop
@@ -1026,13 +958,12 @@ void apsp_mutate_adjacency_general(const int nodes, const int degree, const int 
       if(!has_multiple_vertices(n[0], n[2], n[1], n[3])) break;
     }
 
+    // Backup for apsp_restore_adjacency()
     if(!_n) _n = malloc(sizeof(int)*elements);
     if(!_d) _d = malloc(sizeof(int)*elements);
     memcpy(_n, n, sizeof(int)*elements);
     memcpy(_d, d, sizeof(int)*elements);
     _r = get_random(2);
-    _nodes = nodes;
-    _degree = degree;
     
     if(_r == 0){
       swap(&adjacency[n[0]][d[0]], &adjacency[n[1]][d[1]]);
@@ -1050,6 +981,23 @@ void apsp_mutate_adjacency_general(const int nodes, const int degree, const int 
   }
 }
 
+void apsp_mutate_adjacency_grid(const int nodes, const int degree, const int *restrict num_degrees,
+				const int height, const int length, int adjacency[nodes][degree])
+{
+  while(1){
+    apsp_mutate_adjacency_general(nodes, degree, num_degrees, adjacency);
+    if(_r == 0 && check_length(_n[0], _n[3], height, length) && check_length(_n[1], _n[2], height, length)){
+      break;
+    }
+    else if(_r == 1 && check_length(_n[0], _n[1], height, length) && check_length(_n[2], _n[3], height, length)){
+      break;
+    }
+    else{
+      apsp_restore_adjacency(adjacency);
+    }
+  }
+}
+  
 void apsp_generate_random_general(const int nodes, const int degree, int (*edge)[2])
 {
   check_graph_parameters(nodes, degree);
@@ -1083,7 +1031,6 @@ void apsp_generate_random_general(const int nodes, const int degree, int (*edge)
     apsp_mutate_adjacency_general(nodes, degree, NULL, (int (*)[degree])adjacency);
 
   apsp_conv_adjacency2edge(nodes, degree, NULL, adjacency, edge);
-
   free(adjacency);
 }
 
@@ -1109,5 +1056,51 @@ void apsp_generate_random_general_s(const int nodes, const int degree, const int
   apsp_conv_edge2adjacency_s(nodes, (based_lines*symmetries), edge, symmetries, adjacency);
   // mutate_s x 100
   // adj 2 edge
+  free(adjacency);
+}
+
+// Inherited from http://research.nii.ac.jp/graphgolf/c/create-lattice.c
+void apsp_generate_random_grid(const int width, const int height, const int degree, const int length, int (*edge)[2])
+{
+  int nodes = width * height;
+  check_graph_parameters(nodes, degree);
+
+  int i = 0;
+  for(int x=0;x<width/2;x++){
+    for(int y=0;y<height;y++){
+      for(int k=0;k<degree;k++){
+        edge[i][0] = y + 2 * x * height;
+        edge[i][1] = edge[i][0] + height;
+        i++;
+      }
+    }
+  }
+
+  if(width%2 == 1){
+    for(int y=0;y<height/2;y++){
+      for(int k=0;k<degree;k++){
+        edge[i][0] = (width - 1) * height + 2 * y;
+        edge[i][1] = edge[i][0] + 1;
+        i++;
+      }
+    }
+
+    /* add self-loop */
+    if(height%2 == 1){
+      for(int k=0;k<degree/2;k++){
+        edge[i][0] = edge[i][1] = nodes - 1;
+        i++;
+      }
+    }
+  }
+
+  int lines = (nodes*degree)/2;
+  int *adjacency = malloc(sizeof(int)*nodes*degree);
+  apsp_conv_edge2adjacency(nodes, lines, edge, adjacency);
+
+  for(int i=0;i<lines*GEN_GRAPH_ITERS;i++)  // Give randomness
+    apsp_mutate_adjacency_grid(nodes, degree, NULL, height, length, (int (*)[degree])adjacency);
+
+  apsp_conv_adjacency2edge(nodes, degree, NULL, adjacency, edge);
   free(adjacency);
 }
