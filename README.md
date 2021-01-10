@@ -176,6 +176,22 @@ void apsp_write_edge_grid   (int lines, int height, int edge[lines][2], char *fn
 * [IN] height : Height of a grid graph.
 * [OUT] fname : File name of a graph.
 
+### Print an adjacency matrix
+```
+void apsp_print_adjacency(int nodes, int degree, int num_degrees[nodes], in adjacency[nodse][degree])
+```
+* [IN] nodes : Number of nodes in a graph.
+* [IN] degree : Degree in a graph.
+* [IN] num_degrees : Specify NULL for a regular graph. If not, specify the degrees for each vertex.
+* [IN] adjacency : Adjacency matrix of a graph.
+
+### Print an edge list
+```
+void apsp_print_edge(int lines, int edge[lines][2])
+```
+* [IN] lines : Number of lines in an edge list.
+* [IN] edge : Edge list of a graph.
+
 ### Convert an edge list to an adjacency matrix
 ```
 void apsp_conv_edge2adjacency(int nodes, int lines, int edge[lines][2], int adjacency[nodes][degree])

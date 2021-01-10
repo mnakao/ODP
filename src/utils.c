@@ -3,13 +3,23 @@ static int *_n = NULL;
 static int *_d = NULL;
 static int _r, _nodes, _degree;
 
-void apsp_print_adjacency(const int nodes, const int degree, const int adjacency[nodes][degree])
+void apsp_print_adjacency(const int nodes, const int degree, const int num_degrees[nodes], const int adjacency[nodes][degree])
 {
-  for(int i=0;i<nodes;i++){
-    for(int j=0;j<degree;j++){
-      printf("%3d", adjacency[i][j]);
+  if(!num_degrees){
+    for(int i=0;i<nodes;i++){
+      for(int j=0;j<degree;j++){
+	printf("%3d", adjacency[i][j]);
+      }
+      printf("\n");
     }
-    printf("\n");
+  }
+  else{
+    for(int i=0;i<nodes;i++){
+      for(int j=0;j<num_degrees[i];j++){
+        printf("%3d", adjacency[i][j]);
+      }
+      printf("\n");
+    }
   }
 }
 
