@@ -280,14 +280,14 @@ void ODP_Restore_adjacency(int adjacency[nodes][degree])
 ```
 int ODP_Get_lines(char* fname)
 ```
-* [RETURN] : Nnumber of lines in a file.
+* [RETURN] : Number of lines in a file.
 * [IN] fname : File name of a graph.
 
 ### Get the number of nodes in a graph
 ```
 int ODP_Get_nodes(int lines, int edge[lines][2])
 ```
-* [RETURN] : Nnumber of nodes in an edge list.
+* [RETURN] : Number of nodes in an edge list.
 * [IN] lines : Number of lines in an edge list.
 * [IN] edge : Edge list of a graph.
 
