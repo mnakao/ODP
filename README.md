@@ -375,6 +375,9 @@ The edges plus 6 (`= nodes/symmetries`) matches the 1st row in the next group (i
 Here, 19 + 6 = 25, but the number of nodes is 24, so it goes around and becomes 25 - 24 = 1.
 This rule holds for all groups.
 
+Therefore, in a graph with symmetric graph, the size of the adjacency matrix is `int adjacency[nodes/symmetries][degree]`.
+Since the edge list is used for input and output, the size is `int edge[lines][2]`, which is the same as a normal graph.
+
 ### Initialize
 These functions can be used instead of the ODP_Init_aspl\*().
 
