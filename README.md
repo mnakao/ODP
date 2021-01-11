@@ -388,7 +388,7 @@ void ODP_Init_aspl_mpi_cuda_s(int nodes, int degree, int num_degrees[nodes], MPI
 * [IN] comm : MPI communicator.
 * [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes. If it is 1, it works the same as ODP_Init_aspl\*().
 
-Note that the ODP_Finalize_aspl\*() can be used in common.
+Note that the ODP_Set_aspl\*() and ODP_Finalize_aspl\*() can be used in common.
 
 ### Convert an edge list to an adjacency matrix
 ```
