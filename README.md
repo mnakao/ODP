@@ -1,14 +1,14 @@
 ## Overview
-This software is to solve APSP (All Pairs Shortest Paths) for a noweight undirected graph.
+This software is to solve Order/Degree Problem for a noweight undirected graph.
 You can create following libraries.
-* libapsp.a : Serial version
-* libapsp_threads.a : Threads version
-* libapsp_mpi.a : MPI (Message passing Interface) version
-* libapsp_mpi_threads.a: MPI + Threads version
-* libapsp_cuda.a: CUDA (Compute Unified Device Architecture) version
-* libapsp_mpi_cuda.a: MPI + CUDA version
+* libodp.a : Serial version
+* libodp_threads.a : Threads version
+* libodp_mpi.a : MPI (Message passing Interface) version
+* libodp_mpi_threads.a: MPI + Threads version
+* libodp_cuda.a: CUDA (Compute Unified Device Architecture) version
+* libodp_mpi_cuda.a: MPI + CUDA version
 
-## Algotherm
+## Algotherm to obtain ASPL (Average Shortest Path Length)
 Please see the paper (Open Access).
 * https://dl.acm.org/doi/10.1145/3368474.3368478
 
@@ -33,8 +33,8 @@ _When you write a paper using this software, please refer to the paper._
 
 ## Quick start
 ```
-$ git clone https://github.com/mnakao/APSP.git
-$ cd APSP/src
+$ git clone https://github.com/mnakao/ODP.git
+$ cd ODP/src
 $ make
 $ cd ../samples
 $ make
@@ -48,13 +48,13 @@ ASPL Gap     = 0.1833333333 (1.9166666667 - 1.7333333333)
 
 ## How to create libraries
 ```
-$ cd APSP/src
+$ cd ODP/src
 $ make [serial|threads|mpi|mpi_threads|cuda|mpi_cuda|all]
 ```
  
 ## How to run sample programs
 ```
-$ cd APSP/sample
+$ cd ODP/sample
 $ make [serial|threads|mpi|mpi_threads|cuda|mpi_cuda|all]
 $ ./general.x ./graphs/general/n16d4.edges
 Nodes = 16, Degrees = 4
@@ -71,21 +71,21 @@ ASPL Gap     = 0.1833333333 (1.9166666667 - 1.7333333333)
 * Please see sample graphs in `./samples/graphs/` or http://research.nii.ac.jp/graphgolf/submit.html
 
 ## Environment variable
-### APSP=[NORMAL|SAVING]
+### ASPL=[NORMAL|SAVING]
 
-This library provides two types of APSP algorithms.
+This library provides two types of algorithms to obtain ASPL.
 One is `NORMAL`, the other is `SAVING`. `SAVING` is a memory-saving version.
 By default, `NORMAL` is automatically selected if the amount of memory used is
 lower than the value of `MEM_THRESHOLD` in `src/parameter.h`.
 This environment variable can specify the algorithm to use.
 
-### APSP_PROFILE=1
+### ASPL_PROFILE=1
 
-Output the performance profile for apsp\*_run(). 
-This profile is output when apsp\*_run_finalize() is executed.
+Output the performance profile for ODP_Set_aspl\*(). 
+This profile is output when ODP_Finalize_aspl\*() is executed.
 ```
-$ APSP=SAVING APSP_PROFILE=1 ./general.x ./graphs/general/n16d4.edges
------- Profile for APSP_RUN ------
+$ ASPL=SAVING ASPL_PROFILE=1 ./general.x ./graphs/general/n16d4.edges
+------ Profile for SET_ASPL ------
 Date            = Mon Jan  4 23:14:03 2021
 Hostname        = kiwi
 Number of Times = 1
@@ -107,11 +107,11 @@ ASPL Gap     = 0.1833333333 (1.9166666667 - 1.7333333333)
 The meaning of each item in the profile is as follows.
 * Date : The time when the profile was output.
 * Hostname : Name of the machine on which the program was run.
-* Number of Times : Number of times apsp\*_run() was executed.
-* Total Time : Total execution time of apsp\*_run()
-* Average Time : Average execution time of apsp\*_run()
+* Number of Times : Number of times ODP_Set_aspl\*() was executed.
+* Total Time : Total execution time of ODP_Set_aspl\*()
+* Average Time : Average execution time of ODP_Set_aspl\*()
 * Algorithm : NORMAL or SAVING. The parentheses are the types of libraries used. That is, SERIAL, THREADS, MPI, MPI+THREADS, CUDA, or MPI+CUDA.
-* Symmetries : When using apsp\*_run_init(), the value is 1. When using apsp\*_run_init_s(), the value is symmetries.
+* Symmetries : When using ODP_Init_aspl\*(), the value is 1. When using ODP_Initialize_aspl\*_s(), the value is symmetries.
 * Memory Usage : Amount of memory used in the library.
 * Num of Procs : Number of processes used in the library.
 * Num of Threads : Number of threads used in the library.
@@ -121,12 +121,12 @@ Note that there are no special functions for the threaded versions.
 Thread parallelization is performed automatically depending on the library to be linked.
 
 ### Initialize
-Perform the initialization process before running APSP.
+Perform the initialization process before setting ASPL.
 ```
-void apsp_run_init         (int nodes, int degree, int num_degrees[nodes])
-void apsp_mpi_run_init     (int nodes, int degree, int num_degrees[nodes], MPI_Comm comm)
-void apsp_cuda_run_init    (int nodes, int degree, int num_degrees[nodes])
-void apsp_mpi_cuda_run_init(int nodes, int degree, int num_degrees[nodes], MPI_Comm comm)
+void ODP_Init_aspl         (int nodes, int degree, int num_degrees[nodes])
+void ODP_Init_aspl_mpi     (int nodes, int degree, int num_degrees[nodes], MPI_Comm comm)
+void ODP_Init_aspl_cuda    (int nodes, int degree, int num_degrees[nodes])
+void ODP_Init_aspl_mpi_cuda(int nodes, int degree, int num_degrees[nodes], MPI_Comm comm)
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] degree: Degree in a graph.
@@ -134,21 +134,21 @@ void apsp_mpi_cuda_run_init(int nodes, int degree, int num_degrees[nodes], MPI_C
 * [IN] comm : MPI communicator.
 
 ### Finalize
-Release the resources allocated in apsp\*_run_init().
+Release the resources allocated in ODP_Init_aspl\*().
 ```
-void apsp_run_finalize()
-void apsp_mpi_run_finalize()
-void apsp_cuda_run_finalize()
-void apsp_mpi_cuda_run_finalize()
+void ODP_Finalize_aspl()
+void ODP_Finalize_aspl_mpi_run()
+void ODP_Finalize_aspl_cuda()
+void ODP_Finalize_aspl_mpi_cuda()
 ```
 
-### Run APSP
-Calculate APSP. Note that they must be executed between apsp\*_run_init() and apsp\*_run_finalize().
+### Set diameter, sum, and ASPL
+Set diameter, sum, and ASPL. Note that they must be executed between ODP_Init_aspl\*() and ODP_Finalize_aspl\*().
 ```
-void apsp_run         (int adjacency[nodes][degree], int *diameter, long *sum, double *ASPL)
-void apsp_mpi_run     (int adjacency[nodes][degree], int *diameter, long *sum, double *ASPL)
-void apsp_cuda_run    (int adjacency[nodes][degree], int *diameter, long *sum, double *ASPL)
-void apsp_mpi_cuda_run(int adjacency[nodes][degree], int *diameter, long *sum, double *ASPL)
+void ODP_Set_aspl         (int adjacency[nodes][degree], int *diameter, long *sum, double *ASPL)
+void ODP_Set_aspl_mpi     (int adjacency[nodes][degree], int *diameter, long *sum, double *ASPL)
+void ODP_Set_aspl_cuda    (int adjacency[nodes][degree], int *diameter, long *sum, double *ASPL)
+void ODP_Set_aspl_mpi_cuda(int adjacency[nodes][degree], int *diameter, long *sum, double *ASPL)
 ```
 * [IN] adjacency : Adjacency matrix of a graph.
 * [OUT] diameter : Diameter of a graph.
@@ -158,8 +158,8 @@ void apsp_mpi_cuda_run(int adjacency[nodes][degree], int *diameter, long *sum, d
 ## Utility
 ### Read an edge from a file
 ```
-void apsp_read_edge_general(char* fname, int edge[lines][2])
-void apsp_read_edge_grid   (char *fname, int *width, int *height, int edge[lines][2])
+void ODP_Read_edge_general(char* fname, int edge[lines][2])
+void ODP_Read_edge_grid   (char *fname, int *width, int *height, int edge[lines][2])
 ```
 * [IN] fname : File name of a graph.
 * [OUT] edge : Edge list of a graph.
@@ -168,8 +168,8 @@ void apsp_read_edge_grid   (char *fname, int *width, int *height, int edge[lines
 
 ### Write an edge to a file
 ```
-void apsp_write_edge_general(int lines, int edge[lines][2], char *fname)
-void apsp_write_edge_grid   (int lines, int height, int edge[lines][2], char *fname)
+void ODP_Write_edge_general(int lines, int edge[lines][2], char *fname)
+void ODP_Write_edge_grid   (int lines, int height, int edge[lines][2], char *fname)
 ```
 * [IN] lines : Number of lines in an edge list.
 * [IN] edge : Edge list of a graph.
@@ -178,7 +178,7 @@ void apsp_write_edge_grid   (int lines, int height, int edge[lines][2], char *fn
 
 ### Print an adjacency matrix
 ```
-void apsp_print_adjacency(int nodes, int degree, int num_degrees[nodes], in adjacency[nodse][degree])
+void ODP_Print_adjacency(int nodes, int degree, int num_degrees[nodes], in adjacency[nodse][degree])
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] degree : Degree in a graph.
@@ -187,14 +187,14 @@ void apsp_print_adjacency(int nodes, int degree, int num_degrees[nodes], in adja
 
 ### Print an edge list
 ```
-void apsp_print_edge(int lines, int edge[lines][2])
+void ODP_Print_edge(int lines, int edge[lines][2])
 ```
 * [IN] lines : Number of lines in an edge list.
 * [IN] edge : Edge list of a graph.
 
 ### Convert an edge list to an adjacency matrix
 ```
-void apsp_conv_edge2adjacency(int nodes, int lines, int edge[lines][2], int adjacency[nodes][degree])
+void ODP_Conv_edge2adjacency(int nodes, int lines, int edge[lines][2], int adjacency[nodes][degree])
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] lines : Number of lines in an edge list.
@@ -203,7 +203,7 @@ void apsp_conv_edge2adjacency(int nodes, int lines, int edge[lines][2], int adja
 
 ### Convert an adjacency matrix to an edge list
 ```
-void apsp_conv_adjacency2edge(int nodes, int degree, int num_degrees[nodes], int adjacency[nodes][degree], int edge[lines][2])
+void ODP_Conv_adjacency2edge(int nodes, int degree, int num_degrees[nodes], int adjacency[nodes][degree], int edge[lines][2])
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] degree : Degree in a graph.
@@ -213,8 +213,8 @@ void apsp_conv_adjacency2edge(int nodes, int degree, int num_degrees[nodes], int
 
 ### Set theoretical lower bounds
 ```
-void apsp_set_lbounds_general(int nodes, int degree, int *low_diameter, double *low_ASPL)
-void apsp_set_lbounds_grid   (int width, int height, int degree, int length, int *low_diameter, double *low_ASPL)
+void ODP_Set_lbounds_general(int nodes, int degree, int *low_diameter, double *low_ASPL)
+void ODP_Set_lbounds_grid   (int width, int height, int degree, int length, int *low_diameter, double *low_ASPL)
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] degree : Degree in a graph.
@@ -226,7 +226,7 @@ void apsp_set_lbounds_grid   (int width, int height, int degree, int length, int
 
 ### Set degrees for a non-regular graph
 ```
-void apsp_set_degrees(int nodes, int lines, int edge[lines][2], int num_degrees[nodes])
+void ODP_Set_degrees(int nodes, int lines, int edge[lines][2], int num_degrees[nodes])
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] lines : Number of lines in an edge list.
@@ -234,17 +234,17 @@ void apsp_set_degrees(int nodes, int lines, int edge[lines][2], int num_degrees[
 * [OUT] num_degrees : Degree in each vertex.
 
 ### Set the seed value for random number generation
-This function is executed before apsp_generate_random\*() and apsp_mutate_adjencency\*() that uses random numbers internally.
+This function is executed before ODP_Generate_random\*() and ODP_Mutate_adjencency\*() that uses random numbers internally.
 ```
-void apsp_srand(unsigned int seed)
+void ODP_Srand(unsigned int seed)
 ```
 * [IN] seed : Seed for random.
 
 ### Generate a random graph
 Generate a regular graph with randomly connected vertices. Note that the graph may contain multiple edges and loops.
 ```
-void apsp_generate_random_general(int nodes, int degree, int edge[lines][2])
-void apsp_generate_random_grid   (int width, int height, int degree, int length, int edge[lines][2])
+void ODP_Generate_random_general(int nodes, int degree, int edge[lines][2])
+void ODP_Generate_random_grid   (int width, int height, int degree, int length, int edge[lines][2])
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] degree : Degree in a graph.
@@ -256,8 +256,8 @@ void apsp_generate_random_grid   (int width, int height, int degree, int length,
 ### Mutate an adjacency matrix
 Mutate an adjacency matrix slightly. It is the same as applying the 2-opt method to the edge list corresponding to the adjacency matrix.
 ```
-void apsp_mutate_adjacency_general(int nodes, int degree, int num_degrees[nodes], int adjacency[nodes][degree])
-void apsp_mutate_adjacency_grid(int nodes, int degree, int num_degrees[nodes], int height, int length, int adjacency[nodes][degree])
+void ODP_Mutate_adjacency_general(int nodes, int degree, int num_degrees[nodes], int adjacency[nodes][degree])
+void ODP_Mutate_adjacency_grid(int nodes, int degree, int num_degrees[nodes], int height, int length, int adjacency[nodes][degree])
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] degree : Degree in a graph.
@@ -267,23 +267,23 @@ void apsp_mutate_adjacency_grid(int nodes, int degree, int num_degrees[nodes], i
 * [OUT] adjacency : Adjacency matrix of a graph.
 
 ### Restore an adjacency matrix
-Restore an adjacency matrix to the state it was in before the previous apsp_mutate_adjacency\*() was executed.
-However, only if the adjacency matrix has not been changed by an operation other than apsp_mutate_adjacency\*().
+Restore an adjacency matrix to the state it was in before the previous ODP_Mutate_adjacency\*() was executed.
+However, only if the adjacency matrix has not been changed by an operation other than ODP_Mutate_adjacency\*().
 ```
-void apsp_restore_adjacency(int adjacency[nodes][degree])
+void ODP_Restore_adjacency(int adjacency[nodes][degree])
 ```
 * [OUT] adjacency : Adjacency matrix of a graph.
 
 ### Get the number of lines in a file
 ```
-int apsp_get_lines(char* fname)
+int ODP_Get_lines(char* fname)
 ```
 * [RETURN] : Nnumber of lines in a file.
 * [IN] fname : File name of a graph.
 
 ### Get the number of nodes in a graph
 ```
-int apsp_get_nodes(int lines, int edge[lines][2])
+int ODP_Get_nodes(int lines, int edge[lines][2])
 ```
 * [RETURN] : Nnumber of nodes in an edge list.
 * [IN] lines : Number of lines in an edge list.
@@ -291,7 +291,7 @@ int apsp_get_nodes(int lines, int edge[lines][2])
 
 ### Get a degree in a graph
 ```
-int apsp_get_degree(int nodes, int lines, int edge[lines][2])
+int ODP_Get_degree(int nodes, int lines, int edge[lines][2])
 ```
 * [RETURN] : Degree in an edge list.
 * [IN] nodes : Number of nodes in a graph.
@@ -299,7 +299,7 @@ int apsp_get_degree(int nodes, int lines, int edge[lines][2])
 
 ### Get a maximum length for a grid graph
 ```
-int apsp_get_length(int lines, int edge[lines][2], int height)
+int ODP_Get_length(int lines, int edge[lines][2], int height)
 ```
 * [RETURN] : Maximum length in an edge list.
 * [IN] lines : Number of lines in an edge list.
@@ -308,14 +308,14 @@ int apsp_get_length(int lines, int edge[lines][2], int height)
 
 ### Check if an input file is a general graph
 ```
-bool apsp_check_general(char *fname)
+bool ODP_Check_general(char *fname)
 ```
 * [RETUREN] : When an input is a general graph, it returns true.
 * [IN] fname : File name of a graph.
 
 ### Check if a graph has multiple edges
 ```
-bool apsp_check_multiple_edges(int lines, int edge[lines][2])
+bool ODP_Check_multiple_edges(int lines, int edge[lines][2])
 ```
 * [RETURN] : If a graph has multiple edges, it returns true.
 * [IN] lines : Number of lines in an edge list.
@@ -323,7 +323,7 @@ bool apsp_check_multiple_edges(int lines, int edge[lines][2])
 
 ### Check if a graph has a self-loop
 ```
-bool apsp_check_loop(int lines, int edge[lines][2])
+bool ODP_Check_loop(int lines, int edge[lines][2])
 ```
 * [RETURN] : If a graph has a self-loop, it returns true.
 * [IN] lines : Number of lines in an edge list.
@@ -334,14 +334,14 @@ Return other values just by specifying fname and comm.
 Please see `samples/simple_general.c`.
 
 ```
-void apsp_all_run_general         (char *fname, int *nodes, int *degree, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
-void apsp_all_run_grid            (char *fname, int *width, int *height, int *degree, int *length, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
-void apsp_all_mpi_run_general     (char *fname, MPI_Comm comm, int *nodes, int *degree, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
-void apsp_all_mpi_run_grid        (char *fname, MPI_Comm comm, int *width, int *height, int *degree, int *length, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
-void apsp_all_cuda_run_general    (char *fname, int *nodes, int *degree, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
-void apsp_all_cuda_run_grid       (char *fname, int *width, int *height, int *degree, int *length, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
-void apsp_all_mpi_cuda_run_general(char *fname, MPI_Comm comm, int *nodes, int *degree, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
-void apsp_all_mpi_cuda_run_grid   (char *fname, MPI_Comm comm, int *width, int *height, int *degree, int *length, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
+void ODP_Set_aspl_general         (char *fname, int *nodes, int *degree, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
+void ODP_Set_aspl_grid            (char *fname, int *width, int *height, int *degree, int *length, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
+void ODP_Set_aspl_mpi_general     (char *fname, MPI_Comm comm, int *nodes, int *degree, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
+void ODP_Set_aspl_mpi_grid        (char *fname, MPI_Comm comm, int *width, int *height, int *degree, int *length, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
+void ODP_Set_aspl_cuda_general    (char *fname, int *nodes, int *degree, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
+void ODP_Set_aspl_cuda_grid       (char *fname, int *width, int *height, int *degree, int *length, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
+void ODP_Set_aspl_mpi_cuda_general(char *fname, MPI_Comm comm, int *nodes, int *degree, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
+void ODP_Set_aspl_mpi_cuda_grid   (char *fname, MPI_Comm comm, int *width, int *height, int *degree, int *length, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
 ```
 * [IN] fname : File name of a graph.
 * [IN] comm : MPI communicator.
@@ -374,41 +374,41 @@ Here, 19 + 6 = 25, but the number of nodes is 24, so it goes around and becomes 
 This rule holds for all groups.
 
 ### Initialize
-These functions can be used instead of the apsp\*_run_init() for only a general graph with symmetry.
+These functions can be used instead of the ODP_Init_aspl\*() for only a general graph with symmetry.
 
 ```
-void apsp_run_init_s         (int nodes, int degree, int num_degrees[nodes], int symmetries)
-void apsp_mpi_run_init_s     (int nodes, int degree, int num_degrees[nodes], MPI_Comm comm, int symmetries)
-void apsp_cuda_run_init_s    (int nodes, int degree, int num_degrees[nodes], int symmetries)
-void apsp_mpi_cuda_run_init_s(int nodes, int degree, int num_degrees[nodes], MPI_Comm comm, int symmetries)
+void ODP_Init_aspl_s         (int nodes, int degree, int num_degrees[nodes], int symmetries)
+void ODP_Init_aspl_mpi_s     (int nodes, int degree, int num_degrees[nodes], MPI_Comm comm, int symmetries)
+void ODP_Init_aspl_cuda_s    (int nodes, int degree, int num_degrees[nodes], int symmetries)
+void ODP_Init_aspl_mpi_cuda_s(int nodes, int degree, int num_degrees[nodes], MPI_Comm comm, int symmetries)
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] degree: Degree in a graph.
 * [IN] num_degrees : Specify NULL for a regular graph. If not, specify the degrees for each vertex.
 * [IN] comm : MPI communicator.
-* [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes. If it is 1, it works the same as apsp\*_run_init().
+* [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes. If it is 1, it works the same as ODP_Init_aspl\*().
 
-Note that the apsp\*_run_finalize() can be used in common.
+Note that the ODP_Finalize_aspl\*() can be used in common.
 
 ### Convert an edge list to an adjacency matrix
 ```
-void apsp_conv_edge2adjacency_s(int nodes, int lines, int edge[lines][2], int symmetries, int adjacency[nodes/symmetries][degree])
+void ODP_Conv_edge2adjacency_s(int nodes, int lines, int edge[lines][2], int symmetries, int adjacency[nodes/symmetries][degree])
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] lines : Number of lines in an edge list.
 * [IN] edge : Edge list of a graph.
-* [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes. If it is 1, it works the same as apsp_conv_edge2adjacency().
+* [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes. If it is 1, it works the same as ODP_Conv_edge2adjacency().
 * [OUT] adjacency : Adjacency matrix of a graph.
 
 ### Convert an adjacency matrix to an edge list
 ```
-void apsp_conv_adjacency2edge_s(int nodes, int degree, int num_degrees[nodes], int adjacency[nodes/symmetries][degree], int symmetries, int edge[lines][2])
+void ODP_Conv_adjacency2edge_s(int nodes, int degree, int num_degrees[nodes], int adjacency[nodes/symmetries][degree], int symmetries, int edge[lines][2])
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] degree: Degree in a graph.
 * [IN] num_degrees : Specify NULL for a regular graph. If not, specify the degrees for each vertex.
 * [IN] adjacency : Adjacency matrix of a graph.
-* [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes. If it is 1, it works the same as apsp_conv_adjacency2edge().
+* [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes. If it is 1, it works the same as ODP_Conv_adjacency2edge().
 * [OUT] edge : Edge list of a graph.
 
 ## Note

@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <mpi.h>
-#include "apsp.h"
+#include "odp.h"
 
 int main(int argc, char *argv[])
 {
@@ -16,11 +16,11 @@ int main(int argc, char *argv[])
     exit(1);
   }
     
-  apsp_all_mpi_cuda_run_general(argv[1], MPI_COMM_WORLD, &nodes, &degree,
+  ODP_Set_aspl_mpi_cuda_general(argv[1], MPI_COMM_WORLD, &nodes, &degree,
 				&low_diameter, &low_ASPL, &diameter, &sum, &ASPL);
 
   if(rank == 0){
-    apsp_set_lbounds_general(nodes, degree, &low_diameter, &low_ASPL);
+    ODP_Set_lbounds_general(nodes, degree, &low_diameter, &low_ASPL);
     printf("Nodes = %d, Degrees = %d\n", nodes, degree);
     printf("Diameter     = %d\n", diameter);
     printf("Diameter Gap = %d (%d - %d)\n", diameter - low_diameter, diameter, low_diameter);

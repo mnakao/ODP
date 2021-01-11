@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "apsp.h"
+#include "odp.h"
 
 int main(int argc, char *argv[])
 {
@@ -13,21 +13,21 @@ int main(int argc, char *argv[])
     exit(1);
   }
   
-  int lines = apsp_get_lines(argv[1]);
+  int lines = ODP_Get_lines(argv[1]);
   int (*edge)[2] = malloc(sizeof(int)*lines*2); // int edge[lines][2];
-  apsp_read_edge_grid(argv[1], &width, &height, edge);
-  int nodes  = apsp_get_nodes(lines, edge);
-  int degree = apsp_get_degree(nodes, lines, edge);
+  ODP_Read_edge_grid(argv[1], &width, &height, edge);
+  int nodes  = ODP_Get_nodes(lines, edge);
+  int degree = ODP_Get_degree(nodes, lines, edge);
 
   int (*adjacency)[degree] = malloc(sizeof(int) * nodes * degree); // int adjacency[nodes][degree];
-  apsp_conv_edge2adjacency(nodes, lines, edge, adjacency);
+  ODP_Conv_edge2adjacency(nodes, lines, edge, adjacency);
 
-  apsp_run_init(nodes, degree, NULL);
-  apsp_run(adjacency, &diameter, &sum, &ASPL);
-  apsp_run_finalize();
+  ODP_Init_aspl(nodes, degree, NULL);
+  ODP_Set_aspl(adjacency, &diameter, &sum, &ASPL);
+  ODP_Finalize_aspl();
 
-  int length = apsp_get_length(lines, edge, height);
-  apsp_set_lbounds_grid(width, height, degree, length, &low_diameter, &low_ASPL);
+  int length = ODP_Get_length(lines, edge, height);
+  ODP_Set_lbounds_grid(width, height, degree, length, &low_diameter, &low_ASPL);
   printf("Width = %d, Height = %d, Length = %d, Degrees = %d\n", width, height, length, degree);
   printf("Diameter     = %d\n", diameter);
   printf("Diameter Gap = %d (%d - %d)\n", diameter - low_diameter, diameter, low_diameter);

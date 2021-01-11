@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "apsp.h"
+#include "odp.h"
 
 int main()
 {
@@ -10,14 +10,14 @@ int main()
   // ../data/general/n12d3.random.edges
   
   int adjacency[nodes][degree];
-  apsp_conv_edge2adjacency(nodes, lines, edge, adjacency);
+  ODP_Conv_edge2adjacency(nodes, lines, edge, adjacency);
   // adjacency[][] = {{10,3,4}, {8,3,7}, {8,9,6}, {0,1,5}, {0,9,10}, {3,11,6}, {2,5,7}, {1,6,11}, {1,2,11}, {2,4,10}, {0,4,9}, {5,7,8}};
 
-  apsp_run_init(nodes, degree, NULL);
-  apsp_run(adjacency, &diameter, &sum, &ASPL);
-  apsp_run_finalize();
+  ODP_Init_aspl(nodes, degree, NULL);
+  ODP_Set_aspl(adjacency, &diameter, &sum, &ASPL);
+  ODP_Finalize_aspl();
 
-  apsp_set_lbounds_general(nodes, degree, &low_diameter, &low_ASPL);
+  ODP_Set_lbounds_general(nodes, degree, &low_diameter, &low_ASPL);
   printf("Nodes = %d, Degrees = %d\n", nodes, degree);
   printf("Diameter     = %d\n", diameter);
   printf("Diameter Gap = %d (%d - %d)\n", diameter - low_diameter, diameter, low_diameter);

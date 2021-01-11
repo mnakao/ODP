@@ -28,8 +28,8 @@
 #define WIDTH(v, height) (v/height)
 #define HEIGHT(v, height) (v%height)
 #define UINT64_BITS 64
-#define APSP_NORMAL 1
-#define APSP_SAVING 2
+#define ASPL_NORMAL 1
+#define ASPL_SAVING 2
 #define NOT_VISITED 0
 #define VISITED     1
 
@@ -39,15 +39,15 @@
 #define POPCNT(a) _mm_popcnt_u64(a)
 #endif
 
-extern void apsp_set_lbounds_general(const int nodes, const int degree, int *low_diameter, double *low_ASPL);
-extern void apsp_set_lbounds_grid(const int m, const int n, const int degree, const int length, int *low_diameter, double *low_ASPL);
-extern void apsp_set_degrees(const int nodes, const int lines, int (*edge)[2], int* num_degrees);
-extern void apsp_read_edge_general(const char* fname, int (*edge)[2]);
-extern void apsp_read_edge_grid(const char *fname, int *w, int *h, int (*edge)[2]);
-extern void apsp_conv_edge2adjacency(const int nodes, const int lines, const int (*edge)[2], int *adjacency);
-extern void apsp_conv_adjacency2edge(const int nodes, const int degree, const int *num_degrees, const int *adjacency, int (*edge)[2]);
-extern int apsp_get_lines(const char* fname);
-extern int apsp_get_nodes(const int lines, const int (*edge)[2]);
-extern int apsp_get_degree(const int nodes, const int lines, const int (*edge)[2]);
-extern int apsp_get_length(const int lines, const int (*edge)[2], const int height);
+extern void ODP_Set_lbounds_general(const int nodes, const int degree, int *low_diameter, double *low_ASPL);
+extern void ODP_Set_lbounds_grid(const int m, const int n, const int degree, const int length, int *low_diameter, double *low_ASPL);
+extern void ODP_Set_degrees(const int nodes, const int lines, int (*edge)[2], int* num_degrees);
+extern void ODP_Read_edge_general(const char* fname, int (*edge)[2]);
+extern void ODP_Read_edge_grid(const char *fname, int *w, int *h, int (*edge)[2]);
+extern void ODP_Conv_edge2adjacency(const int nodes, const int lines, const int (*edge)[2], int *adjacency);
+extern void ODP_Conv_adjacency2edge(const int nodes, const int degree, const int *num_degrees, const int *adjacency, int (*edge)[2]);
+extern int ODP_Get_lines(const char* fname);
+extern int ODP_Get_nodes(const int lines, const int (*edge)[2]);
+extern int ODP_Get_degree(const int nodes, const int lines, const int (*edge)[2]);
+extern int ODP_Get_length(const int lines, const int (*edge)[2], const int height);
 #endif

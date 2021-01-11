@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <mpi.h>
-#include "apsp.h"
+#include "odp.h"
 
 int main(int argc, char *argv[])
 {
@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
     exit(1);
   }
 
-  apsp_all_mpi_run_grid(argv[1], MPI_COMM_WORLD, &width, &height, &degree, &length,
+  ODP_Set_aspl_mpi_grid(argv[1], MPI_COMM_WORLD, &width, &height, &degree, &length,
 			&low_diameter, &low_ASPL, &diameter, &sum, &ASPL);
 
   if(rank == 0){

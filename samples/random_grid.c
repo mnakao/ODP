@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "apsp.h"
+#include "odp.h"
 
 int main()
 {
@@ -12,23 +12,23 @@ int main()
   char *fname="grid.edges";
 
   int (*edge)[2] = malloc(sizeof(int)*lines*2); // int edge[lines][2];
-  apsp_srand(1);
-  apsp_generate_random_grid(width, height, degree, length, edge);
+  ODP_Srand(1);
+  ODP_Generate_random_grid(width, height, degree, length, edge);
   int (*adjacency)[degree] = malloc(sizeof(int) * nodes * degree); // int adjacency[nodes][degree];
-  apsp_conv_edge2adjacency(nodes, lines, edge, adjacency);
+  ODP_Conv_edge2adjacency(nodes, lines, edge, adjacency);
 
-  apsp_run_init(nodes, degree, NULL);
-  apsp_run(adjacency, &diameter, &sum, &ASPL);
-  apsp_run_finalize();
+  ODP_Init_aspl(nodes, degree, NULL);
+  ODP_Set_aspl(adjacency, &diameter, &sum, &ASPL);
+  ODP_Finalize_aspl();
 
-  apsp_set_lbounds_grid(width, height, degree, length, &low_diameter, &low_ASPL);
+  ODP_Set_lbounds_grid(width, height, degree, length, &low_diameter, &low_ASPL);
   printf("Width = %d, Height = %d, Length = %d, Degrees = %d\n", width, height, length, degree);
   printf("Diameter     = %d\n", diameter);
   printf("Diameter Gap = %d (%d - %d)\n", diameter - low_diameter, diameter, low_diameter);
   printf("ASPL         = %.10f (%ld/%.0f)\n", ASPL, sum, (double)nodes*(nodes-1)/2);
   printf("ASPL Gap     = %.10f (%.10f - %.10f)\n", ASPL - low_ASPL, ASPL, low_ASPL);
 
-  apsp_write_edge_grid(lines, height, edge, fname);
+  ODP_Write_edge_grid(lines, height, edge, fname);
   printf("Generate ./%s\n", fname);
   
   free(edge);

@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "apsp.h"
+#include "odp.h"
 
 int main(int argc, char *argv[])
 {
@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
     exit(1);
   }
 
-  apsp_all_cuda_run_grid(argv[1], &width, &height, &degree, &length,
+  ODP_Set_aspl_cuda_grid(argv[1], &width, &height, &degree, &length,
 			 &low_diameter, &low_ASPL, &diameter, &sum, &ASPL);
     
   printf("Width = %d, Height = %d, Length = %d, Degrees = %d\n", width, height, length, degree);

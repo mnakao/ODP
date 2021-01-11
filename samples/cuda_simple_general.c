@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "apsp.h"
+#include "odp.h"
 
 int main(int argc, char *argv[])
 {
@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
     exit(1);
   }
   
-  apsp_all_cuda_run_general(argv[1], &nodes, &degree, &low_diameter, &low_ASPL, &diameter, &sum, &ASPL);
+  ODP_Set_aspl_cuda_general(argv[1], &nodes, &degree, &low_diameter, &low_ASPL, &diameter, &sum, &ASPL);
    
   printf("Nodes = %d, Degrees = %d\n", nodes, degree);
   printf("Diameter     = %d\n", diameter);

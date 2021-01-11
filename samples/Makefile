@@ -15,12 +15,12 @@ CUDA_FLAGS=-O3
 CUDA_MPIBIN=-ccbin mpicc
 
 ##############
-LIBS=../src/libapsp.a -lm
-THREADS_LIBS=../src/libapsp_threads.a -lm
-MPI_LIBS=../src/libapsp_mpi.a -lm
-MPI_THREADS_LIBS=../src/libapsp_mpi_threads.a -lm
-CUDA_LIBS=../src/libapsp_cuda.a -lcuda -lm
-MPI_CUDA_LIBS=../src/libapsp_mpi_cuda.a -lcuda -lm
+LIBS=../src/libodp.a -lm
+THREADS_LIBS=../src/libodp_threads.a -lm
+MPI_LIBS=../src/libodp_mpi.a -lm
+MPI_THREADS_LIBS=../src/libodp_mpi_threads.a -lm
+CUDA_LIBS=../src/libodp_cuda.a -lcuda -lm
+MPI_CUDA_LIBS=../src/libodp_mpi_cuda.a -lcuda -lm
 TEST_GENERAL=n12d3.edges n16d4.edges n72d4.edges n100d10.edges n256d5.edges n256d10.edges
 TEST_GRID=w4h4d3r2.edges w5h5d4r2.edges w10h10d6r3.edges w10h10d8r4.edges
 TMP := $(shell mktemp)
@@ -33,68 +33,68 @@ cuda:        cuda_general.x cuda_grid.x cuda_simple_general.x cuda_simple_grid.x
 mpi_cuda:    mpi_cuda_general.x mpi_cuda_grid.x mpi_cuda_simple_general.x mpi_cuda_simple_grid.x
 all: serial threads mpi mpi_threads cuda mpi_cuda
 ##############
-general.x: general.c apsp.h
+general.x: general.c odp.h
 	$(CC) $(CFLAGS) -o $@ $< $(LIBS)
-grid.x: grid.c apsp.h
+grid.x: grid.c odp.h
 	$(CC) $(CFLAGS) -o $@ $< $(LIBS)
-non_regular_general.x: non_regular_general.c apsp.h
+non_regular_general.x: non_regular_general.c odp.h
 	$(CC) $(CFLAGS) -o $@ $< $(LIBS)
-regular_general.x: regular_general.c apsp.h
+regular_general.x: regular_general.c odp.h
 	$(CC) $(CFLAGS) -o $@ $< $(LIBS)
-random_general.x: random_general.c apsp.h
+random_general.x: random_general.c odp.h
 	$(CC) $(CFLAGS) -o $@ $< $(LIBS)
-random_grid.x: random_grid.c apsp.h
+random_grid.x: random_grid.c odp.h
 	$(CC) $(CFLAGS) -o $@ $< $(LIBS)
-simple_general.x: simple_general.c apsp.h
+simple_general.x: simple_general.c odp.h
 	$(CC) $(CFLAGS) -o $@ $< $(LIBS)
-simple_grid.x: simple_grid.c apsp.h
+simple_grid.x: simple_grid.c odp.h
 	$(CC) $(CFLAGS) -o $@ $< $(LIBS)
-sa_general.x: sa_general.c apsp.h
+sa_general.x: sa_general.c odp.h
 	$(CC) $(CFLAGS) -o $@ $< $(LIBS)
 ##############
-threads_general.x: general.c apsp.h
+threads_general.x: general.c odp.h
 	$(CC) $(CFLAGS) $(OMP_FLAGS) -o $@ $< $(THREADS_LIBS)
-threads_grid.x: grid.c apsp.h
+threads_grid.x: grid.c odp.h
 	$(CC) $(CFLAGS) $(OMP_FLAGS) -o $@ $< $(THREADS_LIBS)
-threads_simple_general.x: simple_general.c apsp.h
+threads_simple_general.x: simple_general.c odp.h
 	$(CC) $(CFLAGS) $(OMP_FLAGS) -o $@ $< $(THREADS_LIBS)
-threads_simple_grid.x: simple_grid.c apsp.h
+threads_simple_grid.x: simple_grid.c odp.h
 	$(CC) $(CFLAGS) $(OMP_FLAGS) -o $@ $< $(THREADS_LIBS)
 ##############
-mpi_general.x: mpi_general.c apsp.h
+mpi_general.x: mpi_general.c odp.h
 	$(MPICC) $(CFLAGS) -o $@ $< $(MPI_LIBS)
-mpi_grid.x: mpi_grid.c apsp.h
+mpi_grid.x: mpi_grid.c odp.h
 	$(MPICC) $(CFLAGS) -o $@ $< $(MPI_LIBS)
-mpi_simple_general.x: mpi_simple_general.c apsp.h
+mpi_simple_general.x: mpi_simple_general.c odp.h
 	$(MPICC) $(CFLAGS) -o $@ $< $(MPI_LIBS)
-mpi_simple_grid.x: mpi_simple_grid.c apsp.h
+mpi_simple_grid.x: mpi_simple_grid.c odp.h
 	$(MPICC) $(CFLAGS) -o $@ $< $(MPI_LIBS)
 ##############
-mpi_threads_general.x: mpi_general.c apsp.h
+mpi_threads_general.x: mpi_general.c odp.h
 	$(MPICC) $(CFLAGS) $(OMP_FLAGS) -o $@ $< $(MPI_THREADS_LIBS)
-mpi_threads_grid.x: mpi_grid.c apsp.h
+mpi_threads_grid.x: mpi_grid.c odp.h
 	$(MPICC) $(CFLAGS) $(OMP_FLAGS) -o $@ $< $(MPI_THREADS_LIBS)
-mpi_threads_simple_general.x: mpi_simple_general.c apsp.h
+mpi_threads_simple_general.x: mpi_simple_general.c odp.h
 	$(MPICC) $(CFLAGS) $(OMP_FLAGS) -o $@ $< $(MPI_THREADS_LIBS)
-mpi_threads_simple_grid.x: mpi_simple_grid.c apsp.h
+mpi_threads_simple_grid.x: mpi_simple_grid.c odp.h
 	$(MPICC) $(CFLAGS) $(OMP_FLAGS) -o $@ $< $(MPI_THREADS_LIBS)
 ##############
-cuda_general.x: cuda_general.c apsp.h
+cuda_general.x: cuda_general.c odp.h
 	$(NVCC) $(CUDA_FLAGS) -o $@ $< $(CUDA_LIBS) $(CUDA_BIN)
-cuda_grid.x: cuda_grid.c apsp.h
+cuda_grid.x: cuda_grid.c odp.h
 	$(NVCC) $(CUDA_FLAGS) -o $@ $< $(CUDA_LIBS) $(CUDA_BIN)
-cuda_simple_general.x: cuda_simple_general.c apsp.h
+cuda_simple_general.x: cuda_simple_general.c odp.h
 	$(NVCC) $(CUDA_FLAGS) -o $@ $< $(CUDA_LIBS) $(CUDA_BIN)
-cuda_simple_grid.x: cuda_simple_grid.c apsp.h
+cuda_simple_grid.x: cuda_simple_grid.c odp.h
 	$(NVCC) $(CUDA_FLAGS) -o $@ $< $(CUDA_LIBS) $(CUDA_BIN)
 ##############
-mpi_cuda_general.x: mpi_cuda_general.c apsp.h
+mpi_cuda_general.x: mpi_cuda_general.c odp.h
 	$(NVCC) $(CUDA_FLAGS) -o $@ $< $(MPI_CUDA_LIBS) $(CUDA_MPIBIN)
-mpi_cuda_grid.x: mpi_cuda_grid.c apsp.h
+mpi_cuda_grid.x: mpi_cuda_grid.c odp.h
 	$(NVCC) $(CUDA_FLAGS) -o $@ $< $(MPI_CUDA_LIBS) $(CUDA_MPIBIN)
-mpi_cuda_simple_general.x: mpi_cuda_simple_general.c apsp.h
+mpi_cuda_simple_general.x: mpi_cuda_simple_general.c odp.h
 	$(NVCC) $(CUDA_FLAGS) -o $@ $< $(MPI_CUDA_LIBS) $(CUDA_MPIBIN)
-mpi_cuda_simple_grid.x: mpi_cuda_simple_grid.c apsp.h
+mpi_cuda_simple_grid.x: mpi_cuda_simple_grid.c odp.h
 	$(NVCC) $(CUDA_FLAGS) -o $@ $< $(MPI_CUDA_LIBS) $(CUDA_MPIBIN)
 ##############
 test: serial_test

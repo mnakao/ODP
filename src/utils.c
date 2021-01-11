@@ -3,7 +3,7 @@ static int *_n = NULL;
 static int *_d = NULL;
 static int _r, _degree;
 
-void apsp_print_adjacency(const int nodes, const int degree, const int num_degrees[nodes], const int adjacency[nodes][degree])
+void ODP_Print_adjacency(const int nodes, const int degree, const int num_degrees[nodes], const int adjacency[nodes][degree])
 {
   if(!num_degrees){
     for(int i=0;i<nodes;i++){
@@ -23,22 +23,22 @@ void apsp_print_adjacency(const int nodes, const int degree, const int num_degre
   }
 }
 
-void apsp_print_edge(const int lines, const int edge[lines][2])
+void ODP_Print_edge(const int lines, const int edge[lines][2])
 {
   for(int i=0;i<lines;i++)
     printf("%d %d\n", edge[i][0], edge[i][1]);
 }
 
-double apsp_get_time()
+double ODP_Get_time()
 {
   struct timeval t;
   gettimeofday(&t, NULL);
   return t.tv_sec + 1.0e-6 * t.tv_usec;
 }
 
-bool apsp_check_profile()
+bool ODP_Check_profile()
 {
-  char *val = getenv("APSP_PROFILE");
+  char *val = getenv("ASPL_PROFILE");
   if(val){
     if(atoi(val) == 1)
       return true;
@@ -64,12 +64,12 @@ static void swap(int *a, int *b)
   *b = tmp;
 }
 
-void apsp_srand(const unsigned int seed)
+void ODP_Srand(const unsigned int seed)
 {
   srand(seed);
 }
 
-void apsp_write_edge_general(const int lines, const int edge[lines][2], char *fname)
+void ODP_Write_edge_general(const int lines, const int edge[lines][2], char *fname)
 {
   FILE *fp = NULL;
   
@@ -82,7 +82,7 @@ void apsp_write_edge_general(const int lines, const int edge[lines][2], char *fn
   fclose(fp);
 }
 
-void apsp_write_edge_grid(const int lines, const int height, const int edge[lines][2], char *fname)
+void ODP_Write_edge_grid(const int lines, const int height, const int edge[lines][2], char *fname)
 {
   FILE *fp = NULL;
 
@@ -108,7 +108,7 @@ static bool check_length(const int v, const int w, const int height, const int l
   return (distance <= length);
 }
 
-void apsp_malloc(uint64_t **a, const size_t s, const bool enable_avx2)
+void ODP_Malloc(uint64_t **a, const size_t s, const bool enable_avx2)
 {
   if(enable_avx2)
     *a = _mm_malloc(s, ALIGN_VALUE);
@@ -116,7 +116,7 @@ void apsp_malloc(uint64_t **a, const size_t s, const bool enable_avx2)
     posix_memalign((void **)a, ALIGN_VALUE, s);
 }
 
-void apsp_free(uint64_t *a, const bool enable_avx2)
+void ODP_Free(uint64_t *a, const bool enable_avx2)
 {
   if(enable_avx2)
     _mm_free(a);
@@ -262,9 +262,9 @@ static void matmul_regular_s(const uint64_t *restrict A, uint64_t *restrict B, c
   }
 }
 
-void apsp_matmul(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
-		 const int *restrict num_degrees, const int *restrict adjacency, const bool enable_avx2,
-		 const int elements, const int symmetries)
+void ODP_Matmul(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
+		const int *restrict num_degrees, const int *restrict adjacency, const bool enable_avx2,
+		const int elements, const int symmetries)
 {
   if(symmetries == 1){
     if(enable_avx2){
@@ -424,8 +424,8 @@ static void matmul_regular_CHUNK_s(const uint64_t *restrict A, uint64_t *restric
   }
 }
 
-void apsp_matmul_CHUNK(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
-		       const int *num_degrees, const int *restrict adjacency, const bool enable_avx2, const int symmetries)
+void ODP_Matmul_CHUNK(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
+		      const int *num_degrees, const int *restrict adjacency, const bool enable_avx2, const int symmetries)
 {
   if(symmetries == 1){
     if(enable_avx2){
@@ -449,12 +449,12 @@ void apsp_matmul_CHUNK(const uint64_t *restrict A, uint64_t *restrict B, const i
   }
 }
 
-double apsp_get_mem_usage(const int kind, const int nodes, const int degree, const int symmetries,
-			  const int *num_degrees, const int procs, const bool is_cpu)
+double ODP_Get_mem_usage(const int kind, const int nodes, const int degree, const int symmetries,
+			 const int *num_degrees, const int procs, const bool is_cpu)
 {
   int Mbyte = 1024*1024;
   int chunk = (is_cpu)? CPU_CHUNK : GPU_CHUNK;
-  double AB_mem = (kind == APSP_NORMAL)? (nodes*((double)nodes/(4*symmetries*procs))) : (double)16*nodes*chunk;
+  double AB_mem = (kind == ASPL_NORMAL)? (nodes*((double)nodes/(4*symmetries*procs))) : (double)16*nodes*chunk;
 
   if(is_cpu){
     return AB_mem/Mbyte;
@@ -467,41 +467,41 @@ double apsp_get_mem_usage(const int kind, const int nodes, const int degree, con
   }
 }
 
-int apsp_get_kind(const int nodes, const int degree, const int* num_degrees, const int symmetries,
-		  const int procs, const int is_cpu)
+int ODP_Get_kind(const int nodes, const int degree, const int* num_degrees, const int symmetries,
+		 const int procs, const int is_cpu)
 {
-  char *val = getenv("APSP");
+  char *val = getenv("ASPL");
   int kind;
   if(val == NULL){
-    double normal_mem_usage = apsp_get_mem_usage(APSP_NORMAL, nodes, degree, symmetries, num_degrees, procs, is_cpu);
+    double normal_mem_usage = ODP_Get_mem_usage(ASPL_NORMAL, nodes, degree, symmetries, num_degrees, procs, is_cpu);
     if(normal_mem_usage <= MEM_THRESHOLD)
-      kind = APSP_NORMAL;
+      kind = ASPL_NORMAL;
     else
-      kind = APSP_SAVING;
+      kind = ASPL_SAVING;
   }
   else if(strcmp(val, "NORMAL") == 0){
-    kind = APSP_NORMAL;
+    kind = ASPL_NORMAL;
   }
   else if(strcmp(val, "SAVING") == 0){
-    kind = APSP_SAVING;
+    kind = ASPL_SAVING;
   }
   else{
-    ERROR("Unknown APSP value (%s)\n", val);
+    ERROR("Unknown ASPL value (%s)\n", val);
   }
 
   return kind;
 }
 
-void apsp_profile(const char* name, const int kind, const int symmetries, const double mem_usage,
-		  const double elapsed_time, const unsigned int times, const int procs)
+void ODP_Profile(const char* name, const int kind, const int symmetries, const double mem_usage,
+		 const double elapsed_time, const unsigned int times, const int procs)
 {
   char kind_name[7], hostname[MAX_HOSTNAME_LENGTH];
-  if(kind == APSP_NORMAL) strcpy(kind_name, "NORMAL");
+  if(kind == ASPL_NORMAL) strcpy(kind_name, "NORMAL");
   else                    strcpy(kind_name, "SAVING");
   gethostname(hostname, sizeof(hostname));
   time_t t = time(NULL);
   
-  printf("------ Profile for APSP_RUN ------\n");
+  printf("------ Profile for SET_ASPL ------\n");
   printf("Date            = %s", ctime(&t));
   printf("Hostname        = %s\n", hostname);
   printf("Number of Times = %d\n", times);
@@ -519,7 +519,7 @@ void apsp_profile(const char* name, const int kind, const int symmetries, const 
   printf("--------- End of Profile ---------\n");
 }
 
-bool apsp_check_loop(const int lines, int edge[lines][2])
+bool ODP_Check_loop(const int lines, int edge[lines][2])
 {
   for(int i=0;i<lines;i++)
     if(edge[i][0] == edge[i][1]){
@@ -535,7 +535,7 @@ static bool has_multiple_edges(const int e00, const int e01, const int e10, cons
   return ((e00 == e10 && e01 == e11) || (e00 == e11 && e01 == e10));
 }
 
-bool apsp_check_multiple_edges(const int lines, int edge[lines][2])
+bool ODP_Check_multiple_edges(const int lines, int edge[lines][2])
 {
   for(int i=0;i<lines;i++)
     for(int j=i+1;j<lines;j++)
@@ -547,7 +547,7 @@ bool apsp_check_multiple_edges(const int lines, int edge[lines][2])
   return false;
 }
 
-int apsp_get_length(const int lines, const int edge[lines][2], const int height)
+int ODP_Get_length(const int lines, const int edge[lines][2], const int height)
 {
   int length = 0;
   for(int i=0;i<lines;i++)
@@ -556,7 +556,7 @@ int apsp_get_length(const int lines, const int edge[lines][2], const int height)
   return length;
 }
 
-bool apsp_check_general(char *fname)
+bool ODP_Check_general(char *fname)
 {
   FILE *fp;
   if((fp = fopen(fname, "r")) == NULL)
@@ -569,7 +569,7 @@ bool apsp_check_general(char *fname)
   return (n2 != -1)? true : false;
 }
 
-int apsp_get_degree(const int nodes, const int lines, const int edge[lines][2])
+int ODP_Get_degree(const int nodes, const int lines, const int edge[lines][2])
 {
   int node[nodes];
   for(int i=0;i<nodes;i++)
@@ -587,7 +587,7 @@ int apsp_get_degree(const int nodes, const int lines, const int edge[lines][2])
   return degree;
 }
 
-int apsp_get_nodes(const int lines, const int (*edge)[2])
+int ODP_Get_nodes(const int lines, const int (*edge)[2])
 {
   int max = 0;
   for(int i=0;i<lines;i++){
@@ -598,7 +598,7 @@ int apsp_get_nodes(const int lines, const int (*edge)[2])
   return max + 1;
 }
 
-int apsp_get_lines(const char* fname)
+int ODP_Get_lines(const char* fname)
 {
   FILE *fp = NULL;
   if((fp = fopen(fname, "r")) == NULL)
@@ -614,7 +614,7 @@ int apsp_get_lines(const char* fname)
   return lines;
 }
 
-void apsp_read_edge_general(const char* fname, int (*edge)[2])
+void ODP_Read_edge_general(const char* fname, int (*edge)[2])
 {
   FILE *fp;
   if((fp = fopen(fname, "r")) == NULL)
@@ -630,7 +630,7 @@ void apsp_read_edge_general(const char* fname, int (*edge)[2])
   fclose(fp);
 }
 
-void apsp_read_edge_grid(const char *fname, int *w, int *h, int (*edge)[2])
+void ODP_Read_edge_grid(const char *fname, int *w, int *h, int (*edge)[2])
 {
   FILE *fp;
   if((fp = fopen(fname, "r")) == NULL)
@@ -660,7 +660,7 @@ void apsp_read_edge_grid(const char *fname, int *w, int *h, int (*edge)[2])
 }
 
 // This function is inherited from "http://research.nii.ac.jp/graphgolf/py/create-random.py".
-void apsp_set_lbounds_general(const int nodes, const int degree, int *low_diameter, double *low_ASPL)
+void ODP_Set_lbounds_general(const int nodes, const int degree, int *low_diameter, double *low_ASPL)
 {
   int diam = -1, n = 1, r = 1;
   double aspl = 0.0;
@@ -689,7 +689,7 @@ static int dist(const int x1, const int y1, const int x2, const int y2)
 }
 
 // This function is inherited from "http://research.nii.ac.jp/graphgolf/pl/lower-lattice.pl".
-void apsp_set_lbounds_grid(const int m, const int n, const int degree, const int length, int *low_diameter, double *low_ASPL)
+void ODP_Set_lbounds_grid(const int m, const int n, const int degree, const int length, int *low_diameter, double *low_ASPL)
 {
   int moore[m*n], hist[m*n], mh[m*n];
   int mn = m * n, current = degree, ii;
@@ -739,8 +739,8 @@ void apsp_set_lbounds_grid(const int m, const int n, const int degree, const int
   *low_ASPL     = sum/((double)mn*(mn-1));
 }
 
-void apsp_conv_adjacency2edge(const int nodes, const int degree, const int *num_degrees,
-			      const int *adjacency, int (*edge)[2])
+void ODP_Conv_adjacency2edge(const int nodes, const int degree, const int *num_degrees,
+			     const int *adjacency, int (*edge)[2])
 {
   char (*tmp)[degree] = malloc(sizeof(char) * nodes * degree);
   for(int i=0;i<nodes;i++)
@@ -784,14 +784,14 @@ void apsp_conv_adjacency2edge(const int nodes, const int degree, const int *num_
   free(tmp);
 }
 
-void apsp_conv_edge2adjacency(const int nodes, const int lines, const int edge[lines][2],
-			      int *adjacency) // int adjacency[nodes][degree]
+void ODP_Conv_edge2adjacency(const int nodes, const int lines, const int edge[lines][2],
+			     int *adjacency) // int adjacency[nodes][degree]
 {
   int num_degrees[nodes];
   for(int i=0;i<nodes;i++)
     num_degrees[i] = 0;
 
-  int degree = apsp_get_degree(nodes, lines, edge);
+  int degree = ODP_Get_degree(nodes, lines, edge);
   for(int i=0;i<lines;i++){
     int n1 = edge[i][0];
     int n2 = edge[i][1];
@@ -800,8 +800,8 @@ void apsp_conv_edge2adjacency(const int nodes, const int lines, const int edge[l
   }
 }
 
-void apsp_conv_edge2adjacency_s(const int nodes, const int lines, const int edge[lines][2],
-				const int symmetries, int *adjacency) // int adjacency[nodes/adjacency][degree]
+void ODP_Conv_edge2adjacency_s(const int nodes, const int lines, const int edge[lines][2],
+			       const int symmetries, int *adjacency) // int adjacency[nodes/adjacency][degree]
 {
   if(nodes % symmetries != 0)
     ERROR("nodes(%d) must be divisible by symmetries(%d)\n", nodes, symmetries);
@@ -811,7 +811,7 @@ void apsp_conv_edge2adjacency_s(const int nodes, const int lines, const int edge
   for(int i=0;i<based_nodes;i++)
     num_degrees[i] = 0;
 
-  int degree = apsp_get_degree(nodes, lines, edge);
+  int degree = ODP_Get_degree(nodes, lines, edge);
   for(int i=0;i<lines;i++){
     int n1 = edge[i][0];
     int n2 = edge[i][1];
@@ -822,8 +822,8 @@ void apsp_conv_edge2adjacency_s(const int nodes, const int lines, const int edge
   }
 }
 
-void apsp_conv_adjacency2edge_s(const int nodes, const int degree, const int *num_degrees,
-				const int *adjacency, const int symmetries, int (*edge)[2])
+void ODP_Conv_adjacency2edge_s(const int nodes, const int degree, const int *num_degrees,
+			       const int *adjacency, const int symmetries, int (*edge)[2])
 {
   if(nodes % symmetries != 0)
     ERROR("nodes(%d) must be divisible by symmetries(%d)\n", nodes, symmetries);
@@ -851,12 +851,12 @@ void apsp_conv_adjacency2edge_s(const int nodes, const int degree, const int *nu
     }
   }
 
-  apsp_conv_adjacency2edge(nodes, degree, num_degrees, (int *)tmp_adjacency, edge);
+  ODP_Conv_adjacency2edge(nodes, degree, num_degrees, (int *)tmp_adjacency, edge);
   free(tmp_adjacency);
 }
 
-void apsp_set_degrees(const int nodes, const int lines, int edge[lines][2],
-		      int* num_degrees)
+void ODP_Set_degrees(const int nodes, const int lines, int edge[lines][2],
+		     int* num_degrees)
 {
   for(int i=0;i<nodes;i++)
     num_degrees[i] = 0;
@@ -888,7 +888,7 @@ static bool check_isolated_vertex(const int n[4], const int degree, const int (*
   return false;
 }
 
-void apsp_restore_adjacency(int (*adjacency)[_degree])
+void ODP_Restore_adjacency(int (*adjacency)[_degree])
 {
   if(_r == 0){
     swap(&adjacency[_n[0]][_d[0]], &adjacency[_n[1]][_d[1]]);
@@ -900,8 +900,8 @@ void apsp_restore_adjacency(int (*adjacency)[_degree])
   }
 }
 
-void apsp_mutate_adjacency_general(const int nodes, const int degree, const int *restrict num_degrees,
-				   int adjacency[nodes][degree])
+void ODP_Mutate_adjacency_general(const int nodes, const int degree, const int *restrict num_degrees,
+				  int adjacency[nodes][degree])
 {
   int elements = 4; 
   int n[elements], d[elements];
@@ -958,7 +958,7 @@ void apsp_mutate_adjacency_general(const int nodes, const int degree, const int 
       if(!has_multiple_vertices(n[0], n[2], n[1], n[3])) break;
     }
 
-    // Backup for apsp_restore_adjacency()
+    // Backup for ODP_Restore_adjacency()
     if(!_n) _n = malloc(sizeof(int)*elements);
     if(!_d) _d = malloc(sizeof(int)*elements);
     memcpy(_n, n, sizeof(int)*elements);
@@ -975,17 +975,17 @@ void apsp_mutate_adjacency_general(const int nodes, const int degree, const int 
     }
     
     if(check_isolated_vertex(n, degree, adjacency))
-      apsp_restore_adjacency(adjacency);
+      ODP_Restore_adjacency(adjacency);
     else
       break;
   }
 }
 
-void apsp_mutate_adjacency_grid(const int nodes, const int degree, const int *restrict num_degrees,
-				const int height, const int length, int adjacency[nodes][degree])
+void ODP_Mutate_adjacency_grid(const int nodes, const int degree, const int *restrict num_degrees,
+			       const int height, const int length, int adjacency[nodes][degree])
 {
   while(1){
-    apsp_mutate_adjacency_general(nodes, degree, num_degrees, adjacency);
+    ODP_Mutate_adjacency_general(nodes, degree, num_degrees, adjacency);
     if(_r == 0 && check_length(_n[0], _n[3], height, length) && check_length(_n[1], _n[2], height, length)){
       break;
     }
@@ -993,12 +993,12 @@ void apsp_mutate_adjacency_grid(const int nodes, const int degree, const int *re
       break;
     }
     else{
-      apsp_restore_adjacency(adjacency);
+      ODP_Restore_adjacency(adjacency);
     }
   }
 }
   
-void apsp_generate_random_general(const int nodes, const int degree, int (*edge)[2])
+void ODP_Generate_random_general(const int nodes, const int degree, int (*edge)[2])
 {
   check_graph_parameters(nodes, degree);
 
@@ -1025,22 +1025,22 @@ void apsp_generate_random_general(const int nodes, const int degree, int (*edge)
 
   int lines = (nodes*degree)/2;
   int *adjacency = malloc(sizeof(int)*nodes*degree);
-  apsp_conv_edge2adjacency(nodes, lines, edge, adjacency);
+  ODP_Conv_edge2adjacency(nodes, lines, edge, adjacency);
 
   for(int i=0;i<lines*GEN_GRAPH_ITERS;i++) // Give randomness
-    apsp_mutate_adjacency_general(nodes, degree, NULL, (int (*)[degree])adjacency);
+    ODP_Mutate_adjacency_general(nodes, degree, NULL, (int (*)[degree])adjacency);
 
-  apsp_conv_adjacency2edge(nodes, degree, NULL, adjacency, edge);
+  ODP_Conv_adjacency2edge(nodes, degree, NULL, adjacency, edge);
   free(adjacency);
 }
 
-void apsp_generate_random_general_s(const int nodes, const int degree, const int symmetries, int (*edge)[2])
+void ODP_Generate_random_general_s(const int nodes, const int degree, const int symmetries, int (*edge)[2])
 {
   if(nodes % symmetries != 0)
     ERROR("nodes(%d) must be divisible by symmetries(%d)\n", nodes, symmetries);
 
   int based_nodes = nodes/symmetries;
-  apsp_generate_random_general(based_nodes, degree, edge);
+  ODP_Generate_random_general(based_nodes, degree, edge);
   int based_lines = (based_nodes * degree) / 2;
 
   for(int i=1;i<symmetries;i++){
@@ -1053,14 +1053,14 @@ void apsp_generate_random_general_s(const int nodes, const int degree, const int
   }
 
   int *adjacency = malloc(sizeof(int) * based_nodes * degree);
-  apsp_conv_edge2adjacency_s(nodes, (based_lines*symmetries), edge, symmetries, adjacency);
+  ODP_Conv_edge2adjacency_s(nodes, (based_lines*symmetries), edge, symmetries, adjacency);
   // mutate_s x 100
   // adj 2 edge
   free(adjacency);
 }
 
 // Inherited from http://research.nii.ac.jp/graphgolf/c/create-lattice.c
-void apsp_generate_random_grid(const int width, const int height, const int degree, const int length, int (*edge)[2])
+void ODP_Generate_random_grid(const int width, const int height, const int degree, const int length, int (*edge)[2])
 {
   int nodes = width * height;
   check_graph_parameters(nodes, degree);
@@ -1096,11 +1096,11 @@ void apsp_generate_random_grid(const int width, const int height, const int degr
 
   int lines = (nodes*degree)/2;
   int *adjacency = malloc(sizeof(int)*nodes*degree);
-  apsp_conv_edge2adjacency(nodes, lines, edge, adjacency);
+  ODP_Conv_edge2adjacency(nodes, lines, edge, adjacency);
 
   for(int i=0;i<lines*GEN_GRAPH_ITERS;i++)  // Give randomness
-    apsp_mutate_adjacency_grid(nodes, degree, NULL, height, length, (int (*)[degree])adjacency);
+    ODP_Mutate_adjacency_grid(nodes, degree, NULL, height, length, (int (*)[degree])adjacency);
 
-  apsp_conv_adjacency2edge(nodes, degree, NULL, adjacency, edge);
+  ODP_Conv_adjacency2edge(nodes, degree, NULL, adjacency, edge);
   free(adjacency);
 }

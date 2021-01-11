@@ -3,7 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <math.h>
-#include "apsp.h"
+#include "odp.h"
 #define MAX_FILENAME_LENGTH 256
 #define ERROR(...) do{fprintf(stderr, __VA_ARGS__); exit(0);}while(0)
 
@@ -115,18 +115,18 @@ int main(int argc, char *argv[])
   int (*adjacency)[degree] = malloc(sizeof(int) * nodes * degree); // int adjacency[nodes][degree];
   int (*best_adjacency)[degree] = malloc(sizeof(int) * nodes * degree); // int best_adjacency[nodes][degree];
   
-  apsp_srand(seed);
-  apsp_generate_random_general(nodes, degree, edge);
-  apsp_conv_edge2adjacency(nodes, lines, edge, adjacency);
+  ODP_Srand(seed);
+  ODP_Generate_random_general(nodes, degree, edge);
+  ODP_Conv_edge2adjacency(nodes, lines, edge, adjacency);
   
-  apsp_run_init(nodes, degree, NULL);
-  apsp_run(adjacency, &diameter, &sum, &ASPL);
+  ODP_Init_aspl(nodes, degree, NULL);
+  ODP_Set_aspl(adjacency, &diameter, &sum, &ASPL);
   best_diameter = current_diameter = diameter;
   best_sum      = sum;
   best_ASPL     = current_ASPL     = ASPL;
   memcpy(best_adjacency, adjacency, sizeof(int)*nodes*degree);
 
-  apsp_set_lbounds_general(nodes, degree, &low_diameter, &low_ASPL);
+  ODP_Set_lbounds_general(nodes, degree, &low_diameter, &low_ASPL);
   if(diameter == low_diameter && ASPL == low_ASPL){
     printf("Find optimum solution\n");
   }
@@ -138,8 +138,8 @@ int main(int argc, char *argv[])
       if(i%10000 == 0)
 	printf("%ld\t%f\t%d\t%f\n", i, temp, best_diameter-low_diameter, best_ASPL-low_ASPL);
       
-      apsp_mutate_adjacency_general(nodes, degree, NULL, adjacency);
-      apsp_run(adjacency, &diameter, &sum, &ASPL);
+      ODP_Mutate_adjacency_general(nodes, degree, NULL, adjacency);
+      ODP_Set_aspl(adjacency, &diameter, &sum, &ASPL);
       if(diameter < best_diameter || (diameter == best_diameter && ASPL < best_ASPL)){
 	best_diameter = diameter;
 	best_sum      = sum;
@@ -156,23 +156,23 @@ int main(int argc, char *argv[])
 	current_ASPL     = ASPL;
       }
       else{
-	apsp_restore_adjacency(adjacency);
+	ODP_Restore_adjacency(adjacency);
       }
       temp *= cooling_rate;
     }
   }
   
-  apsp_run_finalize();
-  apsp_conv_adjacency2edge(nodes, degree, NULL, best_adjacency, edge);
+  ODP_Finalize_aspl();
+  ODP_Conv_adjacency2edge(nodes, degree, NULL, best_adjacency, edge);
   printf("---\n");
   printf("Diameter       = %d\n", best_diameter);
   printf("Diameter Gap   = %d (%d - %d)\n", best_diameter - low_diameter, best_diameter, low_diameter);
   printf("ASPL           = %.10f (%ld/%.0f)\n", best_ASPL, best_sum, (double)nodes*(nodes-1)/2);
   printf("ASPL Gap       = %.10f (%.10f - %.10f)\n", best_ASPL - low_ASPL, best_ASPL, low_ASPL);
-  printf("Multiple edges = %s\n", (apsp_check_multiple_edges(lines, edge))? "Exist" : "None");
-  printf("Loop           = %s\n", (apsp_check_loop(lines, edge))? "Exist" : "None");
+  printf("Multiple edges = %s\n", (ODP_Check_multiple_edges(lines, edge))? "Exist" : "None");
+  printf("Loop           = %s\n", (ODP_Check_loop(lines, edge))? "Exist" : "None");
 
-  apsp_write_edge_general(lines, edge, fname);
+  ODP_Write_edge_general(lines, edge, fname);
   printf("Generate ./%s\n", fname);
   
   free(edge);

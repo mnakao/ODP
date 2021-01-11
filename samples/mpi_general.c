@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <mpi.h>
-#include "apsp.h"
+#include "odp.h"
 
 int main(int argc, char *argv[])
 {
@@ -16,21 +16,21 @@ int main(int argc, char *argv[])
     exit(1);
   }
     
-  int lines = apsp_get_lines(argv[1]);
+  int lines = ODP_Get_lines(argv[1]);
   int (*edge)[2] = malloc(sizeof(int)*lines*2); // int edge[lines][2];
-  apsp_read_edge_general(argv[1], edge);
-  int nodes  = apsp_get_nodes(lines, edge);
-  int degree = apsp_get_degree(nodes, lines, edge);
+  ODP_Read_edge_general(argv[1], edge);
+  int nodes  = ODP_Get_nodes(lines, edge);
+  int degree = ODP_Get_degree(nodes, lines, edge);
 
   int (*adjacency)[degree] = malloc(sizeof(int) * nodes * degree); // int adjacency[nodes][degree];
-  apsp_conv_edge2adjacency(nodes, lines, edge, adjacency);
+  ODP_Conv_edge2adjacency(nodes, lines, edge, adjacency);
 
-  apsp_mpi_run_init(nodes, degree, NULL, MPI_COMM_WORLD);
-  apsp_mpi_run(adjacency, &diameter, &sum, &ASPL);
-  apsp_mpi_run_finalize();
+  ODP_Init_aspl_mpi(nodes, degree, NULL, MPI_COMM_WORLD);
+  ODP_Set_aspl_mpi(adjacency, &diameter, &sum, &ASPL);
+  ODP_Finalize_aspl_mpi();
 
   if(rank == 0){
-    apsp_set_lbounds_general(nodes, degree, &low_diameter, &low_ASPL);
+    ODP_Set_lbounds_general(nodes, degree, &low_diameter, &low_ASPL);
     printf("Nodes = %d, Degrees = %d\n", nodes, degree);
     printf("Diameter     = %d\n", diameter);
     printf("Diameter Gap = %d (%d - %d)\n", diameter - low_diameter, diameter, low_diameter);
