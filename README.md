@@ -111,7 +111,7 @@ The meaning of each item in the profile is as follows.
 * Total Time : Total execution time of ODP_Set_aspl\*()
 * Average Time : Average execution time of ODP_Set_aspl\*()
 * Algorithm : NORMAL or SAVING. The parentheses are the types of libraries used. That is, SERIAL, THREADS, MPI, MPI+THREADS, CUDA, or MPI+CUDA.
-* Symmetries : When using ODP_Init_aspl\*(), the value is 1. When using ODP_Init_aspl\*_s(), the value is `symmetries`.
+* Symmetries : When using ODP_Init_aspl\*_s(), the value is `symmetries`. Otherwise, the value is 1.
 * Memory Usage : Amount of memory used in the library.
 * Num of Procs : Number of processes used in the library.
 * Num of Threads : Number of threads used in the library.
