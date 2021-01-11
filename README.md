@@ -121,7 +121,7 @@ Note that there are no special functions for the threaded versions.
 Thread parallelization is performed automatically depending on the library to be linked.
 
 ### Initialize
-Perform the initialization process before setting ASPL.
+Perform the initialization process before executing ODP_Set_aspl\*().
 ```
 void ODP_Init_aspl         (int nodes, int degree, int num_degrees[nodes])
 void ODP_Init_aspl_mpi     (int nodes, int degree, int num_degrees[nodes], MPI_Comm comm)
