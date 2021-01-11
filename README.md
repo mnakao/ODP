@@ -137,7 +137,7 @@ void ODP_Init_aspl_mpi_cuda(int nodes, int degree, int num_degrees[nodes], MPI_C
 Release the resources allocated in ODP_Init_aspl\*().
 ```
 void ODP_Finalize_aspl()
-void ODP_Finalize_aspl_mpi_run()
+void ODP_Finalize_aspl_mpi()
 void ODP_Finalize_aspl_cuda()
 void ODP_Finalize_aspl_mpi_cuda()
 ```
