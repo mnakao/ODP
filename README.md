@@ -71,20 +71,20 @@ ASPL Gap     = 0.1833333333 (1.9166666667 - 1.7333333333)
 * Please see sample graphs in `./samples/graphs/` or http://research.nii.ac.jp/graphgolf/submit.html
 
 ## Environment variable
-### ASPL=[NORMAL|SAVING]
+### ODP_ASPL=[NORMAL|SAVING]
 
 This library provides two types of algorithms to obtain ASPL.
-One is `NORMAL`, the other is `SAVING`. `SAVING` is a memory-saving version.
+One is `NORMAL`, the other is `SAVING`. `SAVING` is a memory-saving version of `NORMAL`.
 By default, `NORMAL` is automatically selected if the amount of memory used is
 lower than the value of `MEM_THRESHOLD` in `src/parameter.h`.
 This environment variable can specify the algorithm to use.
 
-### ASPL_PROFILE=1
+### ODP_PROFILE=1
 
 Output the performance profile for ODP_Set_aspl\*(). 
 This profile is output when ODP_Finalize_aspl\*() is executed.
 ```
-$ ASPL=SAVING ASPL_PROFILE=1 ./general.x ./graphs/general/n16d4.edges
+$ ODP_ASPL=SAVING ODP_PROFILE=1 ./general.x ./graphs/general/n16d4.edges
 ------ Profile for SET_ASPL ------
 Date            = Mon Jan  4 23:14:03 2021
 Hostname        = kiwi

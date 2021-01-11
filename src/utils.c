@@ -91,7 +91,7 @@ double ODP_Get_time()
 
 bool ODP_Check_profile()
 {
-  char *val = getenv("ASPL_PROFILE");
+  char *val = getenv("ODP_PROFILE");
   if(val){
     if(atoi(val) == 1)
       return true;
@@ -523,7 +523,7 @@ double ODP_Get_mem_usage(const int kind, const int nodes, const int degree, cons
 int ODP_Get_kind(const int nodes, const int degree, const int* num_degrees, const int symmetries,
 		 const int procs, const int is_cpu)
 {
-  char *val = getenv("ASPL");
+  char *val = getenv("ODP_ASPL");
   int kind;
   if(val == NULL){
     double normal_mem_usage = ODP_Get_mem_usage(ASPL_NORMAL, nodes, degree, symmetries, num_degrees, procs, is_cpu);
