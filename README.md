@@ -134,7 +134,7 @@ void ODP_Init_aspl_mpi_cuda(int nodes, int degree, int num_degrees[nodes], MPI_C
 * [IN] comm : MPI communicator.
 
 ### Finalize
-Release the resources allocated in ODP_Init_aspl\*() after executing ODP_Set_aspl*().
+Release the resources allocated in ODP_Init_aspl\*().
 ```
 void ODP_Finalize_aspl()
 void ODP_Finalize_aspl_mpi_run()
