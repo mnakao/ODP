@@ -358,7 +358,7 @@ void ODP_Set_aspl_mpi_cuda_grid   (char *fname, MPI_Comm comm, int *width, int *
 * [OUT] height : Height of a grid graph.
 * [OUT] length : Maximum length of a grid graph.
 
-## Function for a graph with symmetry
+## Function for a general graph with symmetry
 Symmetry in this software means that when the vertices are arranged on a circle,
 the graph when rotated by `360/symmetries` degrees and the graph before rotation match.
 
@@ -376,7 +376,7 @@ Here, 19 + 6 = 25, but the number of nodes is 24, so it goes around and becomes 
 This rule holds for all groups.
 
 ### Initialize
-These functions can be used instead of the ODP_Init_aspl\*() for only a general graph with symmetry.
+These functions can be used instead of the ODP_Init_aspl\*().
 
 ```
 void ODP_Init_aspl_s         (int nodes, int degree, int num_degrees[nodes], int symmetries)
