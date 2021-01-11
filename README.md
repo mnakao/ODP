@@ -143,7 +143,7 @@ void ODP_Finalize_aspl_mpi_cuda()
 ```
 
 ### Set diameter, sum, and ASPL
-Set diameter, sum, and ASPL. Note that they must be executed between ODP_Init_aspl\*() and ODP_Finalize_aspl\*().
+Set diameter, sum, and ASPL. Note that these functions must be executed between ODP_Init_aspl\*() and ODP_Finalize_aspl\*().
 ```
 void ODP_Set_aspl         (int adjacency[nodes][degree], int *diameter, long *sum, double *ASPL)
 void ODP_Set_aspl_mpi     (int adjacency[nodes][degree], int *diameter, long *sum, double *ASPL)
