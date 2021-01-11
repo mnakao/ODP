@@ -3,6 +3,59 @@ static int *_n = NULL;
 static int *_d = NULL;
 static int _r, _degree;
 
+static int top_down_step(const int nodes, const int num_frontier, const int degree,
+                         const int* restrict adjacency, int* restrict frontier,
+                         int* restrict next, char* restrict bitmap)
+{
+  int count = 0;
+  for(int i=0;i<num_frontier;i++){
+    int v = frontier[i];
+    for(int j=0;j<degree;j++){
+      int n = *(adjacency + v * degree + j);  // int n = adjacency[v][j];
+      if(bitmap[n] == NOT_VISITED){
+        bitmap[n] = VISITED;
+        next[count++] = n;
+      }
+    }
+  }
+
+  return count;
+}
+
+static bool simple_bfs(const int nodes, const int degree, int *adjacency)
+{
+  char *bitmap  = malloc(sizeof(char) * nodes);
+  int *frontier = malloc(sizeof(int)  * nodes);
+  int *next     = malloc(sizeof(int)  * nodes);
+  int num_frontier = 1, root = 0, num = 0;
+
+  for(int i=0;i<nodes;i++)
+    bitmap[i] = NOT_VISITED;
+
+  frontier[0]  = root;
+  bitmap[root] = VISITED;
+
+  while(1){
+    num_frontier = top_down_step(nodes, num_frontier, degree,
+                                 adjacency, frontier, next, bitmap);
+    if(num_frontier == 0) break;
+
+    int *tmp = frontier;
+    frontier = next;
+    next     = tmp;
+  }
+
+  free(bitmap);
+  free(frontier);
+  free(next);
+  
+  for(int i=0;i<nodes;i++)
+    if(bitmap[i] == NOT_VISITED)
+      return true;
+
+  return false;
+}
+
 void ODP_Print_adjacency(const int nodes, const int degree, const int num_degrees[nodes], const int adjacency[nodes][degree])
 {
   if(!num_degrees){
@@ -981,9 +1034,10 @@ void ODP_Mutate_adjacency_general(const int nodes, const int degree, const int *
   }
 }
 
-void ODP_Mutate_adjacency_grid(const int nodes, const int degree, const int *restrict num_degrees,
-			       const int height, const int length, int adjacency[nodes][degree])
+void ODP_Mutate_adjacency_grid(const int width, const int height, const int degree, const int *restrict num_degrees,
+			       const int length, int (*adjacency)[degree])
 {
+  int nodes = width * height;
   while(1){
     ODP_Mutate_adjacency_general(nodes, degree, num_degrees, adjacency);
     if(_r == 0 && check_length(_n[0], _n[3], height, length) && check_length(_n[1], _n[2], height, length)){
@@ -1027,9 +1081,14 @@ void ODP_Generate_random_general(const int nodes, const int degree, int (*edge)[
   int *adjacency = malloc(sizeof(int)*nodes*degree);
   ODP_Conv_edge2adjacency(nodes, lines, edge, adjacency);
 
-  for(int i=0;i<lines*GEN_GRAPH_ITERS;i++) // Give randomness
+  // Give randomness
+  for(int i=0;i<lines*GEN_GRAPH_ITERS;i++)
     ODP_Mutate_adjacency_general(nodes, degree, NULL, (int (*)[degree])adjacency);
 
+  // Repeat until there are no unreachable vertices
+  while(simple_bfs(nodes, degree, adjacency))
+    ODP_Mutate_adjacency_general(nodes, degree, NULL, (int (*)[degree])adjacency);
+  
   ODP_Conv_adjacency2edge(nodes, degree, NULL, adjacency, edge);
   free(adjacency);
 }
@@ -1098,9 +1157,14 @@ void ODP_Generate_random_grid(const int width, const int height, const int degre
   int *adjacency = malloc(sizeof(int)*nodes*degree);
   ODP_Conv_edge2adjacency(nodes, lines, edge, adjacency);
 
-  for(int i=0;i<lines*GEN_GRAPH_ITERS;i++)  // Give randomness
-    ODP_Mutate_adjacency_grid(nodes, degree, NULL, height, length, (int (*)[degree])adjacency);
+  // Give randomness
+  for(int i=0;i<lines*GEN_GRAPH_ITERS;i++)
+    ODP_Mutate_adjacency_grid(width, height, degree, NULL, length, (int (*)[degree])adjacency);
 
+  // Repeat until there are no unreachable vertices
+  while(simple_bfs(nodes, degree, adjacency))
+    ODP_Mutate_adjacency_grid(width, height, degree, NULL, length, (int (*)[degree])adjacency);
+    
   ODP_Conv_adjacency2edge(nodes, degree, NULL, adjacency, edge);
   free(adjacency);
 }

@@ -11,6 +11,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <limits.h>
+#include <float.h>
 #include "parameter.h"
 #ifdef __AVX2__
 #include <immintrin.h>

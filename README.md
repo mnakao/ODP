@@ -144,6 +144,7 @@ void ODP_Finalize_aspl_mpi_cuda()
 
 ### Set diameter, sum, and ASPL
 Set diameter, sum, and ASPL. Note that these functions must be executed between ODP_Init_aspl\*() and ODP_Finalize_aspl\*().
+In the case of an unconnected graph, INT_MAX, LONG_MAX, and DBL_MAX are assigned to the values of diameter, sum, and ASPL, respectively.
 ```
 void ODP_Set_aspl         (int adjacency[nodes][degree], int *diameter, long *sum, double *ASPL)
 void ODP_Set_aspl_mpi     (int adjacency[nodes][degree], int *diameter, long *sum, double *ASPL)
@@ -257,11 +258,12 @@ void ODP_Generate_random_grid   (int width, int height, int degree, int length, 
 Mutate an adjacency matrix slightly. It is the same as applying the 2-opt method to the edge list corresponding to the adjacency matrix.
 ```
 void ODP_Mutate_adjacency_general(int nodes, int degree, int num_degrees[nodes], int adjacency[nodes][degree])
-void ODP_Mutate_adjacency_grid(int nodes, int degree, int num_degrees[nodes], int height, int length, int adjacency[nodes][degree])
+void ODP_Mutate_adjacency_grid(int width, int height, int degree, int num_degrees[nodes], int length, int adjacency[nodes][degree])
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] degree : Degree in a graph.
 * [IN] num_degrees : Specify NULL for a regular graph. Or specify the degrees in each vertex for a non-regular graph.
+* [IN] width : Width of a grid graph.
 * [IN] height : Height of a grid graph.
 * [IN] length : Maximum length of a grid graph.
 * [OUT] adjacency : Adjacency matrix of a graph.

@@ -64,7 +64,7 @@ extern void ODP_Generate_random_general(int nodes, int degree, int (*edge)[2]);
 extern void ODP_Generate_random_grid(int width, int height, int degree, int length, int (*edge)[2]);
 extern void ODP_Srand(unsigned int seed);
 extern void ODP_Mutate_adjacency_general(int nodes, int degree, int *num_degrees, void *adjacency);
-extern void ODP_Mutate_adjacency_grid(int nodes, int degree, int *num_degrees, int height, int length, void *adjacency);
+extern void ODP_Mutate_adjacency_grid(int width, int height, int degree, int *num_degrees, int length, void *adjacency);
 extern void ODP_Restore_adjacency(void *adjacency);
 extern void ODP_Print_adjacency(int nodes, int degree, int *num_degrees, void *adjacency);
 extern void ODP_Print_edge(int lines, int (*edge)[2]);

@@ -198,8 +198,11 @@ extern "C" void ODP_Set_aspl_mpi_cuda(const int* __restrict__ adjacency,
 
   _elapsed_time += ODP_Get_time() - t;
     
-  if(*diameter > _nodes)
-    ERROR("This graph is not connected graph.\n");
+  if(*diameter > _nodes){
+    *diameter = INT_MAX;
+    *sum = LONG_MAX;
+    *ASPL = DBL_MAX;
+  }
 
   _times++;
 }
