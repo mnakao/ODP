@@ -919,18 +919,24 @@ void ODP_Set_degrees(const int nodes, const int lines, int edge[lines][2],
   }
 }
 
-static bool check_isolated_vertex(const int n, const int degree, const int *num_degrees, const int (*adjacency)[degree])
+static bool check_isolated_vertex(const int n, const int based_nodes, const int degree,
+				  const int *num_degrees, const int (*adjacency)[degree])
 {
+  int x = n % based_nodes;
   if(!num_degrees){
     for(int i=1;i<degree;i++)
-      if(adjacency[n][0] != adjacency[n][i])
+      if(adjacency[x][0] != adjacency[x][i])
 	return false;
   }
   else{
-    for(int i=1;i<num_degrees[n];i++)
-      if(adjacency[n][0] != adjacency[n][i])
+    for(int i=1;i<num_degrees[x];i++)
+      if(adjacency[x][0] != adjacency[x][i])
 	return false;
   }
+
+  if(num_degrees)
+    if(num_degrees[x] < num_degrees[adjacency[x][0]%based_nodes])
+      return false; // It may not be an isolated vertex.
   
   return true;
 }
@@ -1007,10 +1013,10 @@ void ODP_Mutate_adjacency_general_s(const int nodes, const int degree, const int
       adjacency[v[1]%based_nodes][v_d[1]] = v[0];
     }
     
-    if(check_isolated_vertex(u[0]%based_nodes, degree, num_degrees, adjacency) ||
-       check_isolated_vertex(v[0]%based_nodes, degree, num_degrees, adjacency) ||
-       check_isolated_vertex(u[1]%based_nodes, degree, num_degrees, adjacency) ||
-       check_isolated_vertex(v[1]%based_nodes, degree, num_degrees, adjacency))
+    if(check_isolated_vertex(u[0], based_nodes, degree, num_degrees, adjacency) ||
+       check_isolated_vertex(v[0], based_nodes, degree, num_degrees, adjacency) ||
+       check_isolated_vertex(u[1], based_nodes, degree, num_degrees, adjacency) ||
+       check_isolated_vertex(v[1], based_nodes, degree, num_degrees, adjacency))
       ODP_Restore_adjacency(adjacency);
     else
       break;
