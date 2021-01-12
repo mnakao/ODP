@@ -836,22 +836,6 @@ void ODP_Conv_adjacency2edge(const int nodes, const int degree, const int *num_d
   free(tmp);
 }
 
-void ODP_Conv_edge2adjacency(const int nodes, const int lines, const int edge[lines][2],
-			     int *adjacency) // int adjacency[nodes][degree]
-{
-  int num_degrees[nodes];
-  for(int i=0;i<nodes;i++)
-    num_degrees[i] = 0;
-
-  int degree = ODP_Get_degree(nodes, lines, edge);
-  for(int i=0;i<lines;i++){
-    int n1 = edge[i][0];
-    int n2 = edge[i][1];
-    *(adjacency + n1 * degree + (num_degrees[n1]++)) = n2; //  adjacency[n1][num_degrees[n1]++] = n2;
-    *(adjacency + n2 * degree + (num_degrees[n2]++)) = n1; //  adjacency[n2][num_degrees[n2]++] = n1;
-  }
-}
-
 void ODP_Conv_edge2adjacency_s(const int nodes, const int lines, const int edge[lines][2],
 			       const int symmetries, int *adjacency) // int adjacency[nodes/adjacency][degree]
 {
@@ -872,6 +856,12 @@ void ODP_Conv_edge2adjacency_s(const int nodes, const int lines, const int edge[
     if(n2 < based_nodes)
       *(adjacency + n2 * degree + (num_degrees[n2]++)) = n1; //  adjacency[n2][num_degrees[n2]++] = n1;
   }
+}
+
+void ODP_Conv_edge2adjacency(const int nodes, const int lines, const int edge[lines][2],
+                             int *adjacency) // int adjacency[nodes][degree]
+{
+  ODP_Conv_edge2adjacency_s(nodes, lines, edge, 1, adjacency);
 }
 
 void ODP_Conv_adjacency2edge_s(const int nodes, const int degree, const int *num_degrees,
