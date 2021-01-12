@@ -1,7 +1,14 @@
 #include "common.h"
-static int *_n = NULL;
-static int *_d = NULL;
-static int _r, _degree;
+#define MUTATE_ELEMENTS (4)
+static int *_n = NULL, *_d = NULL;
+static int _r, _degree, _based_nodes;
+
+static int ADJ_s(const int nodes, const int based_nodes, const int degree, const int (*adjacency)[degree],
+		 const int x0, const int x1)
+{
+  int n = adjacency[x0%based_nodes][x1] + (x0/based_nodes)*based_nodes;
+  return (n < nodes)? n : n-nodes;
+}
 
 static int top_down_step(const int nodes, const int num_frontier, const int degree,
                          const int* restrict adjacency, int* restrict frontier,
@@ -108,13 +115,6 @@ static void check_graph_parameters(const int nodes, const int degree)
 static int get_random(const int max)
 {
   return (int)(rand()*((double)max)/(1.0+RAND_MAX));
-}
-
-static void swap(int *a, int *b)
-{
-  int tmp = *a;
-  *a = *b;
-  *b = tmp;
 }
 
 void ODP_Srand(const unsigned int seed)
@@ -920,118 +920,125 @@ void ODP_Set_degrees(const int nodes, const int lines, int edge[lines][2],
   }
 }
 
-static bool has_multiple_vertices(const int e00, const int e01, const int e10, const int e11)
+static bool check_isolated_vertex(const int n[MUTATE_ELEMENTS], const int nodes, const int based_nodes,
+				  const int degree, const int (*adjacency)[degree])
 {
-  return (e00 == e10 || e01 == e11 || e00 == e11 || e01 == e10);
-}
-
-static bool check_isolated_vertex(const int n[4], const int degree, const int (*adjacency)[degree])
-{
-  for(int i=0;i<4;i++){
+  for(int i=0;i<MUTATE_ELEMENTS;i++){
     bool flag = true;
+    int nn = n[i] % based_nodes;
     for(int j=1;j<degree;j++){
-      if(adjacency[n[i]][0] != adjacency[n[i]][j]){
-	flag = false;
-	break;
+      if(adjacency[nn][0] != adjacency[nn][j]){
+        flag = false;
+        break;
       }
     }
     if(flag) return true;
   }
-      
+  
   return false;
 }
 
 void ODP_Restore_adjacency(int (*adjacency)[_degree])
 {
-  if(_r == 0){
-    swap(&adjacency[_n[0]][_d[0]], &adjacency[_n[1]][_d[1]]);
-    swap(&adjacency[_n[2]][_d[2]], &adjacency[_n[3]][_d[3]]);
-  }
-  else{
-    swap(&adjacency[_n[0]][_d[0]], &adjacency[_n[3]][_d[3]]);
-    swap(&adjacency[_n[2]][_d[2]], &adjacency[_n[1]][_d[1]]);
+  adjacency[_n[0]%_based_nodes][_d[0]] = _n[2];
+  adjacency[_n[1]%_based_nodes][_d[1]] = _n[3];
+  adjacency[_n[2]%_based_nodes][_d[2]] = _n[0];
+  adjacency[_n[3]%_based_nodes][_d[3]] = _n[1];
+}
+
+void ODP_Mutate_adjacency_general_s(const int nodes, const int degree, const int *restrict num_degrees,
+				    const int symmetries, int adjacency[nodes/symmetries][degree])
+{
+  int n[MUTATE_ELEMENTS], d[MUTATE_ELEMENTS], based_nodes = nodes/symmetries;
+
+  while(1){
+    while(1){
+      n[0] = get_random(nodes);
+      n[1] = get_random(nodes);
+      if(n[0] == n[1]) continue;
+      
+      d[0] = (!num_degrees)? get_random(degree) : get_random(num_degrees[n[0]%based_nodes]);
+      n[2] = ADJ_s(nodes, based_nodes, degree, adjacency, n[0], d[0]); // adjacency[n[0]][d[0]] when symmetries is 1
+      if(n[2] == n[1]) continue;
+      
+      d[1] = (!num_degrees)? get_random(degree) : get_random(num_degrees[n[1]%based_nodes]);
+      n[3] = ADJ_s(nodes, based_nodes, degree, adjacency, n[1], d[1]);
+      if(n[3] == n[0] || n[2] == n[3]) continue;
+      break;
+    }
+
+    bool flag = false;
+    if(n[0] == n[2]){ // loop
+      for(int i=0;i<degree;i++){
+	if(ADJ_s(nodes, based_nodes, degree, adjacency, n[2], i) == n[0] && i != d[0]){
+	  d[2] = i;
+	  flag = true;
+	  break;
+	}
+      }
+    }
+    else{
+      for(int i=0;i<degree;i++){
+	if(ADJ_s(nodes, based_nodes, degree, adjacency, n[2], i) == n[0]){
+	  d[2] = i;
+	  flag = true;
+	  break;
+	}
+      }
+    }
+    if(!flag) ERROR("Something wrong 1\n");
+ 
+    flag = false;
+    if(n[1] == n[3]){ // loop
+      for(int i=0;i<degree;i++)
+	if(ADJ_s(nodes, based_nodes, degree, adjacency, n[3], i) == n[1] && i != d[1]){
+	  d[3] = i;
+	  flag = true;
+	  break;
+	}
+    }
+    else{
+      for(int i=0;i<degree;i++)
+	if(ADJ_s(nodes, based_nodes, degree, adjacency, n[3], i) == n[1]){
+	  d[3] = i;
+	  flag = true;
+	  break;
+	}
+    }
+    if(!flag) ERROR("Something wrong 2\n");
+
+    // Backup for ODP_Restore_adjacency()
+    if(!_n) _n = malloc(sizeof(int)*MUTATE_ELEMENTS);
+    if(!_d) _d = malloc(sizeof(int)*MUTATE_ELEMENTS);
+    memcpy(_n, n, sizeof(int)*MUTATE_ELEMENTS);
+    memcpy(_d, d, sizeof(int)*MUTATE_ELEMENTS);
+    _degree = degree;
+    _based_nodes = based_nodes;
+    
+    if(get_random(2) == 0){
+      adjacency[n[0]%based_nodes][d[0]] = n[3];
+      adjacency[n[1]%based_nodes][d[1]] = n[2];
+      adjacency[n[2]%based_nodes][d[2]] = n[1];
+      adjacency[n[3]%based_nodes][d[3]] = n[0];
+    }
+    else{
+      adjacency[n[0]%based_nodes][d[0]] = n[1];
+      adjacency[n[1]%based_nodes][d[1]] = n[0];
+      adjacency[n[2]%based_nodes][d[2]] = n[3];
+      adjacency[n[3]%based_nodes][d[3]] = n[2];
+    }
+    
+    if(check_isolated_vertex(n, nodes, based_nodes, degree, adjacency))
+      ODP_Restore_adjacency(adjacency);
+    else
+      break;
   }
 }
 
 void ODP_Mutate_adjacency_general(const int nodes, const int degree, const int *restrict num_degrees,
 				  int adjacency[nodes][degree])
 {
-  int elements = 4; 
-  int n[elements], d[elements];
-  _degree = degree;
-  while(1){
-    while(1){
-      while(1){
-	n[0] = get_random(nodes);
-	n[1] = get_random(nodes);
-	if(n[0] == n[1]) continue;
-      
-	d[0] = (!num_degrees)? get_random(degree) : get_random(num_degrees[n[0]]);
-	n[2] = adjacency[n[0]][d[0]];
-	if(n[2] == n[1]) continue;
-      
-	d[1] = (!num_degrees)? get_random(degree) : get_random(num_degrees[n[1]]);
-	n[3] = adjacency[n[1]][d[1]];
-	if(n[3] == n[0]) continue;
-	break;
-      }
-      
-      bool flag[2] = {false, false};
-      if(n[0] == n[2]){ // loop
-	for(int i=0;i<degree;i++)
-	  if(adjacency[n[2]][i] == n[0] && i != d[0]){
-	    d[2] = i;
-	    flag[0] = true;
-	  }
-      }
-      else{
-	for(int i=0;i<degree;i++)
-	  if(adjacency[n[2]][i] == n[0]){
-	    d[2] = i;
-	    flag[0] = true;
-	  }
-      }
-      
-      if(n[1] == n[3]){ // loop
-	for(int i=0;i<degree;i++)
-	  if(adjacency[n[3]][i] == n[1] && i != d[1]){
-	    d[3] = i;
-	    flag[1] = true;
-	  }
-      }
-      else{
-	for(int i=0;i<degree;i++)
-	  if(adjacency[n[3]][i] == n[1]){
-	    d[3] = i;
-	    flag[1] = true;
-	  }
-      }
-      
-      if(!flag[0] || !flag[1]) ERROR("Something wrong!\n");
-      if(!has_multiple_vertices(n[0], n[2], n[1], n[3])) break;
-    }
-
-    // Backup for ODP_Restore_adjacency()
-    if(!_n) _n = malloc(sizeof(int)*elements);
-    if(!_d) _d = malloc(sizeof(int)*elements);
-    memcpy(_n, n, sizeof(int)*elements);
-    memcpy(_d, d, sizeof(int)*elements);
-    _r = get_random(2);
-    
-    if(_r == 0){
-      swap(&adjacency[n[0]][d[0]], &adjacency[n[1]][d[1]]);
-      swap(&adjacency[n[2]][d[2]], &adjacency[n[3]][d[3]]);
-    }
-    else{
-      swap(&adjacency[n[0]][d[0]], &adjacency[n[3]][d[3]]);
-      swap(&adjacency[n[2]][d[2]], &adjacency[n[1]][d[1]]);
-    }
-    
-    if(check_isolated_vertex(n, degree, adjacency))
-      ODP_Restore_adjacency(adjacency);
-    else
-      break;
-  }
+  ODP_Mutate_adjacency_general_s(nodes, degree, num_degrees, 1, adjacency);
 }
 
 void ODP_Mutate_adjacency_grid(const int width, const int height, const int degree, const int *restrict num_degrees,
