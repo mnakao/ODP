@@ -100,6 +100,7 @@ int main(int argc, char *argv[])
   long sum, best_sum, ncalcs = 10000;
   int diameter, current_diameter, best_diameter, low_diameter;
   double ASPL, current_ASPL, best_ASPL, low_ASPL;
+  ODP_Restore r;
 
   set_args(argc, argv, &nodes, &degree, fname, &seed, &ncalcs, &max_temp, &min_temp);
   if(nodes%2 == 1 && degree%2 == 1)
@@ -138,7 +139,7 @@ int main(int argc, char *argv[])
       if(i%10000 == 0)
 	printf("%ld\t%f\t%d\t%f\n", i, temp, best_diameter-low_diameter, best_ASPL-low_ASPL);
       
-      ODP_Mutate_adjacency_general(nodes, degree, NULL, adjacency);
+      ODP_Mutate_adjacency_general(nodes, degree, NULL, &r, adjacency);
       ODP_Set_aspl(adjacency, &diameter, &sum, &ASPL);
       if(diameter < best_diameter || (diameter == best_diameter && ASPL < best_ASPL)){
 	best_diameter = diameter;
@@ -156,7 +157,7 @@ int main(int argc, char *argv[])
 	current_ASPL     = ASPL;
       }
       else{
-	ODP_Restore_adjacency(adjacency);
+	ODP_Restore_adjacency(r, adjacency);
       }
       temp *= cooling_rate;
     }

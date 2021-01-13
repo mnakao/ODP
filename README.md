@@ -257,8 +257,8 @@ void ODP_Generate_random_grid   (int width, int height, int degree, int length, 
 ### Mutate an adjacency matrix
 Mutate an adjacency matrix slightly. It is the same as applying the 2-opt method to the edge list corresponding to the adjacency matrix.
 ```
-void ODP_Mutate_adjacency_general(int nodes, int degree, int num_degrees[nodes], int adjacency[nodes][degree])
-void ODP_Mutate_adjacency_grid(int width, int height, int degree, int num_degrees[nodes], int length, int adjacency[nodes][degree])
+void ODP_Mutate_adjacency_general(int nodes, int degree, int num_degrees[nodes], ODP_Resotre *restore, int adjacency[nodes][degree])
+void ODP_Mutate_adjacency_grid(int width, int height, int degree, int num_degrees[nodes], int length, ODP_Resotre *restore, int adjacency[nodes][degree])
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] degree : Degree in a graph.
@@ -266,14 +266,16 @@ void ODP_Mutate_adjacency_grid(int width, int height, int degree, int num_degree
 * [IN] width : Width of a grid graph.
 * [IN] height : Height of a grid graph.
 * [IN] length : Maximum length of a grid graph.
+* [OUT] *restore : Pointer of object is for restore. It is used in ODP_Restore_adjacency(). Specify NULL if restore is not required.
 * [OUT] adjacency : Adjacency matrix of a graph.
 
 ### Restore an adjacency matrix
 Restore an adjacency matrix to the state it was in before the previous ODP_Mutate_adjacency\*() was executed.
 However, only if the adjacency matrix has not been changed by an operation other than ODP_Mutate_adjacency\*().
 ```
-void ODP_Restore_adjacency(int adjacency[nodes][degree])
+void ODP_Restore_adjacency(ODP_Resotre restore, int adjacency[nodes][degree])
 ```
+* [IN] restore : Object is for restore.
 * [OUT] adjacency : Adjacency matrix of a graph.
 
 ### Get the number of lines in a file

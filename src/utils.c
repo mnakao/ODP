@@ -1,6 +1,4 @@
 #include "common.h"
-static int _u[2], _v[2], _u_d[2], _v_d[2];
-static int _r, _degree, _based_nodes;
 
 static int ADJ_s(const int nodes, const int based_nodes, const int degree, const int (*adjacency)[degree],
 		 const int x0, const int x1)
@@ -522,9 +520,9 @@ double ODP_Get_mem_usage(const int kind, const int nodes, const int degree, cons
 int ODP_Get_kind(const int nodes, const int degree, const int* num_degrees, const int symmetries,
 		 const int procs, const int is_cpu)
 {
-  char *val = getenv("ODP_ASPL");
   int kind;
-  if(val == NULL){
+  char *val = getenv("ODP_ASPL");
+  if(!val){
     double normal_mem_usage = ODP_Get_mem_usage(ASPL_NORMAL, nodes, degree, symmetries, num_degrees, procs, is_cpu);
     if(normal_mem_usage <= MEM_THRESHOLD)
       kind = ASPL_NORMAL;
@@ -931,12 +929,12 @@ static bool check_isolated_vertex(const int n, const int based_nodes, const int 
   return true;
 }
 
-void ODP_Restore_adjacency(int (*adjacency)[_degree])
+void ODP_Restore_adjacency(const ODP_Restore r, int *adjacency)
 {
-  adjacency[_u[0]%_based_nodes][_u_d[0]] = _v[0];
-  adjacency[_u[1]%_based_nodes][_u_d[1]] = _v[1];
-  adjacency[_v[0]%_based_nodes][_v_d[0]] = _u[0];
-  adjacency[_v[1]%_based_nodes][_v_d[1]] = _u[1];
+  adjacency[r.u[0]%r.based_nodes * r.degree + r.u_d[0]] = r.v[0];
+  adjacency[r.u[1]%r.based_nodes * r.degree + r.u_d[1]] = r.v[1];
+  adjacency[r.v[0]%r.based_nodes * r.degree + r.v_d[0]] = r.u[0];
+  adjacency[r.v[1]%r.based_nodes * r.degree + r.v_d[1]] = r.u[1];
 }
 
 static int get_degree_index(const int u, const int v, const int u_d, const int nodes,
@@ -958,10 +956,12 @@ static int get_degree_index(const int u, const int v, const int u_d, const int n
 }
 
 void ODP_Mutate_adjacency_general_s(const int nodes, const int degree, const int *restrict num_degrees,
-				    const int symmetries, int adjacency[nodes/symmetries][degree])
+				    const int symmetries, ODP_Restore *r, int adjacency[nodes/symmetries][degree])
 {
   int u[2], v[2], u_d[2], v_d[2], based_nodes = nodes/symmetries;
-
+  ODP_Restore tmp_r;
+  if(!r) r = &tmp_r;
+  
   while(1){
     while(1){
       u[0] = get_random(nodes);
@@ -982,15 +982,15 @@ void ODP_Mutate_adjacency_general_s(const int nodes, const int degree, const int
     v_d[1] = get_degree_index(u[1], v[1], u_d[1], nodes, based_nodes, degree, adjacency);
 
     // Backup for ODP_Restore_adjacency()
-    memcpy(  _u,   u, sizeof(int)*2);
-    memcpy(  _v,   v, sizeof(int)*2);
-    memcpy(_u_d, u_d, sizeof(int)*2);
-    memcpy(_v_d, v_d, sizeof(int)*2);
-    _degree = degree;
-    _based_nodes = based_nodes;
-    _r = get_random(2);
+    memcpy(r->u,     u, sizeof(int)*2);
+    memcpy(r->v,     v, sizeof(int)*2);
+    memcpy(r->u_d, u_d, sizeof(int)*2);
+    memcpy(r->v_d, v_d, sizeof(int)*2);
+    r->random_value = get_random(2);
+    r->degree       = degree;
+    r->based_nodes  = based_nodes;
     
-    if(_r == 0){ // u[0]--v[1], v[0]--u[1]
+    if(r->random_value == 0){ // u[0]--v[1], v[0]--u[1]
       adjacency[u[0]%based_nodes][u_d[0]] = v[1];
       adjacency[u[1]%based_nodes][u_d[1]] = v[0];
       adjacency[v[0]%based_nodes][v_d[0]] = u[1];
@@ -1007,32 +1007,34 @@ void ODP_Mutate_adjacency_general_s(const int nodes, const int degree, const int
        check_isolated_vertex(v[0], based_nodes, degree, num_degrees, adjacency) ||
        check_isolated_vertex(u[1], based_nodes, degree, num_degrees, adjacency) ||
        check_isolated_vertex(v[1], based_nodes, degree, num_degrees, adjacency))
-      ODP_Restore_adjacency(adjacency);
+      ODP_Restore_adjacency(*r, (int *)adjacency);
     else
       break;
   }
 }
 
 void ODP_Mutate_adjacency_general(const int nodes, const int degree, const int *restrict num_degrees,
-				  int adjacency[nodes][degree])
+				  ODP_Restore *r, int adjacency[nodes][degree])
 {
-  ODP_Mutate_adjacency_general_s(nodes, degree, num_degrees, 1, adjacency);
+  ODP_Mutate_adjacency_general_s(nodes, degree, num_degrees, 1, r, adjacency);
 }
 
 void ODP_Mutate_adjacency_grid(const int width, const int height, const int degree, const int *restrict num_degrees,
-			       const int length, int (*adjacency)[degree])
+			       const int length, ODP_Restore *r, int (*adjacency)[degree])
 {
+  ODP_Restore tmp_r;
+  if(!r) r = &tmp_r;
   int nodes = width * height;
   while(1){
-    ODP_Mutate_adjacency_general(nodes, degree, num_degrees, adjacency);
-    if(_r == 0 && check_length(_u[0], _v[1], height, length) && check_length(_u[1], _v[0], height, length)){
+    ODP_Mutate_adjacency_general(nodes, degree, num_degrees, r, adjacency);
+    if(r->random_value == 0 && check_length(r->u[0], r->v[1], height, length) && check_length(r->u[1], r->v[0], height, length)){
       break;
     }
-    else if(_r == 1 && check_length(_u[0], _u[1], height, length) && check_length(_v[0], _v[1], height, length)){
+    else if(r->random_value == 1 && check_length(r->u[0], r->u[1], height, length) && check_length(r->v[0], r->v[1], height, length)){
       break;
     }
     else{
-      ODP_Restore_adjacency(adjacency);
+      ODP_Restore_adjacency(*r, (int *)adjacency);
     }
   }
 }
@@ -1068,11 +1070,11 @@ void ODP_Generate_random_general(const int nodes, const int degree, int (*edge)[
 
   // Give randomness
   for(int i=0;i<lines*GEN_GRAPH_ITERS;i++)
-    ODP_Mutate_adjacency_general(nodes, degree, NULL, (int (*)[degree])adjacency);
+    ODP_Mutate_adjacency_general(nodes, degree, NULL, NULL, (int (*)[degree])adjacency);
 
   // Repeat until there are no unreachable vertices
   while(simple_bfs(nodes, degree, adjacency))
-    ODP_Mutate_adjacency_general(nodes, degree, NULL, (int (*)[degree])adjacency);
+    ODP_Mutate_adjacency_general(nodes, degree, NULL, NULL, (int (*)[degree])adjacency);
   
   ODP_Conv_adjacency2edge(nodes, degree, NULL, adjacency, edge);
   free(adjacency);
@@ -1144,11 +1146,11 @@ void ODP_Generate_random_grid(const int width, const int height, const int degre
 
   // Give randomness
   for(int i=0;i<lines*GEN_GRAPH_ITERS;i++)
-    ODP_Mutate_adjacency_grid(width, height, degree, NULL, length, (int (*)[degree])adjacency);
+    ODP_Mutate_adjacency_grid(width, height, degree, NULL, length, NULL, (int (*)[degree])adjacency);
 
   // Repeat until there are no unreachable vertices
   while(simple_bfs(nodes, degree, adjacency))
-    ODP_Mutate_adjacency_grid(width, height, degree, NULL, length, (int (*)[degree])adjacency);
+    ODP_Mutate_adjacency_grid(width, height, degree, NULL, length, NULL, (int (*)[degree])adjacency);
     
   ODP_Conv_adjacency2edge(nodes, degree, NULL, adjacency, edge);
   free(adjacency);
