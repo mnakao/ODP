@@ -1,11 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <math.h>
-#include "odp.h"
-#define MAX_FILENAME_LENGTH 256
-#define ERROR(...) do{fprintf(stderr, __VA_ARGS__); exit(0);}while(0)
+#include "sa_common.h"
 
 static void print_help(char *argv)
 {
@@ -72,45 +65,12 @@ static void set_args(const int argc, char **argv, int *width, int *height, int *
   }
 }
 
-static double uniform_rand()
-{
-  return ((double)random()+1.0)/((double)RAND_MAX+2.0);
-}
-
-static bool accept(const int nodes, const int current_diameter, const int diameter,
-		   const double current_ASPL, const double ASPL, const double temp)
-{
-  if(diameter < current_diameter){
-    return true;
-  }
-  else if(diameter > current_diameter){
-    return false;
-  }
-  else{ //  diameter == current_diameter
-    if(ASPL <= current_ASPL){
-      return true;
-    }
-    else{
-      double diff = (current_ASPL-ASPL)*nodes*(nodes-1);
-      if(exp(diff/temp) > uniform_rand()){
-	return true;
-      }
-      else{
-	return false;
-      }
-    }
-  }
-}
-
 int main(int argc, char *argv[])
 {
-  int width, height, degree, length, seed = 0;
-  double max_temp = 100, min_temp = 0.2;
   char *fname="grid.edges";
+  int width, height, degree, length, seed = 0, diameter, current_diameter, best_diameter, low_diameter;
   long sum, best_sum, ncalcs = 10000;
-  int diameter, current_diameter, best_diameter, low_diameter;
-  double ASPL, current_ASPL, best_ASPL, low_ASPL;
-  ODP_Restore restore;
+  double max_temp = 100, min_temp = 0.2, ASPL, current_ASPL, best_ASPL, low_ASPL;
 
   set_args(argc, argv, &width, &height, &degree, &length, fname, &seed, &ncalcs, &max_temp, &min_temp);
   int nodes = width * height;
@@ -128,8 +88,7 @@ int main(int argc, char *argv[])
   int (*adjacency)[degree] = malloc(sizeof(int) * nodes * degree); // int adjacency[nodes][degree];
   int (*best_adjacency)[degree] = malloc(sizeof(int) * nodes * degree); // int best_adjacency[nodes][degree];
   
-  ODP_Srand(seed);
-  ODP_Generate_random_grid(width, height, degree, length, edge);
+  ODP_Generate_random_grid(width, height, degree, length, seed, edge);
   ODP_Conv_edge2adjacency(nodes, lines, edge, adjacency);
   
   ODP_Init_aspl(nodes, degree, NULL);
@@ -151,7 +110,7 @@ int main(int argc, char *argv[])
       if(i%10000 == 0)
 	printf("%ld\t%f\t%d\t%f\n", i, temp, best_diameter-low_diameter, best_ASPL-low_ASPL);
 
-      ODP_Mutate_adjacency_grid(width, height, degree, NULL, length, &restore, adjacency);
+      mutate_adjacency_grid(width, height, degree, length, adjacency);
       ODP_Set_aspl(adjacency, &diameter, &sum, &ASPL);
       if(diameter < best_diameter || (diameter == best_diameter && ASPL < best_ASPL)){
 	best_diameter = diameter;
@@ -169,7 +128,7 @@ int main(int argc, char *argv[])
 	current_ASPL     = ASPL;
       }
       else{
-	ODP_Restore_adjacency(restore, adjacency);
+	restore_adjacency(degree, (int *)adjacency);
       }
       temp *= cooling_rate;
     }
@@ -177,6 +136,7 @@ int main(int argc, char *argv[])
   
   ODP_Finalize_aspl();
   ODP_Conv_adjacency2edge(nodes, degree, NULL, best_adjacency, edge);
+  
   printf("---\n");
   printf("Diameter       = %d\n", best_diameter);
   printf("Diameter Gap   = %d (%d - %d)\n", best_diameter - low_diameter, best_diameter, low_diameter);

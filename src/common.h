@@ -23,16 +23,6 @@
   #include <cuda.h>
 #endif
 
-typedef struct {
-  int u[2];
-  int v[2];
-  int u_d[2];
-  int v_d[2];
-  int random_value;
-  int degree;
-  int based_nodes;
-} ODP_Restore;
-
 #define ERROR(...) do{fprintf(stderr,__VA_ARGS__); exit(1);}while(0)
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
@@ -43,6 +33,8 @@ typedef struct {
 #define ASPL_SAVING 2
 #define NOT_VISITED 0
 #define VISITED     1
+#define MUTATE_1OPT 1
+#define	MUTATE_2OPT 2
 
 #ifdef __NVCC__
 #define POPCNT(a) __popcll(a)

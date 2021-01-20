@@ -6,13 +6,13 @@ int main()
 {
   int nodes = 100, degree = 5, diameter, low_diameter;
   int lines = (nodes * degree)/2;
+  unsigned int seed = 1;
   long sum;
   double ASPL, low_ASPL;
   char *fname="general.edges";
 
   int (*edge)[2] = malloc(sizeof(int)*lines*2); // int edge[lines][2];
-  ODP_Srand(1);
-  ODP_Generate_random_general(nodes, degree, edge);
+  ODP_Generate_random_general(nodes, degree, seed, edge);
   int (*adjacency)[degree] = malloc(sizeof(int) * nodes * degree); // int adjacency[nodes][degree];
   ODP_Conv_edge2adjacency(nodes, lines, edge, adjacency);
 

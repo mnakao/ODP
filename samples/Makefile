@@ -49,10 +49,12 @@ simple_general.x: simple_general.c odp.h
 	$(CC) $(CFLAGS) -o $@ $< $(LIBS)
 simple_grid.x: simple_grid.c odp.h
 	$(CC) $(CFLAGS) -o $@ $< $(LIBS)
-sa_general.x: sa_general.c odp.h
-	$(CC) $(CFLAGS) -o $@ $< $(LIBS)
-sa_grid.x: sa_grid.c odp.h
-	$(CC) $(CFLAGS) -o $@ $< $(LIBS)
+sa_general.x: sa_general.c sa_common.o odp.h sa_common.h
+	$(CC) $(CFLAGS) sa_common.o -o $@ $< $(LIBS)
+sa_grid.x: sa_grid.c sa_common.o odp.h sa_common.h
+	$(CC) $(CFLAGS) sa_common.o -o $@ $< $(LIBS)
+sa_common.o: sa_common.c sa_common.h
+	$(CC) $(CFLAGS) -c $<
 ##############
 threads_general.x: general.c odp.h
 	$(CC) $(CFLAGS) $(OMP_FLAGS) -o $@ $< $(THREADS_LIBS)

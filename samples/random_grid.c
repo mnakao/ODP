@@ -7,13 +7,13 @@ int main()
   int width = 12, height = 8, degree = 3, length = 3;
   int nodes = width * height;
   int lines = (nodes*degree)/2, diameter, low_diameter;
+  unsigned int seed = 1;
   long sum;
   double ASPL, low_ASPL;
   char *fname="grid.edges";
 
   int (*edge)[2] = malloc(sizeof(int)*lines*2); // int edge[lines][2];
-  ODP_Srand(1);
-  ODP_Generate_random_grid(width, height, degree, length, edge);
+  ODP_Generate_random_grid(width, height, degree, length, seed, edge);
   int (*adjacency)[degree] = malloc(sizeof(int) * nodes * degree); // int adjacency[nodes][degree];
   ODP_Conv_edge2adjacency(nodes, lines, edge, adjacency);
 
