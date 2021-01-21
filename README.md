@@ -395,7 +395,7 @@ void ODP_Generate_random_general_s(int nodes, int degree, unsigned int seed, int
 * [IN] nodes : Number of nodes in a graph.
 * [IN] degree: Degree in a graph.
 * [IN] seed : Seed for random.
-* [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes. If it is 1, it works the same as ODP_Generate_random_general_s().
+* [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes. If it is 1, it works the same as ODP_Generate_random_general().
 * [OUT] edge : Edge list of a graph.
 
 ## Note
