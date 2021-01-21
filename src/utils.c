@@ -839,7 +839,6 @@ void ODP_Conv_adjacency2edge(const int nodes, const int degree, const int *num_d
     for(int i=0;i<nodes;i++)
       max_lines += num_degrees[i];
   }
-  
   int j = 0;
   if(!num_degrees){
     for(int u=0;u<nodes;u++){
@@ -858,6 +857,8 @@ void ODP_Conv_adjacency2edge(const int nodes, const int degree, const int *num_d
 	      break;
 	    }
 	  }
+	  if(k==degree)
+	    ERROR("Something Wrong ! [id=1]\n");
         }
       }
     }
@@ -867,17 +868,20 @@ void ODP_Conv_adjacency2edge(const int nodes, const int degree, const int *num_d
       for(int i=0;i<num_degrees[u];i++){
 	int v = *(adjacency + u * degree + i);
 	if(tmp[u][i] == NOT_VISITED){
-	  if(j >= max_lines) ERROR("Something Wrong ! [id=1]\n");
+	  if(j >= max_lines) ERROR("Something Wrong ! [id=2]\n");
 	  edge[j][0] = u;
 	  edge[j][1] = v;
 	  tmp[u][i]  = VISITED;
 	  j++;
-	  for(int k=0;k<num_degrees[v];k++){
+	  int k;
+	  for(k=0;k<num_degrees[v];k++){
             if(*(adjacency + v*degree+k) == u && tmp[v][k] == NOT_VISITED){
               tmp[v][k] = VISITED;
 	      break;
 	    }
 	  }
+	  if(k==degree)
+	    ERROR("Something Wrong ! [id=3]\n");
 	}
       }
     }
@@ -982,11 +986,11 @@ static bool check_isolated_vertex(const int n, const int based_nodes, const int 
 static void restore_adjacency(int *adjacency)
 {
   int based_nodes = _nodes/_symmetries;
-  adjacency[_u[0]%based_nodes * _degree + _u_d[0]] = LOCAL_VERTEX(_v[0], _v[0], _nodes, _symmetries);
-  adjacency[_v[0]%based_nodes * _degree + _v_d[0]] = LOCAL_VERTEX(_u[0], _u[0], _nodes, _symmetries);
+  adjacency[_u[0]%based_nodes * _degree + _u_d[0]] = LOCAL_VERTEX(_v[0], _u[0], _nodes, _symmetries);
+  adjacency[_v[0]%based_nodes * _degree + _v_d[0]] = LOCAL_VERTEX(_u[0], _v[0], _nodes, _symmetries);
   if(_kind == MUTATE_1OPT) return;
-  adjacency[_u[1]%based_nodes * _degree + _u_d[1]] = LOCAL_VERTEX(_v[1], _v[1], _nodes, _symmetries);
-  adjacency[_v[1]%based_nodes * _degree + _v_d[1]] = LOCAL_VERTEX(_u[1], _u[1], _nodes, _symmetries);
+  adjacency[_u[1]%based_nodes * _degree + _u_d[1]] = LOCAL_VERTEX(_v[1], _u[1], _nodes, _symmetries);
+  adjacency[_v[1]%based_nodes * _degree + _v_d[1]] = LOCAL_VERTEX(_u[1], _v[1], _nodes, _symmetries);
 }
 
 static int get_degree_index(const int u, const int v, const int u_d, const int nodes,
@@ -1007,7 +1011,7 @@ static int get_degree_index(const int u, const int v, const int u_d, const int n
 	return i;
   }
 
-  ERROR("Something wrong ! [id=2]\n");
+  ERROR("Something wrong ! [id=4]\n");
   return -1; // dummy
 }
 
@@ -1020,8 +1024,8 @@ static void check_index(const int nodes, const int degree, const int symmetries,
       get_degree_index(i, adjacency[i][j], j, nodes, symmetries, degree, adjacency);
 }
 
-void backup_restore_adjacency(const int u[2], const int u_d[2], const int v[2], const int v_d[2],
-			      const int nodes, const int degree, const int symmetries, const int kind)
+static void backup_restore_adjacency(const int u[2], const int u_d[2], const int v[2], const int v_d[2],
+				     const int nodes, const int degree, const int symmetries, const int kind)
 {
   int based_nodes = nodes/symmetries;
   memcpy(  _u,   u, sizeof(int)*2);
@@ -1055,13 +1059,14 @@ static bool mutate_adjacency_1opt_s(const int nodes, const int degree, const int
   int rnd   = get_random(symmetries-1);
   int new_v = v[0] + based_nodes*(rnd+1);
   int tmp_v = adjacency[u[0]%based_nodes][u_d[0]];
-  adjacency[u[0]%based_nodes][u_d[0]] = LOCAL_VERTEX(new_v, u[0], nodes, symmetries);
   int new_u = v[0] - (new_v - u[0]);
   int tmp_u = adjacency[v[0]%based_nodes][v_d[0]];
+  if(v[0] == tmp_v && u[0] == tmp_u) return false; // No change
+  
+  adjacency[u[0]%based_nodes][u_d[0]] = LOCAL_VERTEX(new_v, u[0], nodes, symmetries);
   adjacency[v[0]%based_nodes][v_d[0]] = LOCAL_VERTEX(new_u, v[0], nodes, symmetries);
 
-  // No change
-  return (v[0] != tmp_v || u[0] != tmp_u);
+  return true;
 }
 
 static bool mutate_adjacency_2opt_s(const int nodes, const int degree, const int *restrict num_degrees,
@@ -1170,7 +1175,6 @@ static void mutate_adjacency_general_s(const int nodes, const int degree, const 
 				       const int symmetries, int adjacency[nodes/symmetries][degree])
 {
   CHECK_SYMMETRIES(nodes, symmetries);
-  
   while(1){
     if(symmetries == 1){
       if(mutate_adjacency_2opt_s(nodes, degree, num_degrees, symmetries, adjacency))
@@ -1269,22 +1273,42 @@ void check_adjacency_s(const int nodes, const int degree, const int symmetries, 
   free(edge);
 }
 
-void ODP_Generate_random_general_s(const int nodes, const int degree, const int symmetries,
-				   const unsigned int seed, int (*edge)[2])
+void ODP_Generate_random_general_s(const int nodes, const int degree, const unsigned int seed,
+				   const int symmetries, int (*edge)[2])
 {
   CHECK_SYMMETRIES(nodes, symmetries);
-
+  CHECK_PARAMETERS(nodes, degree);
+  
   int based_nodes = nodes/symmetries;
   int lines       = (nodes*degree)/2;
   int based_lines = lines/symmetries;
-  
-  ODP_Generate_random_general(based_nodes, degree, seed, edge);
-  for(int i=1;i<symmetries;i++){
-    for(int j=0;j<based_lines;j++){
-      for(int k=0;k<2;k++){
-        int v = edge[j][k] + based_nodes * i;
-        edge[i*based_lines+j][k] = NORM(v, nodes);
+
+  if(based_nodes%2==0 || degree % 2 == 0){
+    ODP_Generate_random_general(based_nodes, degree, seed, edge);
+    for(int i=1;i<symmetries;i++){
+      for(int j=0;j<based_lines;j++){
+	for(int k=0;k<2;k++){
+	  int v = edge[j][k] + based_nodes * i;
+	  edge[i*based_lines+j][k] = NORM(v, nodes);
+	}
       }
+    }
+  }
+  else{
+    ODP_Generate_random_general(based_nodes, degree-1, seed, edge);
+    int based_lines_shrink = (based_nodes*(degree-1))/2;
+    for(int i=1;i<symmetries;i++){
+      for(int j=0;j<based_lines_shrink;j++){
+	for(int k=0;k<2;k++){
+	  int v = edge[j][k] + based_nodes * i;
+	  edge[i*based_lines_shrink+j][k] = NORM(v, nodes);
+	}
+      }
+    }
+    int offset = lines - nodes/2;
+    for(int i=0;i<nodes/2;i++){
+      edge[offset+i][0] = i;
+      edge[offset+i][1] = i + nodes/2;
     }
   }
 
@@ -1292,11 +1316,23 @@ void ODP_Generate_random_general_s(const int nodes, const int degree, const int 
   ODP_Conv_edge2adjacency_s(nodes, lines, edge, symmetries, adjacency);
 
   // Give randomness
-  for(int i=0;i<lines*GEN_GRAPH_ITERS;i++)
-    mutate_adjacency_general_s(nodes, degree, NULL, symmetries, (int (*)[degree])adjacency);
+  if(symmetries != 1)
+    for(int i=0;i<based_lines*GEN_GRAPH_ITERS;i++)
+      mutate_adjacency_general_s(nodes, degree, NULL, symmetries, (int (*)[degree])adjacency);
 
-  // May need to check the concatenation of a graph.
-  ODP_Conv_adjacency2edge_s(nodes, degree, NULL, adjacency, symmetries, edge);  
+  // Repeat until there are no unreachable vertices
+  /*
+  ODP_Conv_adjacency2edge_s(nodes, degree, NULL, adjacency, symmetries, edge);
+  int *adjacency_full = malloc(sizeof(int) * nodes * degree);
+  ODP_Conv_edge2adjacency(nodes, lines, edge, adjacency_full);
+  while(simple_bfs(nodes, degree, adjacency_full)){
+    mutate_adjacency_general_s(nodes, degree, NULL, symmetries, (int (*)[degree])adjacency);
+    ODP_Conv_adjacency2edge_s(nodes, degree, NULL, adjacency, symmetries, edge);
+    ODP_Conv_edge2adjacency(nodes, lines, edge, adjacency_full);
+  }
+  free(adjacency_full);*/
+
+  ODP_Conv_adjacency2edge_s(nodes, degree, NULL, adjacency, symmetries, edge);
   free(adjacency);
 }
 

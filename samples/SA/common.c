@@ -1,4 +1,4 @@
-#include "sa_common.h"
+#include "common.h"
 static int _u[2], _u_d[2], _v[2], _v_d[2], _rnd;
 static bool check_length(const int v, const int w, const int height, const int length)
 {
@@ -69,8 +69,7 @@ static int get_degree_index(const int u, const int v, const int u_d,
     	return i;
   }
 
-  fprintf(stderr, "Something wrong !\n");
-  exit(1);
+  ERROR("Something wrong !\n");
   return -1; // dummy
 }
 
