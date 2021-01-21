@@ -247,13 +247,10 @@ static bool mutate_adjacency_1opt_s(const int nodes, const int degree,
   backup_restore_adjacency(u, u_d, v, v_d, nodes, symmetries, MUTATE_1OPT);
   if(symmetries%2 == 0 && abs(u[0]-v[0]) == nodes/2) return false;
 
-  // When it is an even number, there is one more pattern than when it is an odd number.
-  // However, since the added pattern connects the vertices on the diagonal line,
-  // As a result of some experiments, the pattern does not seem to be good, so comment it out.
-    int rnd   = (symmetries%2 == 1)? get_random(symmetries-1) : get_random(symmetries);
-    int new_v = (rnd != symmetries-1)? v[0] + based_nodes*(rnd+1) : u[0] + based_nodes*(symmetries/2);
-    //  int rnd   = get_random(symmetries-1);
-    //  int new_v = v[0] + based_nodes*(rnd+1);
+  int rnd   = (symmetries%2 == 1)? get_random(symmetries-1) : get_random(symmetries);
+  int new_v = (rnd != symmetries-1)? v[0] + based_nodes*(rnd+1) : u[0] + based_nodes*(symmetries/2);
+  //  int rnd   = get_random(symmetries-1);
+  //  int new_v = v[0] + based_nodes*(rnd+1);
   int tmp_v = adjacency[u[0]%based_nodes][u_d[0]];
   int new_u = v[0] - (new_v - u[0]);
   int tmp_u = adjacency[v[0]%based_nodes][v_d[0]];
