@@ -5,6 +5,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <math.h>
+#include <sys/time.h>
 #include "odp.h"
 
 #define MAX_FILENAME_LENGTH 256
@@ -18,4 +19,5 @@ void mutate_adjacency_grid(const int width, const int height, const int degree,
 void restore_adjacency(const int degree, int *adjacency);
 bool accept(const int nodes, const int current_diameter, const int diameter,
 	    const double current_ASPL, const double ASPL, const double temp);
+double get_time();
 #endif

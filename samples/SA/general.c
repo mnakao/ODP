@@ -75,8 +75,10 @@ int main(int argc, char *argv[])
   int (*edge)[2] = malloc(sizeof(int)*lines*2);                         // int edge[lines][2];
   int (*adjacency)[degree] = malloc(sizeof(int) * nodes * degree);      // int adjacency[nodes][degree];
   int (*best_adjacency)[degree] = malloc(sizeof(int) * nodes * degree); // int best_adjacency[nodes][degree];
-  
+
+  double create_time = get_time();
   ODP_Generate_random_general(nodes, degree, seed, edge);
+  create_time = get_time() - create_time;
   ODP_Conv_edge2adjacency(nodes, lines, edge, adjacency);
   
   ODP_Init_aspl(nodes, degree, NULL);
@@ -87,6 +89,7 @@ int main(int argc, char *argv[])
   memcpy(best_adjacency, adjacency, sizeof(int)*nodes*degree);
 
   ODP_Set_lbounds_general(nodes, degree, &low_diameter, &low_ASPL);
+  double sa_time = get_time();
   if(diameter == low_diameter && ASPL == low_ASPL){
     printf("Find optimum solution\n");
   }
@@ -121,7 +124,7 @@ int main(int argc, char *argv[])
       temp *= cooling_rate;
     }
   }
-  
+  sa_time = get_time() - sa_time;
   ODP_Finalize_aspl();
   ODP_Conv_adjacency2edge(nodes, degree, NULL, best_adjacency, edge);
   
@@ -132,6 +135,7 @@ int main(int argc, char *argv[])
   printf("ASPL Gap       = %.10f (%.10f - %.10f)\n", best_ASPL - low_ASPL, best_ASPL, low_ASPL);
   printf("Multiple edges = %s\n", (ODP_Check_multiple_edges(lines, edge))? "Exist" : "None");
   printf("Loop           = %s\n", (ODP_Check_loop(lines, edge))? "Exist" : "None");
+  printf("Time           = %f/%f sec. (Create Graph/SA)\n", create_time, sa_time);
 
   ODP_Write_edge_general(lines, edge, fname);
   printf("Generate ./%s\n", fname);

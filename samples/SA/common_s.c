@@ -1,6 +1,13 @@
 #include "common_s.h"
 static int _u[2], _v[2], _u_d[2], _v_d[2], _nodes, _symmetries, _kind;
 
+double get_time()
+{
+  struct timeval t;
+  gettimeofday(&t, NULL);
+  return t.tv_sec + 1.0e-6 * t.tv_usec;
+}
+
 static int NORM(int x, const int nodes)
 {
   while(x < 0 || x >= nodes)

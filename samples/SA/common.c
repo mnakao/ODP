@@ -1,5 +1,13 @@
 #include "common.h"
 static int _u[2], _u_d[2], _v[2], _v_d[2], _rnd;
+
+double get_time()
+{
+  struct timeval t;
+  gettimeofday(&t, NULL);
+  return t.tv_sec + 1.0e-6 * t.tv_usec;
+}
+
 static bool check_length(const int v, const int w, const int height, const int length)
 {
   int w0 = WIDTH(v,height);
