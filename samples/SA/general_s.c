@@ -144,8 +144,6 @@ int main(int argc, char *argv[])
   printf("Diameter Gap   = %d (%d - %d)\n", best_diameter - low_diameter, best_diameter, low_diameter);
   printf("ASPL           = %.10f (%ld/%.0f)\n", best_ASPL, best_sum, (double)nodes*(nodes-1)/2);
   printf("ASPL Gap       = %.10f (%.10f - %.10f)\n", best_ASPL - low_ASPL, best_ASPL, low_ASPL);
-  printf("Multiple edges = %s\n", (ODP_Check_multiple_edges(lines, edge))? "Exist" : "None");
-  printf("Loop           = %s\n", (ODP_Check_loop(lines, edge))? "Exist" : "None");
   printf("Time           = %f/%f sec. (Create Graph/SA)\n", create_time, sa_time);
   
   //  ODP_Write_edge_general(lines, edge, fname);

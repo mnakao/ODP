@@ -388,6 +388,16 @@ void ODP_Conv_adjacency2edge_s(int nodes, int degree, int num_degrees[nodes], in
 * [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes. If it is 1, it works the same as ODP_Conv_adjacency2edge().
 * [OUT] edge : Edge list of a graph.
 
+### Generate a random graph
+```
+void ODP_Generate_random_general_s(int nodes, int degree, unsigned int seed, int symmetries, int edge[lines][2])
+```
+* [IN] nodes : Number of nodes in a graph.
+* [IN] degree: Degree in a graph.
+* [IN] seed : Seed for random.
+* [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes. If it is 1, it works the same as ODP_Generate_random_general_s().
+* [OUT] edge : Edge list of a graph.
+
 ## Note
 The software also supports non-regular graphs, but usage of memory may be not efficient.
 Because the format of the adjacency matrix is `int adjacency[nodes][degree]`, which is commanly used in regular and non-regular graphs.
