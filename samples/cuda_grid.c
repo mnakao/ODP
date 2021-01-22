@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
   int degree = ODP_Get_degree(nodes, lines, edge);
 
   int (*adjacency)[degree] = malloc(sizeof(int) * nodes * degree); // int adjacency[nodes][degree];
-  ODP_Conv_edge2adjacency(nodes, lines, edge, adjacency);
+  ODP_Conv_edge2adjacency(nodes, lines, degree, edge, adjacency);
   
   ODP_Init_aspl_cuda(nodes, degree, NULL);
   ODP_Set_aspl_cuda(adjacency, &diameter, &sum, &ASPL);

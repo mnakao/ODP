@@ -14,7 +14,7 @@ void ODP_Set_aspl_general(const char *fname, int *nodes, int *degree,
   *degree = ODP_Get_degree(*nodes, lines, edge);
 
   int (*adjacency)[*degree] = malloc(sizeof(int) * (*nodes) * (*degree)); // int adjacency[nodes][degree];
-  ODP_Conv_edge2adjacency(*nodes, lines, edge, (int *)adjacency);
+  ODP_Conv_edge2adjacency(*nodes, lines, *degree, edge, (int *)adjacency);
   ODP_Set_lbounds_general(*nodes, *degree, low_diameter, low_ASPL);
 
   int *num_degrees = malloc(sizeof(int) * (*nodes));
@@ -39,7 +39,7 @@ void ODP_Set_aspl_grid(const char *fname, int *width, int *height, int *degree, 
   *degree = ODP_Get_degree(nodes, lines, edge);
 
   int (*adjacency)[*degree] = malloc(sizeof(int) * nodes * (*degree)); // int adjacency[nodes][degree];
-  ODP_Conv_edge2adjacency(nodes, lines, edge, (int *)adjacency);
+  ODP_Conv_edge2adjacency(nodes, lines, *degree, edge, (int *)adjacency);
   *length = ODP_Get_length(lines, edge, *height);
   ODP_Set_lbounds_grid(*width, *height, *degree, *length, low_diameter, low_ASPL);
 

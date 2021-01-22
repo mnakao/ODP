@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
   char *fname="general_s.edges";
   int nodes, degree, symmetries, seed = 0, diameter, current_diameter, best_diameter, low_diameter;
   long sum, best_sum, ncalcs = 10000;
-  double max_temp = 238.91, min_temp = 0.217147, ASPL, current_ASPL, best_ASPL, low_ASPL;
+  double max_temp = 100, min_temp = 0.2, ASPL, current_ASPL, best_ASPL, low_ASPL;
 
   set_args(argc, argv, &nodes, &degree, &symmetries, fname, &seed, &ncalcs, &max_temp, &min_temp);
   if(nodes%2 == 1 && degree%2 == 1)
@@ -87,11 +87,11 @@ int main(int argc, char *argv[])
   double create_time = get_time();
   ODP_Generate_random_general_s(nodes, degree, seed, symmetries, edge);
   create_time = get_time() - create_time;
-  ODP_Conv_edge2adjacency_s(nodes, lines, edge, symmetries, adjacency);
+  ODP_Conv_edge2adjacency_general_s(nodes, lines, degree, edge, symmetries, adjacency);
 
   ODP_Init_aspl_s(nodes, degree, NULL, symmetries);
   ODP_Set_aspl(adjacency, &diameter, &sum, &ASPL);
-  ODP_Conv_adjacency2edge_s(nodes, degree, NULL, adjacency, symmetries, edge);
+  ODP_Conv_adjacency2edge_general_s(nodes, degree, NULL, adjacency, symmetries, edge);
 
   best_diameter = current_diameter = diameter;
   best_sum      = sum;
@@ -137,7 +137,7 @@ int main(int argc, char *argv[])
   }
   sa_time = get_time() - sa_time;
   ODP_Finalize_aspl();
-  ODP_Conv_adjacency2edge_s(nodes, degree, NULL, best_adjacency, symmetries, edge);
+  ODP_Conv_adjacency2edge_general_s(nodes, degree, NULL, best_adjacency, symmetries, edge);
   
   printf("---\n");
   printf("Diameter       = %d\n", best_diameter);

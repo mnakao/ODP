@@ -15,7 +15,7 @@ int main()
   int (*edge)[2] = malloc(sizeof(int)*lines*2); // int edge[lines][2];
   ODP_Generate_random_grid(width, height, degree, length, seed, edge);
   int (*adjacency)[degree] = malloc(sizeof(int) * nodes * degree); // int adjacency[nodes][degree];
-  ODP_Conv_edge2adjacency(nodes, lines, edge, adjacency);
+  ODP_Conv_edge2adjacency(nodes, lines, degree, edge, adjacency);
 
   ODP_Init_aspl(nodes, degree, NULL);
   ODP_Set_aspl(adjacency, &diameter, &sum, &ASPL);

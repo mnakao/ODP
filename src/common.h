@@ -47,7 +47,7 @@ extern void ODP_Set_lbounds_grid(const int m, const int n, const int degree, con
 extern void ODP_Set_degrees(const int nodes, const int lines, int (*edge)[2], int* num_degrees);
 extern void ODP_Read_edge_general(const char* fname, int (*edge)[2]);
 extern void ODP_Read_edge_grid(const char *fname, int *w, int *h, int (*edge)[2]);
-extern void ODP_Conv_edge2adjacency(const int nodes, const int lines, const int (*edge)[2], int *adjacency);
+extern void ODP_Conv_edge2adjacency(const int nodes, const int lines, const int degree, const int (*edge)[2], int *adjacency);
 extern void ODP_Conv_adjacency2edge(const int nodes, const int degree, const int *num_degrees, const int *adjacency, int (*edge)[2]);
 extern int ODP_Get_lines(const char* fname);
 extern int ODP_Get_nodes(const int lines, const int (*edge)[2]);

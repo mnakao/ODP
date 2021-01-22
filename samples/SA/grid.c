@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
   int (*best_adjacency)[degree] = malloc(sizeof(int) * nodes * degree); // int best_adjacency[nodes][degree];
   
   ODP_Generate_random_grid(width, height, degree, length, seed, edge);
-  ODP_Conv_edge2adjacency(nodes, lines, edge, adjacency);
+  ODP_Conv_edge2adjacency(nodes, lines, degree, edge, adjacency);
   
   ODP_Init_aspl(nodes, degree, NULL);
   ODP_Set_aspl(adjacency, &diameter, &sum, &ASPL);

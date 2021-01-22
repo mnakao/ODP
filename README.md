@@ -195,10 +195,11 @@ void ODP_Print_edge(int lines, int edge[lines][2])
 
 ### Convert an edge list to an adjacency matrix
 ```
-void ODP_Conv_edge2adjacency(int nodes, int lines, int edge[lines][2], int adjacency[nodes][degree])
+void ODP_Conv_edge2adjacency(int nodes, int lines, int degree, int edge[lines][2], int adjacency[nodes][degree])
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] lines : Number of lines in an edge list.
+* [IN] degree : Degree in a graph.
 * [IN] edge : Edge list of a graph.
 * [OUT] adjacency : Adjacency matrix of a graph.
 
@@ -369,10 +370,11 @@ Note that the ODP_Set_aspl\*() and ODP_Finalize_aspl\*() can be used in common.
 
 ### Convert an edge list to an adjacency matrix
 ```
-void ODP_Conv_edge2adjacency_s(int nodes, int lines, int edge[lines][2], int symmetries, int adjacency[nodes/symmetries][degree])
+void ODP_Conv_edge2adjacency_s(int nodes, int lines, int degree, int edge[lines][2], int symmetries, int adjacency[nodes/symmetries][degree])
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] lines : Number of lines in an edge list.
+* [IN] degree: Degree in a graph.
 * [IN] edge : Edge list of a graph.
 * [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes. If it is 1, it works the same as ODP_Conv_edge2adjacency().
 * [OUT] adjacency : Adjacency matrix of a graph.

@@ -79,8 +79,8 @@ int main(int argc, char *argv[])
   double create_time = get_time();
   ODP_Generate_random_general(nodes, degree, seed, edge);
   create_time = get_time() - create_time;
-  ODP_Conv_edge2adjacency(nodes, lines, edge, adjacency);
-  
+  ODP_Conv_edge2adjacency(nodes, lines, degree, edge, adjacency);
+
   ODP_Init_aspl(nodes, degree, NULL);
   ODP_Set_aspl(adjacency, &diameter, &sum, &ASPL);
   best_diameter = current_diameter = diameter;
