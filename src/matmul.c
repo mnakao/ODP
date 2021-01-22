@@ -1,3 +1,4 @@
+#include "common.h"
 static void matmul_nregular_avx2(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
                                  const int *restrict num_degrees, const int *restrict adjacency, const int elements,
                                  const int quarter_elements)

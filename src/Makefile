@@ -48,9 +48,9 @@ aspl_mpi_cuda.o: aspl_mpi_cuda.cu common.h parameter.h
 	$(NVCC) $(CUDA_FLAGS) -o $@ -c $< -ccbin mpicc
 utils.o: utils.c common.h parameter.h
 	$(CC) $(CFLAGS) -o $@ -c $<
-matmul.o: utils.c common.h parameter.h
+matmul.o: matmul.c common.h parameter.h
 	$(CC) $(CFLAGS) -o $@ -c $<
-matmul_threads.o: utils.c common.h parameter.h
+matmul_threads.o: matmul.c common.h parameter.h
 	$(CC) $(CFLAGS) $(OMP_FLAGS) -o $@ -c $<
 utils_cuda.o: utils_cuda.cu common.h parameter.h
 	$(NVCC) $(CUDA_FLAGS) -o $@ -c $<
