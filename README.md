@@ -179,7 +179,7 @@ void ODP_Write_edge_grid   (int lines, int height, int edge[lines][2], char *fna
 
 ### Print an adjacency matrix
 ```
-void ODP_Print_adjacency(int nodes, int degree, int num_degrees[nodes], in adjacency[nodse][degree])
+void ODP_Print_adjacency(int nodes, int degree, int num_degrees[nodes], int adjacency[nodse][degree])
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] degree : Degree in a graph.
