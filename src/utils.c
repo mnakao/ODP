@@ -1019,62 +1019,42 @@ void ODP_Generate_random_grid(const int width, const int height, const int degre
   free(adjacency);
 }
 
-void ODP_Conv_edge2adjacency_grid_4s(const int width, const int height, const int lines, const int degree,
-				     const int edge[lines][2], int (*adjacency)[degree])
+void ODP_Conv_edge2adjacency_grid_s(const int width, const int height, const int lines, const int degree,
+				    const int edge[lines][2], const int symmetries, int (*adjacency)[degree])
 {
-  if(width%2 != 0)
-    ERROR("width(%d) must be divisible by 2\n", width);
-  else if(height%2 != 0)
-    ERROR("height(%d) must be divisible by 2\n", height);
-  else if(width != height)
-    ERROR("Must be the same as width(%d) and height(%d)\n", width, height);
+  if(symmetries != 1 && symmetries != 2 && symmetries != 4)
+    ERROR("symmetries(%d) must be 1 or 2 or 4\n", symmetries);
 
-  int nodes          = width * height;
-  int (*tmp)[degree] = malloc(sizeof(int)*nodes*degree);
-  ODP_Conv_edge2adjacency(nodes, lines, degree, edge, (int *)tmp);
-  
-  for(int w=0;w<width/2;w++)
-    for(int h=0;h<height/2;h++)
-      for(int i=0;i<degree;i++)
-	adjacency[w*height/2+h][i] = tmp[w*height+h][i];
-
-  free(tmp);
-}
-
-void ODP_Conv_edge2adjacency_grid_2uds(const int width, const int height, const int lines, const int degree,
-				       const int edge[lines][2], int (*adjacency)[degree])
-{
-  if(height%2 != 0)
-    ERROR("height(%d) must be divisible by 2\n", height);
-
-  int nodes          = width * height;
-  int (*tmp)[degree] = malloc(sizeof(int)*nodes*degree);
-  ODP_Conv_edge2adjacency(nodes, lines, degree, edge, (int *)tmp);
-
-  for(int w=0;w<width;w++)
-    for(int h=0;h<height/2;h++)
-      for(int i=0;i<degree;i++)
-        adjacency[w*height/2+h][i] = tmp[w*height+h][i];
-
-  free(tmp); 
-}
-
-void ODP_Conv_edge2adjacency_grid_2lrs(const int width, const int height, const int lines, const int degree,
-				       const int edge[lines][2], int (*adjacency)[degree])
-{
-  if(width%2 != 0)
-    ERROR("width(%d) must be divisible by 2\n", width);
-
-  int nodes          = width * height;
-  int (*tmp)[degree] = malloc(sizeof(int)*nodes*degree);
-  ODP_Conv_edge2adjacency(nodes, lines, degree, edge, (int *)tmp);
-
-  for(int w=0;w<width/2;w++)
-    for(int h=0;h<height;h++)
-      for(int i=0;i<degree;i++)
-      	adjacency[w*height+h][i] = tmp[w*height+h][i];
-
-  free(tmp);
+  int nodes = width * height;
+  if(symmetries == 1){
+    ODP_Conv_edge2adjacency(nodes, lines, degree, edge, (int *)adjacency);
+  }
+  else{
+    if(width%2 != 0)
+      ERROR("width(%d) must be divisible by 2\n", width);
+    
+    int (*tmp)[degree] = malloc(sizeof(int)*nodes*degree);
+    ODP_Conv_edge2adjacency(nodes, lines, degree, edge, (int *)tmp);
+    
+    if(symmetries == 2){
+      for(int w=0;w<width/2;w++)
+	for(int h=0;h<height;h++)
+	  for(int i=0;i<degree;i++)
+	    adjacency[w*height+h][i] = tmp[w*height+h][i];
+    }
+    else{ // symmetries == 4
+      if(height%2 != 0)
+	ERROR("height(%d) must be divisible by 2\n", height);
+      else if(width != height)
+	ERROR("Must be the same as width(%d) and height(%d)\n", width, height);
+      
+      for(int w=0;w<width/2;w++)
+	for(int h=0;h<height/2;h++)
+	  for(int i=0;i<degree;i++)
+	    adjacency[w*height/2+h][i] = tmp[w*height+h][i];
+    }
+    free(tmp);
+  }
 }
 
 static int ROTATE(const int v, const int width, const int height, const int symmetries, const int degree)
@@ -1092,7 +1072,7 @@ static int ROTATE(const int v, const int width, const int height, const int symm
   }
 
   // symmetries == 4
-  if(symmetries != 90 && degree != 180 && degree != 270)
+  if(degree != 90 && degree != 180 && degree != 270)
     ERROR("Invalid degree\n");
   
   if(degree == 90)       return h*height + (height-w-1);
@@ -1100,27 +1080,52 @@ static int ROTATE(const int v, const int width, const int height, const int symm
   else                   return (height-h-1)*height + w; // degree == 270
 }
 
-void ODP_Conv_adjacency2edge_grid_4s(const int width, const int height, const int degree, const int *num_degrees,
-				     const int (*adjacency)[degree], int (*edge)[2])
+void ODP_Conv_adjacency2edge_grid_s(const int width, const int height, const int degree, const int *num_degrees,
+				    const int (*adjacency)[degree], const int symmetries, int (*edge)[2])
 {
-  if(width%2 != 0)
-    ERROR("width(%d) must be divisible by 2\n", width);
-  else if(height%2 != 0)
-    ERROR("height(%d) must be divisible by 2\n", height);
-  else if(width != height)
-    ERROR("Must be the same as width(%d) and height(%d)\n", width, height);
+  if(symmetries != 1 && symmetries != 2 && symmetries != 4)
+    ERROR("symmetries(%d) must be 1 or 2 or 4\n", symmetries);
 
   int nodes = width * height;
-  int based_nodes = nodes/4;
-  ODP_Conv_adjacency2edge(based_nodes, degree, num_degrees, (int *)adjacency, edge);
-  int lines = get_lines(nodes, degree, num_degrees);
-  int based_lines = lines / 4;
-  
-  for(int i=0;i<based_lines;i++){
-    for(int j=0;j<2;j++){
-      edge[based_lines  +i][j] = ROTATE(edge[i][j], width, height, 4,  90);
-      edge[based_lines*2+i][j] = ROTATE(edge[i][j], width, height, 4, 180);
-      edge[based_lines*3+i][j] = ROTATE(edge[i][j], width, height, 4, 360);
+  if(symmetries == 1){
+    ODP_Conv_adjacency2edge(nodes, degree, num_degrees, (int *)adjacency, edge);
+  }
+  else{
+    if(width%2 != 0)
+      ERROR("width(%d) must be divisible by 2\n", width);
+    
+    int (*tmp)[degree] = malloc(sizeof(int) * nodes * degree);    
+    int based_nodes = nodes/symmetries;
+    if(symmetries == 2){
+      for(int i=0;i<based_nodes;i++){
+	int d = (!num_degrees)? degree : num_degrees[i];
+	for(int k=0;k<d;k++){
+	  int v = adjacency[i][k];
+	  tmp[i][k] = v;
+	  tmp[ROTATE(i, width, height, symmetries, 180)][k] = ROTATE(v, width, height, symmetries, 180);
+	}
+      }
     }
+    else{ // symmetries == 4
+      if(height%2 != 0)
+	ERROR("height(%d) must be divisible by 2\n", height);
+      else if(width != height)
+	ERROR("Must be the same as width(%d) and height(%d)\n", width, height);
+
+      int based_height = height/2;
+      for(int i=0;i<based_nodes;i++){
+	int d = (!num_degrees)? degree : num_degrees[i];
+	int j = (i/based_height)*height + (i%based_height);
+	for(int k=0;k<d;k++){
+	  int v = adjacency[i][k];
+	  tmp[j][k] = v;
+	  tmp[ROTATE(j, width, height, symmetries,  90)][k] = ROTATE(v, width, height, symmetries,  90);
+	  tmp[ROTATE(j, width, height, symmetries, 180)][k] = ROTATE(v, width, height, symmetries, 180);
+	  tmp[ROTATE(j, width, height, symmetries, 270)][k] = ROTATE(v, width, height, symmetries, 270);
+	}
+      }
+      ODP_Conv_adjacency2edge(nodes, degree, num_degrees, (int *)tmp, edge);
+    }
+    free(tmp);
   }
 }
