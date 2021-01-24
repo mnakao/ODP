@@ -285,7 +285,7 @@ int ODP_Get_length(int lines, int edge[lines][2], int height)
 ```
 bool ODP_Check_general(char *fname)
 ```
-* [RETUREN] : When an input is a general graph, it returns true.
+* [RETURN] : When an input is a general graph, it returns true.
 * [IN] fname : File name of a graph.
 
 ### Check if a graph has multiple edges
