@@ -1116,18 +1116,6 @@ void ODP_Generate_random_general(const int nodes, const int degree, const unsign
   free(adjacency);
 }
 
-void check_adjacency_s(const int nodes, const int degree, const int symmetries, int *adjacency)
-{
-  int lines = (nodes*degree)/2;
-  int (*edge)[2] = malloc(sizeof(int) * lines * 2);
-  ODP_Conv_adjacency2edge_general_s(nodes, degree, NULL, adjacency, symmetries, edge);
-  int new_degree = ODP_Get_degree(nodes, lines, edge);
-  if(new_degree != degree)
-    ERROR("Something Wrong %d,%d\n", new_degree, degree);
-
-  free(edge);
-}
-
 void ODP_Generate_random_general_s(const int nodes, const int degree, const unsigned int seed,
 				   const int symmetries, int (*edge)[2])
 {
@@ -1180,16 +1168,7 @@ void ODP_Generate_random_general_s(const int nodes, const int degree, const unsi
     mutate_adjacency_general_s(nodes, degree, NULL, symmetries, (int (*)[degree])adjacency);
 
   // Repeat until there are no unreachable vertices
-  /*
-  ODP_Conv_adjacency2edge_general_s(nodes, degree, NULL, adjacency, symmetries, edge);
-  int *adjacency_full = malloc(sizeof(int) * nodes * degree);
-  ODP_Conv_edge2adjacency(nodes, lines, degree, edge, adjacency_full);
-  while(simple_bfs(nodes, degree, adjacency_full)){
-    mutate_adjacency_general_s(nodes, degree, NULL, symmetries, (int (*)[degree])adjacency);
-    ODP_Conv_adjacency2edge_general_s(nodes, degree, NULL, adjacency, symmetries, edge);
-    ODP_Conv_edge2adjacency(nodes, lines, degree, edge, adjacency_full);
-  }
-  free(adjacency_full);*/
+  // (omit)
 
   ODP_Conv_adjacency2edge_general_s(nodes, degree, NULL, adjacency, symmetries, edge);
   free(adjacency);
