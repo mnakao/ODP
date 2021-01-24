@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
   char *fname="general.edges";
   int nodes, degree, seed = 0, diameter, current_diameter, best_diameter, low_diameter;
   long sum, best_sum, ncalcs = 10000;
-  double max_temp = 100, min_temp = 0.2, ASPL, current_ASPL, best_ASPL, low_ASPL;
+  double max_temp = 238.91, min_temp = 0.22, ASPL, current_ASPL, best_ASPL, low_ASPL;
 
   set_args(argc, argv, &nodes, &degree, fname, &seed, &ncalcs, &max_temp, &min_temp);
   if(nodes%2 == 1 && degree%2 == 1)
@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
       if(i%10000 == 0)
 	printf("%ld\t%f\t%d\t%f\n", i, temp, best_diameter-low_diameter, best_ASPL-low_ASPL);
       
-      mutate_adjacency_general(nodes, degree, adjacency);
+      mutate_adjacency_general(nodes, degree, NULL, adjacency);
       ODP_Set_aspl(adjacency, &diameter, &sum, &ASPL);
       if(diameter < best_diameter || (diameter == best_diameter && ASPL < best_ASPL)){
 	best_diameter = diameter;
@@ -119,7 +119,7 @@ int main(int argc, char *argv[])
 	current_ASPL     = ASPL;
       }
       else{
-	restore_adjacency(degree, (int *)adjacency);
+	restore_adjacency((int *)adjacency);
       }
       temp *= cooling_rate;
     }
