@@ -143,29 +143,17 @@ static void matmul_regular_s(const uint64_t *restrict A, uint64_t *restrict B, c
 }
 
 void ODP_Matmul(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
-                const int *restrict num_degrees, const int *restrict adjacency, const bool enable_avx2,
+                const int *restrict num_degrees, const int *restrict adjacency, 
                 const int elements, const int symmetries)
 {
 #ifdef __AVX2__
   if(symmetries == 1){
-    if(enable_avx2){
-      if(num_degrees) matmul_nregular_avx2(A, B, nodes, degree, num_degrees, adjacency, elements, elements/4);
-      else            matmul_regular_avx2(A, B, nodes, degree, adjacency, elements, elements/4);
-    }
-    else{
-      if(num_degrees) matmul_nregular(A, B, nodes, degree, num_degrees, adjacency, elements);
-      else            matmul_regular(A, B, nodes, degree, adjacency, elements);
-    }
+    if(num_degrees) matmul_nregular_avx2(A, B, nodes, degree, num_degrees, adjacency, elements, elements/4);
+    else            matmul_regular_avx2(A, B, nodes, degree, adjacency, elements, elements/4);
   }
   else{
-    if(enable_avx2){
-      if(num_degrees) matmul_nregular_avx2_s(A, B, nodes, degree, num_degrees, adjacency, elements, elements/4, nodes/symmetries);
-      else            matmul_regular_avx2_s(A, B, nodes, degree, adjacency, elements, elements/4, nodes/symmetries);
-    }
-    else{
-      if(num_degrees) matmul_nregular_s(A, B, nodes, degree, num_degrees, adjacency, elements, nodes/symmetries);
-      else            matmul_regular_s(A, B, nodes, degree, adjacency, elements, nodes/symmetries);
-    }
+    if(num_degrees) matmul_nregular_avx2_s(A, B, nodes, degree, num_degrees, adjacency, elements, elements/4, nodes/symmetries);
+    else            matmul_regular_avx2_s(A, B, nodes, degree, adjacency, elements, elements/4, nodes/symmetries);
   }
 #else
   if(symmetries == 1){
@@ -320,35 +308,23 @@ static void matmul_regular_CHUNK_s(const uint64_t *restrict A, uint64_t *restric
 }
 
 void ODP_Matmul_CHUNK(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
-                      const int *num_degrees, const int *restrict adjacency, const bool enable_avx2, const int symmetries)
+                      const int *num_degrees, const int *restrict adjacency, const int symmetries)
 {
 #ifdef __AVX2__
   if(symmetries == 1){
-    if(enable_avx2){
-      if(num_degrees) matmul_nregular_avx2_CHUNK(A, B, nodes, degree, num_degrees, adjacency);
-      else            matmul_regular_avx2_CHUNK(A, B, nodes, degree, adjacency);
-    }
-    else{
-      if(num_degrees) matmul_nregular_CHUNK(A, B, nodes, degree, num_degrees, adjacency);
-      else            matmul_regular_CHUNK(A, B, nodes, degree, adjacency);
-    }
+    if(num_degrees) matmul_nregular_avx2_CHUNK(A, B, nodes, degree, num_degrees, adjacency);
+    else            matmul_regular_avx2_CHUNK(A, B, nodes, degree, adjacency);
   }
-  else{ // symmetries != 1
-    if(enable_avx2){
-      if(num_degrees) matmul_nregular_avx2_CHUNK_s(A, B, nodes, degree, num_degrees, adjacency, nodes/symmetries);
-      else            matmul_regular_avx2_CHUNK_s(A, B, nodes, degree, adjacency, nodes/symmetries);
-    }
-    else{
-      if(num_degrees) matmul_nregular_CHUNK_s(A, B, nodes, degree, num_degrees, adjacency, nodes/symmetries);
-      else            matmul_regular_CHUNK_s(A, B, nodes, degree, adjacency, nodes/symmetries);
-    }
+  else{
+    if(num_degrees) matmul_nregular_avx2_CHUNK_s(A, B, nodes, degree, num_degrees, adjacency, nodes/symmetries);
+    else            matmul_regular_avx2_CHUNK_s(A, B, nodes, degree, adjacency, nodes/symmetries);
   }
 #else
   if(symmetries == 1){
     if(num_degrees) matmul_nregular_CHUNK(A, B, nodes, degree, num_degrees, adjacency);
     else            matmul_regular_CHUNK(A, B, nodes, degree, adjacency);
   }
-  else{ // symmetries != 1
+  else{
     if(num_degrees) matmul_nregular_CHUNK_s(A, B, nodes, degree, num_degrees, adjacency, nodes/symmetries);
     else            matmul_regular_CHUNK_s(A, B, nodes, degree, adjacency, nodes/symmetries);
   }
