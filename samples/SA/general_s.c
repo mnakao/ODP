@@ -6,7 +6,7 @@ static void print_help(char *argv)
 }
 
 static void set_args(const int argc, char **argv, int *nodes, int *degree, int *symmetries,
-		     char *fname, int *seed, long *ncalcs, double *max_temp, double *min_temp)
+		     char *fname, int *seed, long *ncalcs, double *max_temp, double *min_temp, bool *enable_ASPL_priority)
 {
   if(argc < 7)
     print_help(argv[0]);
@@ -54,6 +54,9 @@ static void set_args(const int argc, char **argv, int *nodes, int *degree, int *
       if(*min_temp <= 0)
         ERROR("MIN value > 0\n");
       break;
+    case 'A':
+      *enable_ASPL_priority = true;
+      break;
     default:
       print_help(argv[0]);
     }
@@ -63,11 +66,12 @@ static void set_args(const int argc, char **argv, int *nodes, int *degree, int *
 int main(int argc, char *argv[])
 {
   char *fname="general_s.edges";
+  bool enable_ASPL_priority = false;
   int nodes, degree, symmetries, seed = 0, diameter, current_diameter, best_diameter, low_diameter;
   long sum, best_sum, ncalcs = 10000;
   double max_temp = 238.91, min_temp = 0.22, ASPL, current_ASPL, best_ASPL, low_ASPL;
 
-  set_args(argc, argv, &nodes, &degree, &symmetries, fname, &seed, &ncalcs, &max_temp, &min_temp);
+  set_args(argc, argv, &nodes, &degree, &symmetries, fname, &seed, &ncalcs, &max_temp, &min_temp, &enable_ASPL_priority);
   if(nodes%2 == 1 && degree%2 == 1)
     ERROR("Invalid nodes(%d) or degree(%d)\n", nodes, degree);
   else if(nodes%symmetries != 0)
@@ -125,7 +129,7 @@ int main(int argc, char *argv[])
 	}
       }
       
-      if(accept_s(nodes, current_diameter, diameter, current_ASPL, ASPL, temp, symmetries)){
+      if(accept_s(nodes, current_diameter, diameter, current_ASPL, ASPL, temp, enable_ASPL_priority, symmetries)){
 	current_diameter = diameter;
 	current_ASPL     = ASPL;
       }
@@ -145,6 +149,7 @@ int main(int argc, char *argv[])
   printf("ASPL           = %.10f (%ld/%.0f)\n", best_ASPL, best_sum, (double)nodes*(nodes-1)/2);
   printf("ASPL Gap       = %.10f (%.10f - %.10f)\n", best_ASPL - low_ASPL, best_ASPL, low_ASPL);
   printf("Time           = %f/%f sec. (Create Graph/SA)\n", create_time, sa_time);
+  printf("ASPL priority? = %s\n", (enable_ASPL_priority)? "Yes" : "No");
   
   //  ODP_Write_edge_general(lines, edge, fname);
   //  printf("Generate ./%s\n", fname);

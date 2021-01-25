@@ -20,8 +20,8 @@ void mutate_adjacency_general_s(const int nodes, const int degree, const int *re
 void mutate_adjacency_grid(const int width, const int height, const int degree, const int *restrict num_degrees, const int length, int (*adjacency)[degree]);
 void restore_adjacency(int *adjacency);
 bool accept(const int nodes, const int current_diameter, const int diameter,
-	    const double current_ASPL, const double ASPL, const double temp);
+	    const double current_ASPL, const double ASPL, const double temp, const bool enable_ASPL_priority);
 bool accept_s(const int nodes, const int current_diameter, const int diameter,
-	      const double current_ASPL, const double ASPL, const double temp, const int symmetgries);
+	      const double current_ASPL, const double ASPL, const double temp, const bool enable_ASPL_priority, const int symmetgries);
 double get_time();
 #endif

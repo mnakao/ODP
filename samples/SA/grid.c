@@ -2,11 +2,11 @@
 
 static void print_help(char *argv)
 {
-  ERROR("%s -W width -H height -D degree -L length [-o <output>] [-s <seed>] [-n <calcs>] [-w <max_temp>] [-c <min_temp>]\n", argv);
+  ERROR("%s -W width -H height -D degree -L length [-o <output>] [-s <seed>] [-n <calcs>] [-w <max_temp>] [-c <min_temp>] -A\n", argv);
 }
 
 static void set_args(const int argc, char **argv, int *width, int *height, int *degree, int *length,
-		     char *fname, int *seed, long *ncalcs, double *max_temp, double *min_temp)
+		     char *fname, int *seed, long *ncalcs, double *max_temp, double *min_temp, bool *enable_ASPL_priority)
 {
   if(argc < 9)
     print_help(argv[0]);
@@ -59,6 +59,9 @@ static void set_args(const int argc, char **argv, int *width, int *height, int *
       if(*min_temp <= 0)
         ERROR("MIN value > 0\n");
       break;
+    case 'A':
+      *enable_ASPL_priority = true;
+      break;
     default:
       print_help(argv[0]);
     }
@@ -68,11 +71,12 @@ static void set_args(const int argc, char **argv, int *width, int *height, int *
 int main(int argc, char *argv[])
 {
   char *fname="grid.edges";
+  bool enable_ASPL_priority = false;
   int width, height, degree, length, seed = 0, diameter, current_diameter, best_diameter, low_diameter;
   long sum, best_sum, ncalcs = 10000;
   double max_temp = 100, min_temp = 0.2, ASPL, current_ASPL, best_ASPL, low_ASPL;
 
-  set_args(argc, argv, &width, &height, &degree, &length, fname, &seed, &ncalcs, &max_temp, &min_temp);
+  set_args(argc, argv, &width, &height, &degree, &length, fname, &seed, &ncalcs, &max_temp, &min_temp, &enable_ASPL_priority);
   int nodes = width * height;
   if(nodes%2 == 1 && degree%2 == 1)
     ERROR("Invalid nodes(%d) or degree(%d)\n", nodes, degree);
@@ -123,7 +127,7 @@ int main(int argc, char *argv[])
 	}
       }
       
-      if(accept(nodes, current_diameter, diameter, current_ASPL, ASPL, temp)){
+      if(accept(nodes, current_diameter, diameter, current_ASPL, ASPL, temp, enable_ASPL_priority)){
 	current_diameter = diameter;
 	current_ASPL     = ASPL;
       }
@@ -144,9 +148,10 @@ int main(int argc, char *argv[])
   printf("ASPL Gap       = %.10f (%.10f - %.10f)\n", best_ASPL - low_ASPL, best_ASPL, low_ASPL);
   printf("Multiple edges = %s\n", (ODP_Check_multiple_edges(lines, edge))? "Exist" : "None");
   printf("Loop           = %s\n", (ODP_Check_loop(lines, edge))? "Exist" : "None");
-
-  ODP_Write_edge_grid(lines, height, edge, fname);
-  printf("Generate ./%s\n", fname);
+  printf("ASPL priority? = %s\n", (enable_ASPL_priority)? "Yes" : "No");
+  
+  //  ODP_Write_edge_grid(lines, height, edge, fname);
+  //  printf("Generate ./%s\n", fname);
   
   free(edge);
   free(adjacency);
