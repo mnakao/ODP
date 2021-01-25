@@ -1,12 +1,6 @@
 #include "common.h"
 static int _u[2], _v[2], _u_d[2], _v_d[2], _nodes, _degree, _symmetries, _kind, _rnd;
 
-static void CHECK_PARAMETERS(const int nodes, const int degree)
-{
-  if(nodes % 2 == 1 && degree % 2 == 1)
-    ERROR("Nodes(%d) or Degree(%d) must be a multiple of 2.\n", nodes, degree);
-}
-
 static int WIDTH(const int v, const int height)
 {
   return  v/height;
@@ -210,6 +204,12 @@ static bool simple_bfs(const int nodes, const int degree, int *adjacency)
   return flag;
 }
 
+static void CHECK_PARAMETERS(const int nodes, const int degree)
+{
+  if(nodes % 2 == 1 && degree % 2 == 1)
+    ERROR("Nodes(%d) or Degree(%d) must be a multiple of 2.\n", nodes, degree);
+}
+
 static int get_random(const int max)
 {
   return (int)(rand()*((double)max)/(1.0+RAND_MAX));
@@ -343,13 +343,13 @@ static void backup_restore_adjacency(const int u[2], const int u_d[2], const int
   _kind       = kind;
 }
 
-bool mutate_adjacency_1opt_general_s(const int nodes, const int degree, const int *restrict num_degrees,
-				     const int symmetries, int adjacency[nodes/symmetries][degree])
+static bool mutate_adjacency_1opt_general_s(const int x, const int d, const int nodes, const int degree, 
+					    const int symmetries, int adjacency[nodes/symmetries][degree])
 {
   int u[2], u_d[2], v[2], v_d[2]; // Declared with two elements since for backup_restore_adjacency()
   int based_nodes = nodes/symmetries;
-  u[0]   = get_random(nodes);
-  u_d[0] = (!num_degrees)? get_random(degree) : get_random(num_degrees[u[0]%based_nodes]);
+  u[0]   = x;
+  u_d[0] = d;
   v[0]   = GLOBAL_ADJ_GENERAL(nodes, degree, symmetries, adjacency, u[0], u_d[0]);
   if(symmetries%2 == 0 && abs(u[0]-v[0]) == nodes/2) return false;
   v_d[0] = get_degree_index_general(u[0], v[0], u_d[0], nodes, symmetries, degree, adjacency);
@@ -358,10 +358,10 @@ bool mutate_adjacency_1opt_general_s(const int nodes, const int degree, const in
   // When it is an even number, there is one more pattern than when it is an odd number.
   // However, since the added pattern connects the vertices on the diagonal line,
   // As a result of some experiments, the pattern does not seem to be good, so comment it out.
-  int rnd   = (symmetries%2 == 1)? get_random(symmetries-1) : get_random(symmetries);
-  int new_v = (rnd != symmetries-1)? v[0] + based_nodes*(rnd+1) : u[0] + based_nodes*(symmetries/2);
-  //  int rnd   = get_random(symmetries-1);
-  //  int new_v = v[0] + based_nodes*(rnd+1);
+  //  int rnd   = (symmetries%2 == 1)? get_random(symmetries-1) : get_random(symmetries);
+  //  int new_v = (rnd != symmetries-1)? v[0] + based_nodes*(rnd+1) : u[0] + based_nodes*(symmetries/2);
+  int rnd   = get_random(symmetries-1);
+  int new_v = v[0] + based_nodes*(rnd+1);
   int tmp_v = adjacency[u[0]%based_nodes][u_d[0]];
   int new_u = v[0] - (new_v - u[0]);
   int tmp_u = adjacency[v[0]%based_nodes][v_d[0]];
@@ -372,8 +372,8 @@ bool mutate_adjacency_1opt_general_s(const int nodes, const int degree, const in
   return true;
 }
 
-bool mutate_adjacency_2opt_general_s(const int nodes, const int degree, const int *restrict num_degrees,
-				     const int symmetries, int adjacency[nodes/symmetries][degree])
+static bool mutate_adjacency_2opt_general_s(const int nodes, const int degree, const int *restrict num_degrees,
+					    const int symmetries, int adjacency[nodes/symmetries][degree])
 {
   int u[2], v[2], u_d[2], v_d[2], based_nodes = nodes/symmetries;
   
@@ -442,10 +442,7 @@ bool mutate_adjacency_2opt_general_s(const int nodes, const int degree, const in
   }
   else if((u[0]%based_nodes == u[1]%based_nodes && v[0]%based_nodes == v[1]%based_nodes) ||
 	  (u[0]%based_nodes == v[1]%based_nodes && v[0]%based_nodes == u[1]%based_nodes)){
-    // A graph with symmetry can be created when using mutate_adjacency_1opt_general_s().
-    // But I want mutate_adjacency_1opt_general_s() not to be called in this function
-    // because I want the number of calls to 1opt_s() and 2opt_s() to be about the same.
-    return false;
+    return mutate_adjacency_1opt_general_s(u[0], u_d[0], nodes, degree, symmetries, adjacency);
   }
   _rnd = get_random(2);
   
@@ -475,31 +472,18 @@ bool mutate_adjacency_2opt_general_s(const int nodes, const int degree, const in
 }
 
 void mutate_adjacency_general_s(const int nodes, const int degree, const int *restrict num_degrees,
-				const int symmetries, int adjacency[nodes/symmetries][degree])
+				       const int symmetries, int adjacency[nodes/symmetries][degree])
 {
   CHECK_SYMMETRIES(nodes, symmetries);
-  if(symmetries == 1){
-    while(1){
-      if(mutate_adjacency_2opt_general_s(nodes, degree, num_degrees, symmetries, adjacency))
-	break;
-    }
-    return;
-  }
   
   while(1){
-    if(get_random(2) == 0){
-      if(mutate_adjacency_2opt_general_s(nodes, degree, num_degrees, symmetries, adjacency))
-	break;
-    }
-    else{
-      if(mutate_adjacency_1opt_general_s(nodes, degree, num_degrees, symmetries, adjacency))
-	break;
-    }
+    if(mutate_adjacency_2opt_general_s(nodes, degree, num_degrees, symmetries, adjacency))
+      break;
   }
 }
 
 void mutate_adjacency_general(const int nodes, const int degree, const int *restrict num_degrees,
-			      int adjacency[nodes][degree])
+				     int adjacency[nodes][degree])
 {
   mutate_adjacency_general_s(nodes, degree, num_degrees, 1, adjacency);
 }
@@ -617,3 +601,4 @@ void mutate_adjacency_grid_s(const int width, const int height, const int degree
       break;
   }
 }
+

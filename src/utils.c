@@ -204,41 +204,6 @@ static bool simple_bfs(const int nodes, const int degree, int *adjacency)
   return flag;
 }
 
-void ODP_Print_adjacency(const int nodes, const int degree, const int num_degrees[nodes], const int adjacency[nodes][degree])
-{
-  for(int i=0;i<nodes;i++){
-    printf("%d ", i);
-    int d = (!num_degrees)? degree : num_degrees[i];
-    for(int j=0;j<d;j++){
-      printf("%3d", adjacency[i][j]);
-    }
-    printf("\n");
-  }
-}
-
-void ODP_Print_edge(const int lines, const int edge[lines][2])
-{
-  for(int i=0;i<lines;i++)
-    printf("%d %d\n", edge[i][0], edge[i][1]);
-}
-
-double ODP_Get_time()
-{
-  struct timeval t;
-  gettimeofday(&t, NULL);
-  return t.tv_sec + 1.0e-6 * t.tv_usec;
-}
-
-bool ODP_Check_profile()
-{
-  char *val = getenv("ODP_PROFILE");
-  if(val){
-    if(atoi(val) == 1)
-      return true;
-  }
-  return false;
-}
-
 static void CHECK_PARAMETERS(const int nodes, const int degree)
 {
   if(nodes % 2 == 1 && degree % 2 == 1)
@@ -248,34 +213,6 @@ static void CHECK_PARAMETERS(const int nodes, const int degree)
 static int get_random(const int max)
 {
   return (int)(rand()*((double)max)/(1.0+RAND_MAX));
-}
-
-void ODP_Write_edge_general(const int lines, const int edge[lines][2], char *fname)
-{
-  FILE *fp = NULL;
-  
-  if((fp = fopen(fname, "w")) == NULL)
-    ERROR("Cannot open %s\n", fname);
-  
-  for(int i=0;i<lines;i++)
-    fprintf(fp, "%d %d\n", edge[i][0], edge[i][1]);
-  
-  fclose(fp);
-}
-
-void ODP_Write_edge_grid(const int lines, const int height, const int edge[lines][2], char *fname)
-{
-  FILE *fp = NULL;
-
-  if((fp = fopen(fname, "w")) == NULL)
-    ERROR("Cannot open %s\n", fname);
-
-  for(int i=0;i<lines;i++)
-    fprintf(fp, "%d,%d %d,%d\n",
-	    WIDTH(edge[i][0], height), HEIGHT(edge[i][0], height),
-            WIDTH(edge[i][1], height), HEIGHT(edge[i][1], height));
-    
-  fclose(fp);
 }
 
 static bool check_length(const int v, const int w, const int height, const int length)
@@ -289,310 +226,14 @@ static bool check_length(const int v, const int w, const int height, const int l
   return (distance <= length);
 }
 
-void ODP_Malloc(uint64_t **a, const size_t s, const bool enable_avx2)
-{
-  if(enable_avx2)
-    *a = _mm_malloc(s, ALIGN_VALUE);
-  else
-    posix_memalign((void **)a, ALIGN_VALUE, s);
-}
-
-void ODP_Free(uint64_t *a, const bool enable_avx2)
-{
-  if(enable_avx2)
-    _mm_free(a);
-  else
-    free(a);
-}
-
-double ODP_Get_mem_usage(const int kind, const int nodes, const int degree, const int symmetries,
-			 const int *num_degrees, const int procs, const bool is_cpu)
-{
-  int Mbyte = 1024*1024;
-  int chunk = (is_cpu)? CPU_CHUNK : GPU_CHUNK;
-  double AB_mem = (kind == ASPL_NORMAL)? (nodes*((double)nodes/(4*symmetries*procs))) : (double)16*nodes*chunk;
-
-  if(is_cpu){
-    return AB_mem/Mbyte;
-  }
-  else{ // on GPU
-    double res_mem = (double)sizeof(uint64_t)*BLOCKS;
-    double adj_mem = (double)sizeof(int)*(nodes/symmetries)*degree;
-    double deg_mem = (num_degrees)? (double)sizeof(int)*nodes : 0;
-    return (AB_mem+res_mem+adj_mem+deg_mem)/Mbyte;
-  }
-}
-
-int ODP_Get_kind(const int nodes, const int degree, const int* num_degrees, const int symmetries,
-		 const int procs, const int is_cpu)
-{
-  int kind;
-  char *val = getenv("ODP_ASPL");
-  if(!val){
-    double normal_mem_usage = ODP_Get_mem_usage(ASPL_NORMAL, nodes, degree, symmetries, num_degrees, procs, is_cpu);
-    if(normal_mem_usage <= MEM_THRESHOLD)
-      kind = ASPL_NORMAL;
-    else
-      kind = ASPL_SAVING;
-  }
-  else if(strcmp(val, "NORMAL") == 0){
-    kind = ASPL_NORMAL;
-  }
-  else if(strcmp(val, "SAVING") == 0){
-    kind = ASPL_SAVING;
-  }
-  else{
-    ERROR("Unknown ASPL value (%s)\n", val);
-  }
-
-  return kind;
-}
-
-void ODP_Profile(const char* name, const int kind, const int symmetries, const double mem_usage,
-		 const double elapsed_time, const unsigned int times, const int procs)
-{
-  char kind_name[7], hostname[MAX_HOSTNAME_LENGTH];
-  if(kind == ASPL_NORMAL) strcpy(kind_name, "NORMAL");
-  else                    strcpy(kind_name, "SAVING");
-  gethostname(hostname, sizeof(hostname));
-  time_t t = time(NULL);
-  
-  printf("------ Profile for SET_ASPL ------\n");
-  printf("Date            = %s", ctime(&t));
-  printf("Hostname        = %s\n", hostname);
-  printf("Number of Times = %d\n", times);
-  printf("Total Time      = %f sec.\n", elapsed_time);
-  printf("Average Time    = %f sec.\n", elapsed_time/times);
-  printf("Algorithm       = %s (%s)\n", kind_name, name);
-  printf("Symmetries      = %d\n", symmetries);
-  printf("Memory Usage    = %.3f MB\n", mem_usage);
-  printf("Num of Procs    = %d\n", procs);
-#ifdef _OPENMP
-  printf("Num of Threads  = %d\n", omp_get_max_threads());
-#else
-  printf("Num of Threads  = %d\n", 1);
-#endif
-  printf("--------- End of Profile ---------\n");
-}
-
-bool ODP_Check_loop(const int lines, int edge[lines][2])
-{
-  for(int i=0;i<lines;i++)
-    if(edge[i][0] == edge[i][1]){
-      printf("Loop is found in line %d\n", i+1);
-      return true;
-    }
-  
-  return false;
-}
-
 static bool has_multiple_edges(const int e00, const int e01, const int e10, const int e11)
 {
   return ((e00 == e10 && e01 == e11) || (e00 == e11 && e01 == e10));
 }
 
-bool ODP_Check_multiple_edges(const int lines, int edge[lines][2])
-{
-  for(int i=0;i<lines;i++)
-    for(int j=i+1;j<lines;j++)
-      if(has_multiple_edges(edge[i][0], edge[i][1], edge[j][0], edge[j][1])){
-	printf("Multiple edeges are found in lines %d %d\n", i+1, j+1);
-	return true;
-      }
-  
-  return false;
-}
-
-int ODP_Get_length(const int lines, const int edge[lines][2], const int height)
-{
-  int length = 0;
-  for(int i=0;i<lines;i++)
-    length = MAX(length, abs(edge[i][0]/height-edge[i][1]/height)+abs(edge[i][0]%height-edge[i][1]%height));
-  
-  return length;
-}
-
-bool ODP_Check_general(char *fname)
-{
-  FILE *fp;
-  if((fp = fopen(fname, "r")) == NULL)
-    ERROR("File not found\n");
-
-  int n1=1, n2=-1;
-  fscanf(fp, "%d %d", &n1, &n2);
-  fclose(fp);
-
-  return (n2 != -1)? true : false;
-}
-
-int ODP_Get_degree(const int nodes, const int lines, const int edge[lines][2])
-{
-  int node[nodes];
-  for(int i=0;i<nodes;i++)
-    node[i] = 0;
-
-  for(int i=0;i<lines;i++){
-    node[edge[i][0]]++;
-    node[edge[i][1]]++;
-  }
-
-  int degree = node[0];
-  for(int i=1;i<nodes;i++)
-    degree = MAX(degree, node[i]);
-
-  return degree;
-}
-
-int ODP_Get_nodes(const int lines, const int (*edge)[2])
-{
-  int max = 0;
-  for(int i=0;i<lines;i++){
-    max = MAX(max, edge[i][0]);
-    max = MAX(max, edge[i][1]);
-  }
-
-  return max + 1;
-}
-
-int ODP_Get_lines(const char* fname)
-{
-  FILE *fp = NULL;
-  if((fp = fopen(fname, "r")) == NULL)
-    ERROR("File not found\n");
-
-  int lines = 0, c;
-  while((c = fgetc(fp)) != EOF)
-    if(c == '\n')
-      lines++;
-
-  fclose(fp);
-
-  return lines;
-}
-
-void ODP_Read_edge_general(const char* fname, int (*edge)[2])
-{
-  FILE *fp;
-  if((fp = fopen(fname, "r")) == NULL)
-    ERROR("File not found\n");
-
-  int n1, n2, i = 0;
-  while(fscanf(fp, "%d %d", &n1, &n2) != EOF){
-    edge[i][0] = n1;
-    edge[i][1] = n2;
-    i++;
-  }
-
-  fclose(fp);
-}
-
-void ODP_Read_edge_grid(const char *fname, int *w, int *h, int (*edge)[2])
-{
-  FILE *fp;
-  if((fp = fopen(fname, "r")) == NULL)
-    ERROR("File not found\n");
-
-  int n[4];
-  *w = 0;
-  *h = 0;
-  while(fscanf(fp, "%d,%d %d,%d", &n[0], &n[1], &n[2], &n[3]) != EOF){
-    *w = MAX(*w, n[0]);
-    *h = MAX(*h, n[1]);
-    *w = MAX(*w, n[2]);
-    *h = MAX(*h, n[3]);
-  }
-  *w += 1;
-  *h += 1;
-  rewind(fp);
-
-  int i = 0;
-  while(fscanf(fp, "%d,%d %d,%d", &n[0], &n[1], &n[2], &n[3]) != EOF){
-    edge[i][0] = n[0] * (*h) + n[1];
-    edge[i][1] = n[2] * (*h) + n[3];
-    i++;
-  }
-
-  fclose(fp);
-}
-
-// This function is inherited from "http://research.nii.ac.jp/graphgolf/py/create-random.py".
-void ODP_Set_lbounds_general(const int nodes, const int degree, int *low_diameter, double *low_ASPL)
-{
-  int diam = -1, n = 1, r = 1;
-  double aspl = 0.0;
-
-  while(1){
-    int tmp = n + degree * pow(degree-1, r-1);
-    if(tmp >= nodes)
-      break;
-
-    n = tmp;
-    aspl += r * degree * pow(degree-1, r-1);
-    diam = r++;
-  }
-
-  diam++;
-  aspl += diam * (nodes - n);
-  aspl /= (nodes - 1);
-
-  *low_diameter = diam;
-  *low_ASPL     = aspl;
-}
-
 static int dist(const int x1, const int y1, const int x2, const int y2)
 {
   return(abs(x1 - x2) + abs(y1 - y2));
-}
-
-// This function is inherited from "http://research.nii.ac.jp/graphgolf/pl/lower-lattice.pl".
-void ODP_Set_lbounds_grid(const int m, const int n, const int degree, const int length, int *low_diameter, double *low_ASPL)
-{
-  int moore[m*n], hist[m*n], mh[m*n];
-  int mn = m * n, current = degree, ii;
-  double sum = 0;
-
-  moore[0] = 1;
-  moore[1] = degree + 1;
-  for(ii=2;;ii++){
-    current = current * (degree - 1);
-    moore[ii] = moore[ii-1] + current;
-    if(moore[ii] >= mn){
-      moore[ii] = mn;
-      break;
-    }
-  }
-
-  int maxhop = MAX((m+n-2+(length-1))/length, ii);
-  for(int i=ii+1;i<=maxhop;i++)
-    moore[i] = mn;
-
-  for(int i=0;i<m;i++){
-    for(int j=0;j<n;j++){
-      for(int k=0;k<=maxhop;k++)
-        hist[k] = 0;
-
-      for (int i2=0;i2<m;i2++)
-        for(int j2=0;j2<n;j2++)
-          hist[(dist(i,j,i2,j2)+length-1)/length]++;
-
-      for(int k=1;k<=maxhop;k++)
-        hist[k] += hist[k-1];
-
-      for(int k=0;k<=maxhop;k++)
-        mh[k] = MIN(hist[k], moore[k]);
-
-      for(int k=1;k<=maxhop;k++)
-        sum += (double)(mh[k] - mh[k-1]) * k;
-    }
-  }
-
-  int dboth = 0;
-  for(dboth=0;;dboth++)
-    if(mh[dboth] == mn)
-      break;
-
-  *low_diameter = dboth;
-  *low_ASPL     = sum/((double)mn*(mn-1));
 }
 
 static int get_lines(const int nodes, const int degree, const int *num_degrees)
@@ -606,101 +247,6 @@ static int get_lines(const int nodes, const int degree, const int *num_degrees)
       lines += num_degrees[i];
   }
   return lines;
-}
-
-void ODP_Conv_adjacency2edge(const int nodes, const int degree, const int *num_degrees,
-			     const int *adjacency, int (*edge)[2])
-{
-  char (*tmp)[degree] = malloc(sizeof(char) * nodes * degree);
-  for(int i=0;i<nodes;i++)
-    for(int j=0;j<degree;j++)
-      tmp[i][j] = NOT_VISITED;
-
-  int lines = get_lines(nodes, degree, num_degrees);
-  int j = 0;
-  for(int u=0;u<nodes;u++){
-    int d = (!num_degrees)? degree : num_degrees[u];
-    for(int i=0;i<d;i++){
-      int v = *(adjacency + u * degree + i);
-      if(tmp[u][i] == NOT_VISITED){
-	if(j >= lines) ERROR("Something Wrong ! [id=0]\n");
-	edge[j][0] = u;
-	edge[j][1] = v;
-	tmp[u][i]  = VISITED;
-	j++;
-	int k=0;
-	for(k=0;k<degree;k++){
-	  if(*(adjacency +v*degree+k) == u && tmp[v][k] == NOT_VISITED){
-	    tmp[v][k] = VISITED;
-	    break;
-	  }
-	}
-	if(k==degree)
-	  ERROR("Something Wrong ! [id=1]\n");
-      }
-    }
-  }
-  
-  free(tmp);
-}
-
-void ODP_Conv_edge2adjacency_general_s(const int nodes, const int lines, const int degree, const int edge[lines][2],
-				       const int symmetries, int *adjacency) // int adjacency[nodes/adjacency][degree]
-{
-  CHECK_SYMMETRIES(nodes, symmetries);
-  
-  int based_nodes = nodes/symmetries;
-  int num_degrees[based_nodes];
-  for(int i=0;i<based_nodes;i++)
-    num_degrees[i] = 0;
-
-  for(int i=0;i<lines;i++){
-    int n1 = edge[i][0];
-    int n2 = edge[i][1];
-    if(n1 < based_nodes)
-      *(adjacency + n1 * degree + (num_degrees[n1]++)) = n2; //  adjacency[n1][num_degrees[n1]++] = n2;
-    if(n2 < based_nodes)
-      *(adjacency + n2 * degree + (num_degrees[n2]++)) = n1; //  adjacency[n2][num_degrees[n2]++] = n1;
-  }
-}
-
-void ODP_Conv_edge2adjacency(const int nodes, const int lines, const int degree, const int edge[lines][2],
-                             int *adjacency) // int adjacency[nodes][degree]
-{
-  ODP_Conv_edge2adjacency_general_s(nodes, lines, degree, edge, 1, adjacency);
-}
-
-void ODP_Conv_adjacency2edge_general_s(const int nodes, const int degree, const int *num_degrees,
-				       const int *adjacency, const int symmetries, int (*edge)[2])
-{
-  CHECK_SYMMETRIES(nodes, symmetries);
-  
-  int (*tmp)[degree] = malloc(sizeof(int) * nodes * degree);
-  int based_nodes = nodes/symmetries;
-  for(int i=0;i<symmetries;i++){
-    for(int j=0;j<based_nodes;j++){
-      int d = (!num_degrees)? degree : num_degrees[j];
-      for(int k=0;k<d;k++){
-	int v = *(adjacency + j * degree + k) + i * based_nodes;
-	tmp[i*based_nodes+j][k] = NORM(v, nodes);
-      }
-    }
-  }
-
-  ODP_Conv_adjacency2edge(nodes, degree, num_degrees, (int *)tmp, edge);
-  free(tmp);
-}
-
-void ODP_Set_degrees(const int nodes, const int lines, int edge[lines][2],
-		     int* num_degrees)
-{
-  for(int i=0;i<nodes;i++)
-    num_degrees[i] = 0;
-
-  for(int i=0;i<lines;i++){
-    num_degrees[edge[i][0]]++;
-    num_degrees[edge[i][1]]++;
-  }
 }
 
 static bool check_isolated_vertex(const int n, const int based_nodes, const int degree,
@@ -797,13 +343,13 @@ static void backup_restore_adjacency(const int u[2], const int u_d[2], const int
   _kind       = kind;
 }
 
-static bool mutate_adjacency_1opt_general_s(const int nodes, const int degree, const int *restrict num_degrees,
+static bool mutate_adjacency_1opt_general_s(const int x, const int d, const int nodes, const int degree, 
 					    const int symmetries, int adjacency[nodes/symmetries][degree])
 {
   int u[2], u_d[2], v[2], v_d[2]; // Declared with two elements since for backup_restore_adjacency()
   int based_nodes = nodes/symmetries;
-  u[0]   = get_random(nodes);
-  u_d[0] = (!num_degrees)? get_random(degree) : get_random(num_degrees[u[0]%based_nodes]);
+  u[0]   = x;
+  u_d[0] = d;
   v[0]   = GLOBAL_ADJ_GENERAL(nodes, degree, symmetries, adjacency, u[0], u_d[0]);
   if(symmetries%2 == 0 && abs(u[0]-v[0]) == nodes/2) return false;
   v_d[0] = get_degree_index_general(u[0], v[0], u_d[0], nodes, symmetries, degree, adjacency);
@@ -896,10 +442,7 @@ static bool mutate_adjacency_2opt_general_s(const int nodes, const int degree, c
   }
   else if((u[0]%based_nodes == u[1]%based_nodes && v[0]%based_nodes == v[1]%based_nodes) ||
 	  (u[0]%based_nodes == v[1]%based_nodes && v[0]%based_nodes == u[1]%based_nodes)){
-    // A graph with symmetry can be created when using mutate_adjacency_1opt_general_s().
-    // But I want mutate_adjacency_1opt_general_s() not to be called in this function
-    // because I want the number of calls to 1opt_s() and 2opt_s() to be about the same.
-    return false;
+    return mutate_adjacency_1opt_general_s(u[0], u_d[0], nodes, degree, symmetries, adjacency);
   }
   _rnd = get_random(2);
   
@@ -932,23 +475,10 @@ static void mutate_adjacency_general_s(const int nodes, const int degree, const 
 				       const int symmetries, int adjacency[nodes/symmetries][degree])
 {
   CHECK_SYMMETRIES(nodes, symmetries);
-  if(symmetries == 1){
-    while(1){
-      if(mutate_adjacency_2opt_general_s(nodes, degree, num_degrees, symmetries, adjacency))
-	break;
-    }
-    return;
-  }
   
   while(1){
-    if(get_random(2) == 0){
-      if(mutate_adjacency_2opt_general_s(nodes, degree, num_degrees, symmetries, adjacency))
-	break;
-    }
-    else{
-      if(mutate_adjacency_1opt_general_s(nodes, degree, num_degrees, symmetries, adjacency))
-	break;
-    }
+    if(mutate_adjacency_2opt_general_s(nodes, degree, num_degrees, symmetries, adjacency))
+      break;
   }
 }
 
@@ -1069,6 +599,47 @@ static void mutate_adjacency_grid_s(const int width, const int height, const int
   while(1){
     if(mutate_adjacency_1opt_grid_s(width, height, degree, num_degrees, length, symmetries, adjacency))
       break;
+  }
+}
+
+void ODP_Conv_adjacency2edge_general_s(const int nodes, const int degree, const int *num_degrees,
+                                       const int *adjacency, const int symmetries, int (*edge)[2])
+{
+  CHECK_SYMMETRIES(nodes, symmetries);
+
+  int (*tmp)[degree] = malloc(sizeof(int) * nodes * degree);
+  int based_nodes = nodes/symmetries;
+  for(int i=0;i<symmetries;i++){
+    for(int j=0;j<based_nodes;j++){
+      int d = (!num_degrees)? degree : num_degrees[j];
+      for(int k=0;k<d;k++){
+	int v = *(adjacency + j * degree + k) + i * based_nodes;
+        tmp[i*based_nodes+j][k] = NORM(v, nodes);
+      }
+    }
+  }
+
+  ODP_Conv_adjacency2edge(nodes, degree, num_degrees, (int *)tmp, edge);
+  free(tmp);
+}
+
+void ODP_Conv_edge2adjacency_general_s(const int nodes, const int lines, const int degree, const int edge[lines][2],
+                                       const int symmetries, int *adjacency) // int adjacency[nodes/adjacency][degree]
+{
+  CHECK_SYMMETRIES(nodes, symmetries);
+
+  int based_nodes = nodes/symmetries;
+  int num_degrees[based_nodes];
+  for(int i=0;i<based_nodes;i++)
+    num_degrees[i] = 0;
+
+  for(int i=0;i<lines;i++){
+    int n1 = edge[i][0];
+    int n2 = edge[i][1];
+    if(n1 < based_nodes)
+      *(adjacency + n1 * degree + (num_degrees[n1]++)) = n2; //  adjacency[n1][num_degrees[n1]++] = n2;
+    if(n2 < based_nodes)
+      *(adjacency + n2 * degree + (num_degrees[n2]++)) = n1; //  adjacency[n2][num_degrees[n2]++] = n1;
   }
 }
 
@@ -1423,3 +994,418 @@ void ODP_Generate_random_grid_s(const int width, const int height, const int deg
   
   free(adjacency);
 }
+
+void ODP_Print_adjacency(const int nodes, const int degree, const int num_degrees[nodes], const int adjacency[nodes][degree])
+{
+  for(int i=0;i<nodes;i++){
+    printf("%d ", i);
+    int d = (!num_degrees)? degree : num_degrees[i];
+    for(int j=0;j<d;j++){
+      printf("%3d", adjacency[i][j]);
+    }
+    printf("\n");
+  }
+}
+
+void ODP_Print_edge(const int lines, const int edge[lines][2])
+{
+  for(int i=0;i<lines;i++)
+    printf("%d %d\n", edge[i][0], edge[i][1]);
+}
+
+double ODP_Get_time()
+{
+  struct timeval t;
+  gettimeofday(&t, NULL);
+  return t.tv_sec + 1.0e-6 * t.tv_usec;
+}
+
+bool ODP_Check_profile()
+{
+  char *val = getenv("ODP_PROFILE");
+  if(val){
+    if(atoi(val) == 1)
+      return true;
+  }
+  return false;
+}
+
+void ODP_Write_edge_general(const int lines, const int edge[lines][2], char *fname)
+{
+  FILE *fp = NULL;
+
+  if((fp = fopen(fname, "w")) == NULL)
+    ERROR("Cannot open %s\n", fname);
+
+  for(int i=0;i<lines;i++)
+    fprintf(fp, "%d %d\n", edge[i][0], edge[i][1]);
+
+  fclose(fp);
+}
+
+void ODP_Write_edge_grid(const int lines, const int height, const int edge[lines][2], char *fname)
+{
+  FILE *fp = NULL;
+
+  if((fp = fopen(fname, "w")) == NULL)
+    ERROR("Cannot open %s\n", fname);
+
+  for(int i=0;i<lines;i++)
+    fprintf(fp, "%d,%d %d,%d\n",
+            WIDTH(edge[i][0], height), HEIGHT(edge[i][0], height),
+            WIDTH(edge[i][1], height), HEIGHT(edge[i][1], height));
+
+  fclose(fp);
+}
+
+void ODP_Malloc(uint64_t **a, const size_t s, const bool enable_avx2)
+{
+  if(enable_avx2)
+    *a = _mm_malloc(s, ALIGN_VALUE);
+  else
+    posix_memalign((void **)a, ALIGN_VALUE, s);
+}
+
+void ODP_Free(uint64_t *a, const bool enable_avx2)
+{
+  if(enable_avx2)
+    _mm_free(a);
+  else
+    free(a);
+}
+
+double ODP_Get_mem_usage(const int kind, const int nodes, const int degree, const int symmetries,
+                         const int *num_degrees, const int procs, const bool is_cpu)
+{
+  int Mbyte = 1024*1024;
+  int chunk = (is_cpu)? CPU_CHUNK : GPU_CHUNK;
+  double AB_mem = (kind == ASPL_NORMAL)? (nodes*((double)nodes/(4*symmetries*procs))) : (double)16*nodes*chunk;
+
+  if(is_cpu){
+    return AB_mem/Mbyte;
+  }
+  else{ // on GPU
+    double res_mem = (double)sizeof(uint64_t)*BLOCKS;
+    double adj_mem = (double)sizeof(int)*(nodes/symmetries)*degree;
+    double deg_mem = (num_degrees)? (double)sizeof(int)*nodes : 0;
+    return (AB_mem+res_mem+adj_mem+deg_mem)/Mbyte;
+  }
+}
+
+int ODP_Get_kind(const int nodes, const int degree, const int* num_degrees, const int symmetries,
+                 const int procs, const int is_cpu)
+{
+  int kind;
+  char *val = getenv("ODP_ASPL");
+  if(!val){
+    double normal_mem_usage = ODP_Get_mem_usage(ASPL_NORMAL, nodes, degree, symmetries, num_degrees, procs, is_cpu);
+    if(normal_mem_usage <= MEM_THRESHOLD)
+      kind = ASPL_NORMAL;
+    else
+      kind = ASPL_SAVING;
+  }
+  else if(strcmp(val, "NORMAL") == 0){
+    kind = ASPL_NORMAL;
+  }
+  else if(strcmp(val, "SAVING") == 0){
+    kind = ASPL_SAVING;
+  }
+  else{
+    ERROR("Unknown ASPL value (%s)\n", val);
+  }
+
+  return kind;
+}
+
+void ODP_Profile(const char* name, const int kind, const int symmetries, const double mem_usage,
+                 const double elapsed_time, const unsigned int times, const int procs)
+{
+  char kind_name[7], hostname[MAX_HOSTNAME_LENGTH];
+  if(kind == ASPL_NORMAL) strcpy(kind_name, "NORMAL");
+  else                    strcpy(kind_name, "SAVING");
+  gethostname(hostname, sizeof(hostname));
+  time_t t = time(NULL);
+
+  printf("------ Profile for SET_ASPL ------\n");
+  printf("Date            = %s", ctime(&t));
+  printf("Hostname        = %s\n", hostname);
+  printf("Number of Times = %d\n", times);
+  printf("Total Time      = %f sec.\n", elapsed_time);
+  printf("Average Time    = %f sec.\n", elapsed_time/times);
+  printf("Algorithm       = %s (%s)\n", kind_name, name);
+  printf("Symmetries      = %d\n", symmetries);
+  printf("Memory Usage    = %.3f MB\n", mem_usage);
+  printf("Num of Procs    = %d\n", procs);
+#ifdef _OPENMP
+  printf("Num of Threads  = %d\n", omp_get_max_threads());
+#else
+  printf("Num of Threads  = %d\n", 1);
+#endif
+  printf("--------- End of Profile ---------\n");
+}
+
+bool ODP_Check_loop(const int lines, int edge[lines][2])
+{
+  for(int i=0;i<lines;i++)
+    if(edge[i][0] == edge[i][1]){
+      printf("Loop is found in line %d\n", i+1);
+      return true;
+    }
+
+  return false;
+}
+
+bool ODP_Check_multiple_edges(const int lines, int edge[lines][2])
+{
+  for(int i=0;i<lines;i++)
+    for(int j=i+1;j<lines;j++)
+      if(has_multiple_edges(edge[i][0], edge[i][1], edge[j][0], edge[j][1])){
+        printf("Multiple edeges are found in lines %d %d\n", i+1, j+1);
+        return true;
+      }
+
+  return false;
+}
+
+int ODP_Get_length(const int lines, const int edge[lines][2], const int height)
+{
+  int length = 0;
+  for(int i=0;i<lines;i++)
+    length = MAX(length, abs(edge[i][0]/height-edge[i][1]/height)+abs(edge[i][0]%height-edge[i][1]%height));
+
+  return length;
+}
+
+bool ODP_Check_general(char *fname)
+{
+  FILE *fp;
+  if((fp = fopen(fname, "r")) == NULL)
+    ERROR("File not found\n");
+
+  int n1=1, n2=-1;
+  fscanf(fp, "%d %d", &n1, &n2);
+  fclose(fp);
+
+  return (n2 != -1)? true : false;
+}
+
+int ODP_Get_degree(const int nodes, const int lines, const int edge[lines][2])
+{
+  int node[nodes];
+  for(int i=0;i<nodes;i++)
+    node[i] = 0;
+
+  for(int i=0;i<lines;i++){
+    node[edge[i][0]]++;
+    node[edge[i][1]]++;
+  }
+
+  int degree = node[0];
+  for(int i=1;i<nodes;i++)
+    degree = MAX(degree, node[i]);
+
+  return degree;
+}
+
+int ODP_Get_nodes(const int lines, const int (*edge)[2])
+{
+  int max = 0;
+  for(int i=0;i<lines;i++){
+    max = MAX(max, edge[i][0]);
+    max = MAX(max, edge[i][1]);
+  }
+
+  return max + 1;
+}
+
+int ODP_Get_lines(const char* fname)
+{
+  FILE *fp = NULL;
+  if((fp = fopen(fname, "r")) == NULL)
+    ERROR("File not found\n");
+
+  int lines = 0, c;
+  while((c = fgetc(fp)) != EOF)
+    if(c == '\n')
+      lines++;
+
+  fclose(fp);
+
+  return lines;
+}
+
+
+void ODP_Read_edge_general(const char* fname, int (*edge)[2])
+{
+  FILE *fp;
+  if((fp = fopen(fname, "r")) == NULL)
+    ERROR("File not found\n");
+
+  int n1, n2, i = 0;
+  while(fscanf(fp, "%d %d", &n1, &n2) != EOF){
+    edge[i][0] = n1;
+    edge[i][1] = n2;
+    i++;
+  }
+
+  fclose(fp);
+}
+
+void ODP_Read_edge_grid(const char *fname, int *w, int *h, int (*edge)[2])
+{
+  FILE *fp;
+  if((fp = fopen(fname, "r")) == NULL)
+    ERROR("File not found\n");
+
+  int n[4];
+  *w = 0;
+  *h = 0;
+  while(fscanf(fp, "%d,%d %d,%d", &n[0], &n[1], &n[2], &n[3]) != EOF){
+    *w = MAX(*w, n[0]);
+    *h = MAX(*h, n[1]);
+    *w = MAX(*w, n[2]);
+    *h = MAX(*h, n[3]);
+  }
+  *w += 1;
+  *h += 1;
+  rewind(fp);
+
+  int i = 0;
+  while(fscanf(fp, "%d,%d %d,%d", &n[0], &n[1], &n[2], &n[3]) != EOF){
+    edge[i][0] = n[0] * (*h) + n[1];
+    edge[i][1] = n[2] * (*h) + n[3];
+    i++;
+  }
+
+  fclose(fp);
+}
+
+// This function is inherited from "http://research.nii.ac.jp/graphgolf/py/create-random.py".
+void ODP_Set_lbounds_general(const int nodes, const int degree, int *low_diameter, double *low_ASPL)
+{
+  int diam = -1, n = 1, r = 1;
+  double aspl = 0.0;
+
+  while(1){
+    int tmp = n + degree * pow(degree-1, r-1);
+    if(tmp >= nodes)
+      break;
+
+    n = tmp;
+    aspl += r * degree * pow(degree-1, r-1);
+    diam = r++;
+  }
+
+  diam++;
+  aspl += diam * (nodes - n);
+  aspl /= (nodes - 1);
+
+  *low_diameter = diam;
+  *low_ASPL     = aspl;
+}
+
+// This function is inherited from "http://research.nii.ac.jp/graphgolf/pl/lower-lattice.pl".
+void ODP_Set_lbounds_grid(const int m, const int n, const int degree, const int length, int *low_diameter, double *low_ASPL)
+{
+  int moore[m*n], hist[m*n], mh[m*n];
+  int mn = m * n, current = degree, ii;
+  double sum = 0;
+
+  moore[0] = 1;
+  moore[1] = degree + 1;
+  for(ii=2;;ii++){
+    current = current * (degree - 1);
+    moore[ii] = moore[ii-1] + current;
+    if(moore[ii] >= mn){
+      moore[ii] = mn;
+      break;
+    }
+  }
+
+  int maxhop = MAX((m+n-2+(length-1))/length, ii);
+  for(int i=ii+1;i<=maxhop;i++)
+    moore[i] = mn;
+
+  for(int i=0;i<m;i++){
+    for(int j=0;j<n;j++){
+      for(int k=0;k<=maxhop;k++)
+        hist[k] = 0;
+
+      for (int i2=0;i2<m;i2++)
+        for(int j2=0;j2<n;j2++)
+          hist[(dist(i,j,i2,j2)+length-1)/length]++;
+
+      for(int k=1;k<=maxhop;k++)
+        hist[k] += hist[k-1];
+
+      for(int k=0;k<=maxhop;k++)
+        mh[k] = MIN(hist[k], moore[k]);
+
+      for(int k=1;k<=maxhop;k++)
+        sum += (double)(mh[k] - mh[k-1]) * k;
+    }
+  }
+
+  int dboth = 0;
+  for(dboth=0;;dboth++)
+    if(mh[dboth] == mn)
+      break;
+
+  *low_diameter = dboth;
+  *low_ASPL     = sum/((double)mn*(mn-1));
+}
+
+void ODP_Conv_adjacency2edge(const int nodes, const int degree, const int *num_degrees,
+                             const int *adjacency, int (*edge)[2])
+{
+  char (*tmp)[degree] = malloc(sizeof(char) * nodes * degree);
+  for(int i=0;i<nodes;i++)
+    for(int j=0;j<degree;j++)
+      tmp[i][j] = NOT_VISITED;
+
+  int lines = get_lines(nodes, degree, num_degrees);
+  int j = 0;
+  for(int u=0;u<nodes;u++){
+    int d = (!num_degrees)? degree : num_degrees[u];
+    for(int i=0;i<d;i++){
+      int v = *(adjacency + u * degree + i);
+      if(tmp[u][i] == NOT_VISITED){
+        if(j >= lines) ERROR("Something Wrong ! [id=0]\n");
+        edge[j][0] = u;
+        edge[j][1] = v;
+        tmp[u][i]  = VISITED;
+        j++;
+        int k=0;
+        for(k=0;k<degree;k++){
+          if(*(adjacency +v*degree+k) == u && tmp[v][k] == NOT_VISITED){
+            tmp[v][k] = VISITED;
+            break;
+          }
+        }
+        if(k==degree)
+          ERROR("Something Wrong ! [id=1]\n");
+      }
+    }
+  }
+
+  free(tmp);
+}
+
+void ODP_Conv_edge2adjacency(const int nodes, const int lines, const int degree, const int edge[lines][2],
+                             int *adjacency) // int adjacency[nodes][degree]
+{
+  ODP_Conv_edge2adjacency_general_s(nodes, lines, degree, edge, 1, adjacency);
+}
+
+void ODP_Set_degrees(const int nodes, const int lines, int edge[lines][2],
+                     int* num_degrees)
+{
+  for(int i=0;i<nodes;i++)
+    num_degrees[i] = 0;
+
+  for(int i=0;i<lines;i++){
+    num_degrees[edge[i][0]]++;
+    num_degrees[edge[i][1]]++;
+  }
+}
+
