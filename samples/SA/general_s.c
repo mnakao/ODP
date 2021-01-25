@@ -2,7 +2,7 @@
 
 static void print_help(char *argv)
 {
-  ERROR("%s -N nodes -D degree -S symmetries [-o <output>] [-s <seed>] [-n <calcs>] [-w <max_temp>] [-c <min_temp>]\n", argv);
+  ERROR("%s -N nodes -D degree -S symmetries [-o <output>] [-s <seed>] [-n <calcs>] [-w <max_temp>] [-c <min_temp>] [-A]\n", argv);
 }
 
 static void set_args(const int argc, char **argv, int *nodes, int *degree, int *symmetries,
@@ -12,7 +12,7 @@ static void set_args(const int argc, char **argv, int *nodes, int *degree, int *
     print_help(argv[0]);
 
   int result;
-  while((result = getopt(argc,argv,"N:D:S:o:s:n:w:c:"))!=-1){
+  while((result = getopt(argc,argv,"N:D:S:o:s:n:w:c:A"))!=-1){
     switch(result){
     case 'N':
       *nodes = atoi(optarg);

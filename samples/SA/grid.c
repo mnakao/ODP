@@ -2,7 +2,7 @@
 
 static void print_help(char *argv)
 {
-  ERROR("%s -W width -H height -D degree -L length [-o <output>] [-s <seed>] [-n <calcs>] [-w <max_temp>] [-c <min_temp>] -A\n", argv);
+  ERROR("%s -W width -H height -D degree -L length [-o <output>] [-s <seed>] [-n <calcs>] [-w <max_temp>] [-c <min_temp>] [-A]\n", argv);
 }
 
 static void set_args(const int argc, char **argv, int *width, int *height, int *degree, int *length,
@@ -12,7 +12,7 @@ static void set_args(const int argc, char **argv, int *width, int *height, int *
     print_help(argv[0]);
 
   int result;
-  while((result = getopt(argc,argv,"W:H:D:L:o:s:n:w:c:"))!=-1){
+  while((result = getopt(argc,argv,"W:H:D:L:o:s:n:w:c:A"))!=-1){
     switch(result){
     case 'W':
       *width = atoi(optarg);
