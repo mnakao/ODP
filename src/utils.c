@@ -1055,6 +1055,22 @@ void ODP_Write_edge_grid(const int lines, const int height, const int edge[lines
   fclose(fp);
 }
 
+void ODP_Malloc(uint64_t **a, const size_t s, const bool enable_avx2)
+{
+  if(enable_avx2)
+    *a = _mm_malloc(s, ALIGN_VALUE);
+  else
+    posix_memalign((void **)a, ALIGN_VALUE, s);
+}
+
+void ODP_Free(uint64_t *a, const bool enable_avx2)
+{
+  if(enable_avx2)
+    _mm_free(a);
+  else
+    free(a);
+}
+
 double ODP_Get_mem_usage(const int kind, const int nodes, const int degree, const int symmetries,
                          const int *num_degrees, const int procs, const bool is_cpu)
 {

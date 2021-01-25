@@ -4,7 +4,7 @@ static int _nodes, _degree, _symmetries, _kind;
 static const int* _num_degrees;
 static unsigned int _elements, _times;
 static double _mem_usage, _elapsed_time;
-static bool _is_profile;
+static bool _enable_avx2 = false, _is_profile;
 
 extern bool ODP_Check_profile();
 extern double ODP_Get_time();
@@ -15,9 +15,11 @@ extern int ODP_Get_kind(const int nodes, const int degree, const int* num_degree
 extern double ODP_Get_mem_usage(const int kind, const int nodes, const int degree, const int symmetries,
                                  const int *num_degrees, const int procs, const bool is_cpu);
 extern void ODP_Matmul(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
-			const int *restrict num_degrees, const int *restrict adjacency, const int elements, const int symmetries);
+			const int *restrict num_degrees, const int *restrict adjacency, const bool enable_avx2, const int elements, const int symmetries);
 extern void ODP_Matmul_CHUNK(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
-			      const int *restrict num_degrees, const int *restrict adjacency, const int symmetries);
+			      const int *restrict num_degrees, const int *restrict adjacency, const bool enable_avx2, const int symmetries);
+extern void ODP_Malloc(uint64_t **a, const size_t s, const bool enable_avx2);
+extern void ODP_Free(uint64_t *a, const bool enable_avx2);
 
 static void aspl_mat(const int* restrict adjacency,
 		     int *diameter, long *sum, double *ASPL)
@@ -36,7 +38,7 @@ static void aspl_mat(const int* restrict adjacency,
   *diameter = 1;
   for(int kk=0;kk<_nodes;kk++){
     ODP_Matmul(_A, _B, _nodes, _degree, _num_degrees, adjacency, 
-	       _elements, _symmetries);
+	       _enable_avx2, _elements, _symmetries);
     
     uint64_t num = 0;
 #pragma omp parallel for reduction(+:num)
@@ -78,7 +80,7 @@ static void aspl_mat_saving(const int* restrict adjacency,
     }
 
     for(kk=0;kk<_nodes;kk++){
-      ODP_Matmul_CHUNK(_A, _B, _nodes, _degree, _num_degrees, adjacency, _symmetries);
+      ODP_Matmul_CHUNK(_A, _B, _nodes, _degree, _num_degrees, adjacency, _enable_avx2, _symmetries);
 
       uint64_t num = 0;
 #pragma omp parallel for reduction(+:num)
@@ -113,18 +115,14 @@ void ODP_Init_aspl_s(const int nodes, const int degree, const int* num_degrees, 
   _elements = (nodes/symmetries+(UINT64_BITS-1))/UINT64_BITS;
 #ifdef __AVX2__
   if(_elements >= 4){ // For performance
+    _enable_avx2 = true;
     _elements = ((_elements+3)/4)*4;  // _elements must be multiple of 4
   }
 #endif
 
   size_t s = (_kind == ASPL_NORMAL)? _elements : CPU_CHUNK;
-#ifdef __AVX2__
-  _A = _mm_malloc(nodes*s*sizeof(uint64_t), ALIGN_VALUE);
-  _B = _mm_malloc(nodes*s*sizeof(uint64_t), ALIGN_VALUE);
-#else
-  posix_memalign(&_A, ALIGN_VALUE, nodes*s*sizeof(uint64_t)); // uint64_t A[nodes][s];
-  posix_memalign(&_B, ALIGN_VALUE, nodes*s*sizeof(uint64_t)); // uint64_t B[nodes][s];
-#endif
+  ODP_Malloc(&_A, nodes*s*sizeof(uint64_t), _enable_avx2); // uint64_t A[nodes][s];
+  ODP_Malloc(&_B, nodes*s*sizeof(uint64_t), _enable_avx2); // uint64_t B[nodes][s];
 
   _nodes = nodes;
   _degree = degree;
@@ -142,13 +140,8 @@ void ODP_Init_aspl(const int nodes, const int degree, const int* num_degrees)
 
 void ODP_Finalize_aspl()
 {
-#ifdef __AVX2__
-  _mm_free(_A);
-  _mm_free(_A);
-#else
-  free(_A);
-  free(_B);
-#endif
+  ODP_Free(_A, _enable_avx2);
+  ODP_Free(_B, _enable_avx2);
 
   if(_is_profile){
 #ifdef _OPENMP
