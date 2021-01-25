@@ -13,9 +13,7 @@
 #include <limits.h>
 #include <float.h>
 #include "parameter.h"
-#ifdef __AVX2__
 #include <immintrin.h>
-#endif
 #ifdef _OPENMP
   #include <omp.h>
 #endif
