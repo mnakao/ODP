@@ -188,10 +188,12 @@ void ODP_Print_adjacency(int nodes, int degree, int num_degrees[nodes], int adja
 
 ### Print an edge list
 ```
-void ODP_Print_edge(int lines, int edge[lines][2])
+void ODP_Print_edge_general(int lines, int edge[lines][2])
+void ODP_Print_edge_grid(int lines, int height, int edge[lines][2])
 ```
 * [IN] lines : Number of lines in an edge list.
 * [IN] edge : Edge list of a graph.
+* [IN] height : Height of a grid graph.
 
 ### Convert an edge list to an adjacency matrix
 ```
@@ -348,7 +350,8 @@ The edges plus 6 (`= nodes/symmetries`) matches the 1st row in the next group (i
 Here, 19 + 6 = 25, but the number of nodes is 24, so it goes around and becomes 25 - 24 = 1.
 This rule holds for all groups.
 
-Therefore, in a graph with symmetric graph, the size of the adjacency matrix is `int adjacency[nodes/symmetries][degree]`.
+Since it can calculate the remaining elements from the first (nodes/symmetries) line of the adjacency matrix,
+the size of the adjacency matrix is `int adjacency[nodes/symmetries][degree]`.
 Since the edge list is used for input and output, the size is `int edge[lines][2]`, which is the same as a normal graph.
 
 ### Initialize
@@ -370,7 +373,8 @@ Note that the ODP_Set_aspl\*() and ODP_Finalize_aspl\*() can be used in common.
 
 ### Convert an edge list to an adjacency matrix
 ```
-void ODP_Conv_edge2adjacency_s(int nodes, int lines, int degree, int edge[lines][2], int symmetries, int adjacency[nodes/symmetries][degree])
+void ODP_Conv_edge2adjacency_general_s(int nodes, int lines, int degree, int edge[lines][2], int symmetries, int adjacency[nodes/symmetries][degree])
+void ODP_Conv_edge2adjacency_grid_s(int width, int height, int lines, int degree, int edge[lines][2], int symmetries, int adjacency[nodes/symmetries][degree])
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] lines : Number of lines in an edge list.
@@ -381,23 +385,30 @@ void ODP_Conv_edge2adjacency_s(int nodes, int lines, int degree, int edge[lines]
 
 ### Convert an adjacency matrix to an edge list
 ```
-void ODP_Conv_adjacency2edge_s(int nodes, int degree, int num_degrees[nodes], int adjacency[nodes/symmetries][degree], int symmetries, int edge[lines][2])
+void ODP_Conv_adjacency2edge_general_s(int nodes, int degree, int num_degrees[nodes/symmetries], int adjacency[nodes/symmetries][degree], int symmetries, int edge[lines][2])
+void ODP_Conv_adjacency2edge_grid_s(int width, int height, int degree, int num_degrees[nodes/symmetries], int adjacency[nodes/symmetries][degree], int symmetries, int edge[lines][2])
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] degree: Degree in a graph.
 * [IN] num_degrees : Specify NULL for a regular graph. If not, specify the degrees for each vertex.
 * [IN] adjacency : Adjacency matrix of a graph.
 * [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes. If it is 1, it works the same as ODP_Conv_adjacency2edge().
+* [IN] width : Width of a grid graph.
+* [IN] height : Height of a grid graph.
 * [OUT] edge : Edge list of a graph.
 
 ### Generate a random graph
 ```
 void ODP_Generate_random_general_s(int nodes, int degree, unsigned int seed, int symmetries, int edge[lines][2])
+void ODP_Generate_random_grid_s(int width, int height, int degree, int length, unsigned int seed, int symmetries, int edge[lines][2])
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] degree: Degree in a graph.
 * [IN] seed : Seed for random.
 * [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes. If it is 1, it works the same as ODP_Generate_random_general().
+* [IN] width : Width of a grid graph.
+* [IN] height : Height of a grid graph.
+* [IN] length : Maximum length of a grid graph.
 * [OUT] edge : Edge list of a graph.
 
 ## Note
