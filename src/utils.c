@@ -1419,6 +1419,7 @@ void ODP_Set_degrees(const int nodes, const int lines, int edge[lines][2],
 void ODP_mutate_adjacency_grid(const int width, const int height, const int degree,
 			       const int *restrict num_degrees, const int length, int (*adjacency)[degree])
 {
+  CHECK_PARAMETERS(width*height, degree);
   while(1){
     if(mutate_adjacency_2opt_grid_s(width, height, degree, num_degrees, length, 1, adjacency))
       break;

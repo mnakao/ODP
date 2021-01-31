@@ -350,7 +350,7 @@ The edges plus 6 (`= nodes/symmetries`) matches the 1st row in the next group (i
 Here, 19 + 6 = 25, but the number of nodes is 24, so it goes around and becomes 25 - 24 = 1.
 This rule holds for all groups.
 
-Since it can calculate the remaining elements from the first (nodes/symmetries) line of the adjacency matrix,
+Since the remaining elements can be calculated from the first (nodes/symmetries) lines of the adjacency matrix,
 the size of the adjacency matrix is `int adjacency[nodes/symmetries][degree]`.
 Since the edge list is used for input and output, the size is `int edge[lines][2]`, which is the same as a normal graph.
 
