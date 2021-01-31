@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
     double temp = max_temp;
     printf("Ncalcs : Temp : Diameter Gap : ASPL Gap\n");
     for(long i=0;i<ncalcs;i++){
-      if(i%10000 == 0)
+      if(i%(ncalcs/100) == 0)
 	printf("%ld\t%f\t%d\t%f\n", i, temp, best_diameter-low_diameter, best_ASPL-low_ASPL);
 
       ODP_mutate_adjacency_general(nodes, degree, NULL, adjacency);
