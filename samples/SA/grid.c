@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
       if(i%10000 == 0)
 	printf("%ld\t%f\t%d\t%f\n", i, temp, best_diameter-low_diameter, best_ASPL-low_ASPL);
 
-      mutate_adjacency_grid(width, height, degree, NULL, length, adjacency);
+      ODP_mutate_adjacency_grid(width, height, degree, NULL, length, adjacency);
       ODP_Set_aspl(adjacency, &diameter, &sum, &ASPL);
       if(diameter < best_diameter || (diameter == best_diameter && ASPL < best_ASPL)){
 	best_diameter = diameter;
@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
 	current_ASPL     = ASPL;
       }
       else{
-	restore_adjacency((int *)adjacency);
+	ODP_restore_adjacency_grid(width, height, degree, adjacency);
       }
       temp *= cooling_rate;
     }
