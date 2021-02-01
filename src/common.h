@@ -29,8 +29,7 @@
 #define ASPL_SAVING 2
 #define NOT_VISITED 0
 #define VISITED     1
-#define MUTATE_1OPT 1
-#define	MUTATE_2OPT 2
+#define NOT_DEFINED -1
 
 #ifdef __NVCC__
 #define POPCNT(a) __popcll(a)
