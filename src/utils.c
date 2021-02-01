@@ -483,11 +483,13 @@ void ODP_restore_adjacency_general(const int nodes, const int degree, int (*adja
 }
 
 static int get_degree_index_general(const int u, const int v, const int u_d, const int nodes,
-				    const int symmetries, const int degree, const int (*adjacency)[degree])
+				    const int symmetries, const int degree, const int *restrict num_degrees,
+				    const int (*adjacency)[degree])
 {
   int based_nodes = nodes/symmetries;
   if(u == v){ // loop
-    for(int i=0;i<degree;i++)
+    int d = (!num_degrees)? degree : num_degrees[v];
+    for(int i=0;i<d;i++)
       if(GLOBAL_ADJ_GENERAL(nodes, degree, symmetries, adjacency, v, i) == u && i != u_d)
 	return i;
   }
@@ -495,7 +497,8 @@ static int get_degree_index_general(const int u, const int v, const int u_d, con
     return u_d;
   }
   else{
-    for(int i=0;i<degree;i++)
+    int d = (!num_degrees)? degree : num_degrees[v];
+    for(int i=0;i<d;i++)
       if(GLOBAL_ADJ_GENERAL(nodes, degree, symmetries, adjacency, v, i) == u)
 	return i;
   }
@@ -505,10 +508,12 @@ static int get_degree_index_general(const int u, const int v, const int u_d, con
 }
 
 static int get_degree_index_grid(const int u, const int v, const int u_d, const int width, const int height,
-				 const int symmetries, const int degree, const int (*adjacency)[degree])
+				 const int symmetries, const int degree, const int *restrict num_degrees,
+				 const int (*adjacency)[degree])
 {
   if(u == v){ // loop
-    for(int i=0;i<degree;i++)
+    int d = (!num_degrees)? degree : num_degrees[v];
+    for(int i=0;i<d;i++)
       if(GLOBAL_ADJ_GRID(width, height, degree, symmetries, adjacency, v, i) == u && i != u_d)
 	return i;
   }
@@ -516,7 +521,8 @@ static int get_degree_index_grid(const int u, const int v, const int u_d, const 
     return u_d;
   }
   else{
-    for(int i=0;i<degree;i++){
+    int d = (!num_degrees)? degree : num_degrees[v];
+    for(int i=0;i<d;i++){
       if(GLOBAL_ADJ_GRID(width, height, degree, symmetries, adjacency, v, i) == u)
 	return i;
     }
@@ -534,13 +540,14 @@ static void backup_restore_adjacency(const int u[2], const int u_d[2], const int
   memcpy(_v_d, v_d, sizeof(int)*2);
 }
 
-static bool mutate_adjacency_1opt_general_s(const int u, const int u_d, const int nodes, const int degree, 
-					    const int symmetries, int adjacency[nodes/symmetries][degree])
+static bool mutate_adjacency_1opt_general_s(const int u, const int u_d, const int nodes, const int degree,
+					    const int *restrict num_degrees, const int symmetries,
+					    int adjacency[nodes/symmetries][degree])
 {
   int based_nodes = nodes/symmetries;
   int v = GLOBAL_ADJ_GENERAL(nodes, degree, symmetries, adjacency, u, u_d);
   if(IS_DIAMETER_GENERAL(u, v, nodes, symmetries)) return false;
-  int v_d = get_degree_index_general(u, v, u_d, nodes, symmetries, degree, adjacency);
+  int v_d = get_degree_index_general(u, v, u_d, nodes, symmetries, degree, num_degrees, adjacency);
 
   int rnd   = (symmetries%2 == 1)? get_random(symmetries-1) : get_random(symmetries);
   int new_v = (rnd != symmetries-1)? v + based_nodes*(rnd+1) : u + based_nodes*(symmetries/2);
@@ -574,8 +581,8 @@ static bool mutate_adjacency_2opt_general_s(const int nodes, const int degree, c
     break;
   }
 
-  v_d[0] = get_degree_index_general(u[0], v[0], u_d[0], nodes, symmetries, degree, adjacency);
-  v_d[1] = get_degree_index_general(u[1], v[1], u_d[1], nodes, symmetries, degree, adjacency);
+  v_d[0] = get_degree_index_general(u[0], v[0], u_d[0], nodes, symmetries, degree, num_degrees, adjacency);
+  v_d[1] = get_degree_index_general(u[1], v[1], u_d[1], nodes, symmetries, degree, num_degrees, adjacency);
   backup_restore_adjacency(u, u_d, v, v_d);
   
   if(IS_DIAMETER_GENERAL(u[0], v[0], nodes, symmetries) && IS_DIAMETER_GENERAL(u[1], v[1], nodes, symmetries)){
@@ -634,11 +641,11 @@ static bool mutate_adjacency_2opt_general_s(const int nodes, const int degree, c
     diff[1] = (u[1] > v[1])? v[1] - u[1] + nodes : v[1] - u[1];
     
     if(diff[0] == diff[1] && u[0]%based_nodes == u[1]%based_nodes)
-      return mutate_adjacency_1opt_general_s(u[0], u_d[0], nodes, degree, symmetries, adjacency);
+      return mutate_adjacency_1opt_general_s(u[0], u_d[0], nodes, degree, num_degrees, symmetries, adjacency);
 
     diff[1] = (u[1] < v[1])? u[1] - v[1] + nodes : u[1] - v[1];
     if(diff[0] == diff[1] && u[0]%based_nodes == v[1]%based_nodes)
-      return mutate_adjacency_1opt_general_s(u[0], u_d[0], nodes, degree, symmetries, adjacency);
+      return mutate_adjacency_1opt_general_s(u[0], u_d[0], nodes, degree, num_degrees, symmetries, adjacency);
   }
   
   if(get_random(2) == 0){ // u[0]--v[1], v[0]--u[1]
@@ -691,7 +698,7 @@ static bool mutate_adjacency_1opt_grid_s(const int u, const int u_d, const int w
   int based_nodes = nodes/symmetries;
   int v           = GLOBAL_ADJ_GRID(width, height, degree, symmetries, adjacency, u, u_d);
   if(IS_DIAMETER_GRID(u, v, width, height, symmetries)) return false;
-  int v_d         = get_degree_index_grid(u, v, u_d, width, height, symmetries, degree, adjacency);
+  int v_d         = get_degree_index_grid(u, v, u_d, width, height, symmetries, degree, num_degrees, adjacency);
 
   int rnd   = get_random(symmetries);
   if(rnd != symmetries-1){
@@ -733,8 +740,8 @@ static bool mutate_adjacency_2opt_grid_s(const int width, const int height, cons
     break;
   }
 
-  v_d[0] = get_degree_index_grid(u[0], v[0], u_d[0], width, height, symmetries, degree, adjacency);
-  v_d[1] = get_degree_index_grid(u[1], v[1], u_d[1], width, height, symmetries, degree, adjacency);
+  v_d[0] = get_degree_index_grid(u[0], v[0], u_d[0], width, height, symmetries, degree, num_degrees, adjacency);
+  v_d[1] = get_degree_index_grid(u[1], v[1], u_d[1], width, height, symmetries, degree, num_degrees, adjacency);
   backup_restore_adjacency(u, u_d, v, v_d);
 
   if(IS_DIAMETER_GRID(u[0], v[0], width, height, symmetries) && IS_DIAMETER_GRID(u[1], v[1], width, height, symmetries)){
@@ -896,6 +903,10 @@ void ODP_Conv_edge2adjacency_general_s(const int nodes, const int lines, const i
   for(int i=0;i<based_nodes;i++)
     num_degrees[i] = 0;
 
+  for(int i=0;i<nodes/symmetries;i++)
+    for(int j=0;j<degree;j++)
+      *(adjacency + i * degree +j) = -1;
+
   for(int i=0;i<lines;i++){
     int n1 = edge[i][0];
     int n2 = edge[i][1];
@@ -1023,18 +1034,28 @@ void ODP_Conv_edge2adjacency_grid_s(const int width, const int height, const int
   int (*tmp)[degree] = malloc(sizeof(int)*nodes*degree);
   ODP_Conv_edge2adjacency(nodes, lines, degree, edge, (int *)tmp);
 
-  if(symmetries == 2){
-    for(int w=0;w<width/2;w++)
-      for(int h=0;h<height;h++)
-	for(int i=0;i<degree;i++)
-	  adjacency[w*height+h][i] = tmp[w*height+h][i];
+  int based_nodes = (width*height)/symmetries;
+  int num_degrees[based_nodes];
+  for(int i=0;i<based_nodes;i++)
+    num_degrees[i] = 0;
+  
+  for(int i=0;i<nodes/symmetries;i++)
+    for(int j=0;j<degree;j++)
+      adjacency[i][j] = -1;
+
+  int based_width = width/2;
+  int based_height = (symmetries == 2)? height : height/2;
+  for(int i=0;i<lines;i++){
+    int n1 = edge[i][0];
+    int n2 = edge[i][1];
+    int local_n1 = LOCAL_INDEX_GRID(n1, height, symmetries);
+    int local_n2 = LOCAL_INDEX_GRID(n2, height, symmetries);
+    if(WIDTH(n1,height)<based_width && HEIGHT(n1,height)<based_height)
+      adjacency[local_n1][num_degrees[local_n1]++] = n2;
+    if(WIDTH(n2,height)<based_width && HEIGHT(n2,height)<based_height)
+      adjacency[local_n2][num_degrees[local_n2]++] = n1;
   }
-  else{ // symmetries == 4
-    for(int w=0;w<width/2;w++)
-      for(int h=0;h<height/2;h++)
-	for(int i=0;i<degree;i++)
-	  adjacency[w*height/2+h][i] = tmp[w*height+h][i];
-  }
+  
   free(tmp);
 }
 
