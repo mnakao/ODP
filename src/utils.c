@@ -17,7 +17,8 @@ void ODP_Print_adjacency(const int nodes, const int degree, const int num_degree
     printf("%d ", i);
     int d = (!num_degrees)? degree : num_degrees[i];
     for(int j=0;j<d;j++){
-      printf("%3d", adjacency[i][j]);
+      if(adjacency[i][j] != NOT_DEFINED)
+	printf("%3d", adjacency[i][j]);
     }
     printf("\n");
   }
@@ -905,7 +906,7 @@ void ODP_Conv_edge2adjacency_general_s(const int nodes, const int lines, const i
 
   for(int i=0;i<nodes/symmetries;i++)
     for(int j=0;j<degree;j++)
-      *(adjacency + i * degree +j) = -1;
+      *(adjacency + i * degree +j) = NOT_DEFINED;
 
   for(int i=0;i<lines;i++){
     int n1 = edge[i][0];
@@ -1041,7 +1042,7 @@ void ODP_Conv_edge2adjacency_grid_s(const int width, const int height, const int
   
   for(int i=0;i<nodes/symmetries;i++)
     for(int j=0;j<degree;j++)
-      adjacency[i][j] = -1;
+      adjacency[i][j] = NOT_DEFINED;
 
   int based_width = width/2;
   int based_height = (symmetries == 2)? height : height/2;
