@@ -1405,8 +1405,9 @@ void ODP_Conv_adjacency2edge(const int nodes, const int degree, const int *num_d
         tmp[u][i]  = VISITED;
         j++;
         int k=0;
-        for(k=0;k<degree;k++){
-          if(*(adjacency +v*degree+k) == u && tmp[v][k] == NOT_VISITED){
+	int d2 = (!num_degrees)? degree : num_degrees[v];
+        for(k=0;k<d2;k++){
+          if(*(adjacency + v * degree + k) == u && tmp[v][k] == NOT_VISITED){
             tmp[v][k] = VISITED;
             break;
           }
