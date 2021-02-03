@@ -15,14 +15,6 @@
 #define MUTATE_2OPT 2
 #define ERROR(...) do{fprintf(stderr, __VA_ARGS__); exit(0);}while(0)
 
-void ODP_mutate_adjacency_general(const int nodes, const int degree, const int *restrict num_degrees, int adjacency[nodes][degree]);
-void ODP_mutate_adjacency_general_s(const int nodes, const int degree, const int *restrict num_degrees, const int symmetgries, int adjacency[nodes][degree]);
-void ODP_mutate_adjacency_grid(const int width, const int height, const int degree, const int *restrict num_degrees, const int length, int (*adjacency)[degree]);
-void ODP_mutate_adjacency_grid_s(const int width, const int height, const int degree, const int *restrict num_degrees, const int length, const int symmetgries, int (*adjacency)[degree]);
-void ODP_restore_adjacency_general(const int nodes, const int degree, int (*adjacency)[degree]);
-void ODP_restore_adjacency_general_s(const int nodes, const int degree, const int symmetries, int (*adjacency)[degree]);
-void ODP_restore_adjacency_grid(const int width, const int height, const int degree, int (*adjacency)[degree]);
-void ODP_restore_adjacency_grid_s(const int width, const int height, const int degree, const int symmetries, int (*adjacency)[degree]);
 bool accept(const int nodes, const int current_diameter, const int diameter,
 	    const double current_ASPL, const double ASPL, const double temp, const bool enable_ASPL_priority);
 bool accept_s(const int nodes, const int current_diameter, const int diameter,

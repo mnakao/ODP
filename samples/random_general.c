@@ -12,7 +12,8 @@ int main()
   char *fname="general.edges";
 
   int (*edge)[2] = malloc(sizeof(int)*lines*2); // int edge[lines][2];
-  ODP_Generate_random_general(nodes, degree, seed, edge);
+  ODP_Srand(seed);
+  ODP_Generate_random_general(nodes, degree, edge);
   int (*adjacency)[degree] = malloc(sizeof(int) * nodes * degree); // int adjacency[nodes][degree];
   ODP_Conv_edge2adjacency(nodes, lines, degree, edge, adjacency);
 

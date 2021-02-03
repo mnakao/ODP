@@ -65,6 +65,7 @@ int main(int argc, char *argv[])
   int nodes, degree, seed = 0, diameter, current_diameter, best_diameter, low_diameter;
   long sum, best_sum, ncalcs = 10000;
   double max_temp = 238.91, min_temp = 0.22, ASPL, current_ASPL, best_ASPL, low_ASPL;
+  ODP_Restore restore;
 
   set_args(argc, argv, &nodes, &degree, fname, &seed, &ncalcs, &max_temp, &min_temp, &enable_ASPL_priority);
   if(nodes%2 == 1 && degree%2 == 1)
@@ -81,7 +82,8 @@ int main(int argc, char *argv[])
   int (*best_adjacency)[degree] = malloc(sizeof(int) * nodes * degree); // int best_adjacency[nodes][degree];
 
   double create_time = get_time();
-  ODP_Generate_random_general(nodes, degree, seed, edge);
+  ODP_Srand(seed);
+  ODP_Generate_random_general(nodes, degree, edge);
   create_time = get_time() - create_time;
   ODP_Conv_edge2adjacency(nodes, lines, degree, edge, adjacency);
 
@@ -105,7 +107,7 @@ int main(int argc, char *argv[])
       if(i%(ncalcs/100) == 0)
 	printf("%ld\t%f\t%d\t%f\n", i, temp, best_diameter-low_diameter, best_ASPL-low_ASPL);
 
-      ODP_mutate_adjacency_general(nodes, degree, NULL, adjacency);
+      ODP_Mutate_adjacency_general(nodes, degree, NULL, &restore, adjacency);
       ODP_Set_aspl(adjacency, &diameter, &sum, &ASPL);
       if(diameter < best_diameter || (diameter == best_diameter && ASPL < best_ASPL)){
 	best_diameter = diameter;
@@ -123,7 +125,7 @@ int main(int argc, char *argv[])
 	current_ASPL     = ASPL;
       }
       else{
-	ODP_restore_adjacency_general(nodes, degree, adjacency);
+	ODP_Restore_adjacency_general(nodes, degree, restore, adjacency);
       }
       temp *= cooling_rate;
     }

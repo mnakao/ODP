@@ -13,7 +13,8 @@ int main()
   char *fname="grid.edges";
 
   int (*edge)[2] = malloc(sizeof(int)*lines*2); // int edge[lines][2];
-  ODP_Generate_random_grid(width, height, degree, length, seed, edge);
+  ODP_Srand(seed);
+  ODP_Generate_random_grid(width, height, degree, length, edge);
   int (*adjacency)[degree] = malloc(sizeof(int) * nodes * degree); // int adjacency[nodes][degree];
   ODP_Conv_edge2adjacency(nodes, lines, degree, edge, adjacency);
 
