@@ -75,7 +75,6 @@ int main(int argc, char *argv[])
   int width, height, degree, length, seed = 0, diameter, current_diameter, best_diameter, low_diameter;
   long sum, best_sum, ncalcs = 10000;
   double max_temp = 100, min_temp = 0.2, ASPL, current_ASPL, best_ASPL, low_ASPL;
-  ODP_Restore restore;
 
   set_args(argc, argv, &width, &height, &degree, &length, fname, &seed, &ncalcs, &max_temp, &min_temp, &enable_ASPL_priority);
   int nodes = width * height;
@@ -116,7 +115,7 @@ int main(int argc, char *argv[])
       if(i%(ncalcs/100) == 0)
 	printf("%ld\t%f\t%d\t%f\n", i, temp, best_diameter-low_diameter, best_ASPL-low_ASPL);
 
-      ODP_Mutate_adjacency_grid(width, height, degree, NULL, length, &restore, adjacency);
+      ODP_Mutate_adjacency_grid(width, height, degree, NULL, length, adjacency);
       ODP_Set_aspl(adjacency, &diameter, &sum, &ASPL);
       if(diameter < best_diameter || (diameter == best_diameter && ASPL < best_ASPL)){
 	best_diameter = diameter;
@@ -134,7 +133,7 @@ int main(int argc, char *argv[])
 	current_ASPL     = ASPL;
       }
       else{
-	ODP_Restore_adjacency_grid(width, height, degree, restore, adjacency);
+	ODP_Restore_adjacency_grid(width, height, degree, adjacency);
       }
       temp *= cooling_rate;
     }
