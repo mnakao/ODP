@@ -489,6 +489,17 @@ static bool check_multiple_edges_general_s(const int u, const int u_d, const int
   return true;
 }
 
+static bool check_multiple_edges_grid_s(const int u, const int u_d, const int v, const int width, const int height,
+					const int degree, const int *num_degrees, const int symmetries, const int (*adjacency)[degree])
+{
+  int d = (!num_degrees)? degree : num_degrees[global2local_vertex_grid(u, width, height, symmetries)];
+  for(int i=0;i<d;i++)
+    if(i!=u_d && GLOBAL_ADJ_GRID(width, height, degree, symmetries, adjacency, u, i) == v)
+      return false;
+
+  return true;
+}
+
 static bool check_isolated_vertices_grid(const int u[2], const int v[2], const int width, const int height, const int symmetries,
                                          const int degree, const int *num_degrees, int (*adjacency)[degree])
 {
@@ -780,10 +791,14 @@ static bool mutate_adjacency_1opt_grid_s(const int u, const int u_d, const int w
   int v_d = get_degree_index_grid(u, v, u_d, width, height, symmetries, degree, num_degrees, adjacency);
 
   int rnd = get_random(symmetries);
+  int tmp[2];
   if(rnd != symmetries-1){
     int new_v = ROTATE(v, width, height, symmetries, (rnd+1)*(360/symmetries));
     int new_u = ROTATE(u, width, height, symmetries, (symmetries-rnd-1)*(360/symmetries));
     if(!CHECK_LENGTH(u,new_v,height,length)) return false;
+    if(!check_multiple_edges_grid_s(new_v, v_d, u, width, height, degree, num_degrees, symmetries, adjacency) ||
+       !check_multiple_edges_grid_s(new_u, u_d, v, width, height, degree, num_degrees, symmetries, adjacency))
+      return false;
     set_adjacency(new_v, v_d, u, width, height, degree, symmetries, adjacency);
     set_adjacency(new_u, u_d, v, width, height, degree, symmetries, adjacency);
   }
@@ -791,9 +806,13 @@ static bool mutate_adjacency_1opt_grid_s(const int u, const int u_d, const int w
     int new_v = ROTATE(u, width, height, symmetries, 180);
     int new_u = ROTATE(v, width, height, symmetries, 180);
     if(!CHECK_LENGTH(u,new_v,height,length) || !CHECK_LENGTH(v,new_u,height,length)) return false;
+    if(!check_multiple_edges_grid_s(new_v, u_d, u, width, height, degree, num_degrees, symmetries, adjacency) ||
+       !check_multiple_edges_grid_s(new_u, v_d, v, width, height, degree, num_degrees, symmetries, adjacency))
+      return false;
     set_adjacency(new_v, u_d, u, width, height, degree, symmetries, adjacency);
     set_adjacency(new_u, v_d, v, width, height, degree, symmetries, adjacency);
   }
+
 
   return true;
 }
@@ -833,16 +852,24 @@ static bool mutate_adjacency_2opt_grid_s(const int width, const int height, cons
       }
     }
     else{
+      int tmp[2];
       if(get_random(2)){ // u[0]--u[1], v[0]--v[1]
 	if(!CHECK_LENGTH(u[0], u[1], height, length)) return false;
-	set_adjacency(u[0], u_d[0], u[1], width, height, degree, symmetries, adjacency);
-	set_adjacency(u[1], u_d[1], u[0], width, height, degree, symmetries, adjacency);
+	tmp[0] = u[1];
+	tmp[1] = u[0];
       }
       else{ // u[0]--v[1], u[1]--v[0]
 	if(!CHECK_LENGTH(u[0], v[1], height, length)) return false;
-	set_adjacency(u[0], u_d[0], v[1], width, height, degree, symmetries, adjacency);
-	set_adjacency(u[1], u_d[1], v[0], width, height, degree, symmetries, adjacency);
+	tmp[0] = v[1];
+	tmp[1] = v[0];
       }
+
+      if(!check_multiple_edges_grid_s(u[0], u_d[0], tmp[0], width, height, degree, num_degrees, symmetries, adjacency) ||
+	 !check_multiple_edges_grid_s(u[1], u_d[1], tmp[1], width, height, degree, num_degrees, symmetries, adjacency))
+	return false;
+      
+      set_adjacency(u[0], u_d[0], tmp[0], width, height, degree, symmetries, adjacency);
+      set_adjacency(u[1], u_d[1], tmp[1], width, height, degree, symmetries, adjacency);
     }
     return check_isolated_vertices_grid(u, v, width, height, symmetries, degree, num_degrees, adjacency);
   }
@@ -855,38 +882,51 @@ static bool mutate_adjacency_2opt_grid_s(const int width, const int height, cons
     int rnd = get_random(4);
     int u1_opposite = ROTATE(u[1], width, height, symmetries, 180);
     int v1_opposite = ROTATE(v[1], width, height, symmetries, 180);
+    int tmp[4];
     if(rnd == 0){ // u[0]--v[1], u[1]--u[1]', v[0]--v[1]'
       if(!CHECK_LENGTH(u[0], v[1], height, length) || !CHECK_LENGTH(u[1], u1_opposite, height, length))
 	return false;
-      set_adjacency(u[0], u_d[0], v[1],        width, height, degree, symmetries, adjacency);
-      set_adjacency(u[1], u_d[1], u1_opposite, width, height, degree, symmetries, adjacency);
-      set_adjacency(v[0], v_d[0], v1_opposite, width, height, degree, symmetries, adjacency);
-      set_adjacency(v[1], v_d[1], u[0],        width, height, degree, symmetries, adjacency);
+      tmp[0] = v[1];
+      tmp[1] = u1_opposite;
+      tmp[2] = v1_opposite;
+      tmp[3] = u[0];
     }
     else if(rnd == 1){ // u[0]--v[1]', v[0]--v[1], u[1]--u[1]'
       if(!CHECK_LENGTH(u[0], v1_opposite, height, length) || !CHECK_LENGTH(u[1], u1_opposite, height, length))
-	return false;
-      set_adjacency(u[0], u_d[0], v1_opposite, width, height, degree, symmetries, adjacency);
-      set_adjacency(u[1], u_d[1], u1_opposite, width, height, degree, symmetries, adjacency);
-      set_adjacency(v[0], v_d[0], v[1],        width, height, degree, symmetries, adjacency);
-      set_adjacency(v[1], v_d[1], v[0],        width, height, degree, symmetries, adjacency);
+        return false;
+      tmp[0] = v1_opposite;
+      tmp[1] = u1_opposite;
+      tmp[2] = v[1];
+      tmp[3] = v[0];
     }
     else if(rnd == 2){ // u[0]--u[1], v[0]--u[1]', v[1]--v[1]'
       if(!CHECK_LENGTH(u[0], u[1], height, length) || !CHECK_LENGTH(v[1], v1_opposite, height, length))
-	return false;
-      set_adjacency(u[0], u_d[0], u[1],        width, height, degree, symmetries, adjacency);
-      set_adjacency(u[1], u_d[1], u[0],        width, height, degree, symmetries, adjacency);
-      set_adjacency(v[0], v_d[0], u1_opposite, width, height, degree, symmetries, adjacency);
-      set_adjacency(v[1], v_d[1], v1_opposite, width, height, degree, symmetries, adjacency);
+        return false;
+      tmp[0] = u[1];
+      tmp[1] = u[0];
+      tmp[2] = u1_opposite;
+      tmp[3] = v1_opposite;
     }
     else if(rnd == 3){ // u[0]--u[1]', u[1]--v[0], v[1]--v[1]'
       if(!CHECK_LENGTH(u[0], u1_opposite, height, length) || !CHECK_LENGTH(v[1], v1_opposite, height, length))
-	return false;
-      set_adjacency(u[0], u_d[0], u1_opposite, width, height, degree, symmetries, adjacency);
-      set_adjacency(u[1], u_d[1], v[0],        width, height, degree, symmetries, adjacency);
-      set_adjacency(v[0], v_d[0], u[1],        width, height, degree, symmetries, adjacency);
-      set_adjacency(v[1], v_d[1], v1_opposite, width, height, degree, symmetries, adjacency);
+        return false;
+      tmp[0] = u1_opposite;
+      tmp[1] = v[0];
+      tmp[2] = u[1];
+      tmp[3] = v1_opposite;
     }
+
+     if(!check_multiple_edges_grid_s(u[0], u_d[0], tmp[0], width, height, degree, num_degrees, symmetries, adjacency) ||
+	!check_multiple_edges_grid_s(u[1], u_d[1], tmp[1], width, height, degree, num_degrees, symmetries, adjacency) ||
+	!check_multiple_edges_grid_s(v[0], v_d[0], tmp[2], width, height, degree, num_degrees, symmetries, adjacency) ||
+	!check_multiple_edges_grid_s(v[1], v_d[1], tmp[3], width, height, degree, num_degrees, symmetries, adjacency))
+       return false;
+     
+    set_adjacency(u[0], u_d[0], tmp[0], width, height, degree, symmetries, adjacency);
+    set_adjacency(u[1], u_d[1], tmp[1], width, height, degree, symmetries, adjacency);
+    set_adjacency(v[0], v_d[0], tmp[2], width, height, degree, symmetries, adjacency);
+    set_adjacency(v[1], v_d[1], tmp[3], width, height, degree, symmetries, adjacency);
+
     return check_isolated_vertices_grid(u, v, width, height, symmetries, degree, num_degrees, adjacency);
   }
   else{ // The two selected edges are symmetrical
@@ -914,24 +954,34 @@ static bool mutate_adjacency_2opt_grid_s(const int width, const int height, cons
     }
   }
 
+  int tmp[4];
   if(get_random(2) == 0){ // u[0]--v[1], v[0]--u[1]
     if(!CHECK_LENGTH(u[0], v[1], height, length) || !CHECK_LENGTH(v[0], u[1], height, length))
       return false;
-
-    set_adjacency(u[0], u_d[0], v[1], width, height, degree, symmetries, adjacency);
-    set_adjacency(u[1], u_d[1], v[0], width, height, degree, symmetries, adjacency);
-    set_adjacency(v[0], v_d[0], u[1], width, height, degree, symmetries, adjacency);
-    set_adjacency(v[1], v_d[1], u[0], width, height, degree, symmetries, adjacency);
+    tmp[0] = v[1];
+    tmp[1] = v[0];
+    tmp[2] = u[1];
+    tmp[3] = u[0];
   }
   else{ // u[0]--u[1], v[0]--v[1]
     if(!CHECK_LENGTH(u[0], u[1], height, length) || !CHECK_LENGTH(v[0], v[1], height, length))
       return false;
-
-    set_adjacency(u[0], u_d[0], u[1], width, height, degree, symmetries, adjacency);
-    set_adjacency(u[1], u_d[1], u[0], width, height, degree, symmetries, adjacency);
-    set_adjacency(v[0], v_d[0], v[1], width, height, degree, symmetries, adjacency);
-    set_adjacency(v[1], v_d[1], v[0], width, height, degree, symmetries, adjacency);
+    tmp[0] = u[1];
+    tmp[1] = u[0];
+    tmp[2] = v[1];
+    tmp[3] = v[0];
   }
+
+  if(!check_multiple_edges_grid_s(u[0], u_d[0], tmp[0], width, height, degree, num_degrees, symmetries, adjacency) ||
+     !check_multiple_edges_grid_s(u[1], u_d[1], tmp[1], width, height, degree, num_degrees, symmetries, adjacency) ||
+     !check_multiple_edges_grid_s(v[0], v_d[0], tmp[2], width, height, degree, num_degrees, symmetries, adjacency) ||
+     !check_multiple_edges_grid_s(v[1], v_d[1], tmp[3], width, height, degree, num_degrees, symmetries, adjacency))
+    return false;
+    
+  set_adjacency(u[0], u_d[0], tmp[0], width, height, degree, symmetries, adjacency);
+  set_adjacency(u[1], u_d[1], tmp[1], width, height, degree, symmetries, adjacency);
+  set_adjacency(v[0], v_d[0], tmp[2], width, height, degree, symmetries, adjacency);
+  set_adjacency(v[1], v_d[1], tmp[3], width, height, degree, symmetries, adjacency);
 
   return check_isolated_vertices_grid(u, v, width, height, symmetries, degree, num_degrees, adjacency);
 }
