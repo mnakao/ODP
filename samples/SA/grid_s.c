@@ -2,32 +2,42 @@
 
 static void print_help(char *argv)
 {
-  ERROR("%s -N nodes -D degree -S symmetries [-o <output>] [-s <seed>] [-n <calcs>] [-w <max_temp>] [-c <min_temp>] [-A]\n", argv);
+  ERROR("%s -W width -H height -D degree -L length -S symmetries [-o <output>] [-s <seed>] [-n <calcs>] [-w <max_temp>] [-c <min_temp>] [-A]\n", argv);
 }
 
-static void set_args(const int argc, char **argv, int *nodes, int *degree, int *symmetries,
+static void set_args(const int argc, char **argv, int *width, int *height, int *degree, int *length, int *symmetries,
 		     char *fname, int *seed, long *ncalcs, double *max_temp, double *min_temp, bool *enable_ASPL_priority)
 {
-  if(argc < 7)
+  if(argc < 11)
     print_help(argv[0]);
 
   int result;
-  while((result = getopt(argc,argv,"N:D:S:o:s:n:w:c:A"))!=-1){
+  while((result = getopt(argc,argv,"W:H:D:L:S:o:s:n:w:c:A"))!=-1){
     switch(result){
-    case 'N':
-      *nodes = atoi(optarg);
-      if(*nodes <= 0)
-        ERROR("-N value > 0\n");
+    case 'W':
+      *width = atoi(optarg);
+      if(*width <= 0)
+        ERROR("-W value > 0\n");
+      break;
+    case 'H':
+      *height = atoi(optarg);
+      if(*height <= 0)
+        ERROR("-H value > 0\n");
       break;
     case 'D':
       *degree = atoi(optarg);
       if(*degree <= 0)
         ERROR("-D value > 0\n");
       break;
+    case 'L':
+      *length = atoi(optarg);
+      if(*length <= 0)
+        ERROR("-L value > 0\n");
+      break;
     case 'S':
       *symmetries = atoi(optarg);
       if(*symmetries <= 0)
-        ERROR("-S value > 0\n");
+	ERROR("-S value > 0\n");
       break;
     case 'o':
       if(strlen(optarg) > MAX_FILENAME_LENGTH)
@@ -65,48 +75,52 @@ static void set_args(const int argc, char **argv, int *nodes, int *degree, int *
 
 int main(int argc, char *argv[])
 {
-  char *fname="general_s.edges";
+  char *fname="grid_s.edges";
   bool enable_ASPL_priority = false;
-  int nodes = NOT_DEFINED, degree = NOT_DEFINED, symmetries = NOT_DEFINED;
+  int width = NOT_DEFINED, height = NOT_DEFINED, degree = NOT_DEFINED, length = NOT_DEFINED, symmetries = NOT_DEFINED;
   int seed = 0, diameter, current_diameter, best_diameter, low_diameter;
   long sum, best_sum, ncalcs = 10000;
-  double max_temp = 238.91, min_temp = 0.22, ASPL, current_ASPL, best_ASPL, low_ASPL;
+  double max_temp = 100, min_temp = 0.22, ASPL, current_ASPL, best_ASPL, low_ASPL;
 
-  set_args(argc, argv, &nodes, &degree, &symmetries, fname, &seed, &ncalcs, &max_temp, &min_temp, &enable_ASPL_priority);
-  if(nodes == NOT_DEFINED || degree == NOT_DEFINED || symmetries == NOT_DEFINED)
+  set_args(argc, argv, &width, &height, &degree, &length, &symmetries, fname, &seed, &ncalcs, &max_temp, &min_temp, &enable_ASPL_priority);
+  int nodes = width * height;
+  if(width == NOT_DEFINED || height == NOT_DEFINED || degree == NOT_DEFINED || length == NOT_DEFINED || symmetries == NOT_DEFINED)
     print_help(argv[0]);
   else if(nodes%2 == 1 && degree%2 == 1)
     ERROR("Invalid nodes(%d) or degree(%d)\n", nodes, degree);
   else if(nodes%symmetries != 0)
     ERROR("Invalid nodes(%d) or symmetries(%d)\n", nodes, symmetries);
-
-  printf("Nodes = %d, Degrees = %d, Symmetries = %d\n", nodes, degree, symmetries);
+  
+  printf("Width = %d, Height = %d, Degrees = %d, Length = %d, Symmetries = %d\n",
+	 width, height, degree, length, symmetries);
   printf("Random seed = %d\n", seed);
   printf("Number of calculations = %ld\n", ncalcs);
   printf("Max, Min temperature = %f, %f\n", max_temp, min_temp);
   
   int lines = (nodes * degree)/2;
+  int (*edge)[2] = malloc(sizeof(int)*lines*2); // int edge[lines][2];
   int based_nodes = nodes/symmetries;
-  int (*edge)[2] = malloc(sizeof(int)*lines*2);                           // int edge[lines][2];
-  int (*adjacency)[degree] = malloc(sizeof(int)*based_nodes*degree);      // int adjacency[based_nodes][degree];
-  int (*best_adjacency)[degree] = malloc(sizeof(int)*based_nodes*degree); // int best_adjacency[based_nodes][degree];
+  int (*adjacency)[degree] = malloc(sizeof(int) * based_nodes * degree); // int adjacency[based_nodes][degree];
+  int (*best_adjacency)[degree] = malloc(sizeof(int) * based_nodes * degree); // int best_adjacency[based_nodes][degree];
 
   double create_time = get_time();
   ODP_Srand(seed);
-  ODP_Generate_random_general_s(nodes, degree, symmetries, edge);
+  ODP_Generate_random_grid_s(width, height, degree, length, symmetries, edge);
   create_time = get_time() - create_time;
-  ODP_Conv_edge2adjacency_general_s(nodes, lines, degree, edge, symmetries, adjacency);
-
-  ODP_Init_aspl_s(nodes, degree, NULL, symmetries);
-  ODP_Set_aspl(adjacency, &diameter, &sum, &ASPL);
-  ODP_Conv_adjacency2edge_general_s(nodes, degree, NULL, adjacency, symmetries, edge);
-
+  ODP_Conv_edge2adjacency_grid_s(width, height, lines, degree, edge, symmetries, adjacency);
+  
+  ODP_Init_aspl(nodes, degree, NULL);
+  
+  int adjacency2[nodes][degree], edge2[lines][2];
+  ODP_Conv_adjacency2edge_grid_s(width, height, degree, NULL, adjacency, symmetries, edge2);
+  ODP_Conv_edge2adjacency(nodes, lines, degree, edge2, adjacency2);
+  ODP_Set_aspl(adjacency2, &diameter, &sum, &ASPL);
   best_diameter = current_diameter = diameter;
   best_sum      = sum;
   best_ASPL     = current_ASPL     = ASPL;
   memcpy(best_adjacency, adjacency, sizeof(int)*based_nodes*degree);
 
-  ODP_Set_lbounds_general(nodes, degree, &low_diameter, &low_ASPL);
+  ODP_Set_lbounds_grid(width, height, degree, length, &low_diameter, &low_ASPL);
   double sa_time = get_time();
   if(diameter == low_diameter && ASPL == low_ASPL){
     printf("Find optimum solution\n");
@@ -119,8 +133,11 @@ int main(int argc, char *argv[])
       if(i%(ncalcs/100) == 0)
 	printf("%ld\t%f\t%d\t%f\n", i, temp, best_diameter-low_diameter, best_ASPL-low_ASPL);
 
-      ODP_Mutate_adjacency_general_s(nodes, degree, NULL, symmetries, adjacency);
-      ODP_Set_aspl(adjacency, &diameter, &sum, &ASPL);
+      ODP_Mutate_adjacency_grid_s(width, height, degree, NULL, length, symmetries, adjacency);
+      
+      ODP_Conv_adjacency2edge_grid_s(width, height, degree, NULL, adjacency, symmetries, edge2);
+      ODP_Conv_edge2adjacency(nodes, lines, degree, edge2, adjacency2);
+      ODP_Set_aspl(adjacency2, &diameter, &sum, &ASPL);
 
       if(diameter < best_diameter || (diameter == best_diameter && ASPL < best_ASPL)){
 	best_diameter = diameter;
@@ -138,14 +155,14 @@ int main(int argc, char *argv[])
 	current_ASPL     = ASPL;
       }
       else{
-	ODP_Restore_adjacency_general_s(nodes, degree, symmetries, adjacency);
+	ODP_Restore_adjacency_grid_s(width, height, degree, symmetries, adjacency);
       }
       temp *= cooling_rate;
     }
   }
-  sa_time = get_time() - sa_time;
+  sa_time = get_time() - sa_time;  
   ODP_Finalize_aspl();
-  ODP_Conv_adjacency2edge_general_s(nodes, degree, NULL, best_adjacency, symmetries, edge);
+  ODP_Conv_adjacency2edge_grid_s(width, height, degree, NULL, adjacency, symmetries, edge);
   
   printf("---\n");
   printf("Diameter       = %d\n", best_diameter);
@@ -155,7 +172,7 @@ int main(int argc, char *argv[])
   printf("Time           = %f/%f sec. (Create Graph/SA)\n", create_time, sa_time);
   printf("ASPL priority? = %s\n", (enable_ASPL_priority)? "Yes" : "No");
   
-  //  ODP_Write_edge_general(lines, edge, fname);
+  //  ODP_Write_edge_grid(lines, height, edge, fname);
   //  printf("Generate ./%s\n", fname);
   
   free(edge);

@@ -9,10 +9,7 @@
 #include "odp.h"
 
 #define MAX_FILENAME_LENGTH 256
-#define NOT_VISITED 0
-#define VISITED     1
-#define MUTATE_1OPT 1
-#define MUTATE_2OPT 2
+#define NOT_DEFINED -1
 #define ERROR(...) do{fprintf(stderr, __VA_ARGS__); exit(0);}while(0)
 
 bool accept(const int nodes, const int current_diameter, const int diameter,

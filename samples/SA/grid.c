@@ -72,13 +72,16 @@ int main(int argc, char *argv[])
 {
   char *fname="grid.edges";
   bool enable_ASPL_priority = false;
-  int width, height, degree, length, seed = 0, diameter, current_diameter, best_diameter, low_diameter;
+  int width = NOT_DEFINED, height = NOT_DEFINED, degree = NOT_DEFINED, length = NOT_DEFINED;
+  int seed = 0, diameter, current_diameter, best_diameter, low_diameter;
   long sum, best_sum, ncalcs = 10000;
-  double max_temp = 100, min_temp = 0.2, ASPL, current_ASPL, best_ASPL, low_ASPL;
+  double max_temp = 100, min_temp = 0.22, ASPL, current_ASPL, best_ASPL, low_ASPL;
 
   set_args(argc, argv, &width, &height, &degree, &length, fname, &seed, &ncalcs, &max_temp, &min_temp, &enable_ASPL_priority);
   int nodes = width * height;
-  if(nodes%2 == 1 && degree%2 == 1)
+  if(width == NOT_DEFINED || height == NOT_DEFINED || degree == NOT_DEFINED || length == NOT_DEFINED)
+    print_help(argv[0]);
+  else if(nodes%2 == 1 && degree%2 == 1)
     ERROR("Invalid nodes(%d) or degree(%d)\n", nodes, degree);
   
   printf("Width = %d, Height = %d, Degrees = %d, Length = %d\n",
@@ -92,8 +95,10 @@ int main(int argc, char *argv[])
   int (*adjacency)[degree] = malloc(sizeof(int) * nodes * degree); // int adjacency[nodes][degree];
   int (*best_adjacency)[degree] = malloc(sizeof(int) * nodes * degree); // int best_adjacency[nodes][degree];
 
+  double create_time = get_time();
   ODP_Srand(seed);
   ODP_Generate_random_grid(width, height, degree, length, edge);
+  create_time = get_time() - create_time;
   ODP_Conv_edge2adjacency(nodes, lines, degree, edge, adjacency);
   
   ODP_Init_aspl(nodes, degree, NULL);
@@ -104,6 +109,7 @@ int main(int argc, char *argv[])
   memcpy(best_adjacency, adjacency, sizeof(int)*nodes*degree);
 
   ODP_Set_lbounds_grid(width, height, degree, length, &low_diameter, &low_ASPL);
+  double sa_time = get_time();
   if(diameter == low_diameter && ASPL == low_ASPL){
     printf("Find optimum solution\n");
   }
@@ -138,7 +144,7 @@ int main(int argc, char *argv[])
       temp *= cooling_rate;
     }
   }
-  
+  sa_time = get_time() - sa_time;  
   ODP_Finalize_aspl();
   ODP_Conv_adjacency2edge(nodes, degree, NULL, best_adjacency, edge);
   
@@ -147,8 +153,7 @@ int main(int argc, char *argv[])
   printf("Diameter Gap   = %d (%d - %d)\n", best_diameter - low_diameter, best_diameter, low_diameter);
   printf("ASPL           = %.10f (%ld/%.0f)\n", best_ASPL, best_sum, (double)nodes*(nodes-1)/2);
   printf("ASPL Gap       = %.10f (%.10f - %.10f)\n", best_ASPL - low_ASPL, best_ASPL, low_ASPL);
-  printf("Multiple edges = %s\n", (ODP_Check_multiple_edges(lines, edge))? "Exist" : "None");
-  printf("Loop           = %s\n", (ODP_Check_loop(lines, edge))? "Exist" : "None");
+  printf("Time           = %f/%f sec. (Create Graph/SA)\n", create_time, sa_time);
   printf("ASPL priority? = %s\n", (enable_ASPL_priority)? "Yes" : "No");
   
   //  ODP_Write_edge_grid(lines, height, edge, fname);

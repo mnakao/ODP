@@ -62,12 +62,15 @@ int main(int argc, char *argv[])
 {
   char *fname="general.edges";
   bool enable_ASPL_priority = false;
-  int nodes, degree, seed = 0, diameter, current_diameter, best_diameter, low_diameter;
+  int nodes = NOT_DEFINED, degree = NOT_DEFINED;
+  int seed = 0, diameter, current_diameter, best_diameter, low_diameter;
   long sum, best_sum, ncalcs = 10000;
   double max_temp = 238.91, min_temp = 0.22, ASPL, current_ASPL, best_ASPL, low_ASPL;
 
   set_args(argc, argv, &nodes, &degree, fname, &seed, &ncalcs, &max_temp, &min_temp, &enable_ASPL_priority);
-  if(nodes%2 == 1 && degree%2 == 1)
+  if(nodes == NOT_DEFINED || degree == NOT_DEFINED)
+    print_help(argv[0]);
+  else if(nodes%2 == 1 && degree%2 == 1)
     ERROR("Invalid nodes(%d) or degree(%d)\n", nodes, degree);
   
   printf("Nodes = %d, Degrees = %d\n", nodes, degree);
