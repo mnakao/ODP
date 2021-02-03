@@ -8,9 +8,6 @@ static void print_help(char *argv)
 static void set_args(const int argc, char **argv, int *width, int *height, int *degree, int *length,
 		     char *fname, int *seed, long *ncalcs, double *max_temp, double *min_temp, bool *enable_ASPL_priority)
 {
-  if(argc < 9)
-    print_help(argv[0]);
-
   int result;
   while((result = getopt(argc,argv,"W:H:D:L:o:s:n:w:c:A"))!=-1){
     switch(result){
