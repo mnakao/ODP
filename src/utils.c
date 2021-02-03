@@ -665,7 +665,7 @@ static bool mutate_adjacency_2opt_general_s(const int nodes, const int degree, c
       adjacency[u[0]%based_nodes][u_d[0]] = tmp[0];
       adjacency[u[1]%based_nodes][u_d[1]] = tmp[1];
       
-      return check_isolated_vertices_general(u, v, nodes, symmetries, degree, num_degrees, adjacency);
+      return true;
     }
   }
   else if(IS_DIAMETER_GENERAL(u[0], v[0], nodes, symmetries) || IS_DIAMETER_GENERAL(u[1], v[1], nodes, symmetries)){
@@ -711,29 +711,21 @@ static bool mutate_adjacency_2opt_general_s(const int nodes, const int degree, c
     adjacency[v[0]%based_nodes][v_d[0]] = tmp[2];
     adjacency[v[1]%based_nodes][v_d[1]] = tmp[3];
 
-    return check_isolated_vertices_general(u, v, nodes, symmetries, degree, num_degrees, adjacency);
+    return true;
   }
   else{ // Two selected edges are symmetrical 
     int diff[2];
     diff[0] = (u[0] > v[0])? v[0] - u[0] + nodes : v[0] - u[0];
     diff[1] = (u[1] > v[1])? v[1] - u[1] + nodes : v[1] - u[1];
     
-    if(diff[0] == diff[1] && u[0]%based_nodes == u[1]%based_nodes){
-      if(!mutate_adjacency_1opt_general_s(u[0], u_d[0], nodes, degree, num_degrees, symmetries, adjacency))
-	return false;
-
-      return check_isolated_vertices_general(u, v, nodes, symmetries, degree, num_degrees, adjacency);
-    }
+    if(diff[0] == diff[1] && u[0]%based_nodes == u[1]%based_nodes)
+      return mutate_adjacency_1opt_general_s(u[0], u_d[0], nodes, degree, num_degrees, symmetries, adjacency);
     
     diff[1] = (u[1] < v[1])? u[1] - v[1] + nodes : u[1] - v[1];
-    if(diff[0] == diff[1] && u[0]%based_nodes == v[1]%based_nodes){
-      if(!mutate_adjacency_1opt_general_s(u[0], u_d[0], nodes, degree, num_degrees, symmetries, adjacency))
-	return false;
-
-      return check_isolated_vertices_general(u, v, nodes, symmetries, degree, num_degrees, adjacency);
-    }
+    if(diff[0] == diff[1] && u[0]%based_nodes == v[1]%based_nodes)
+      return mutate_adjacency_1opt_general_s(u[0], u_d[0], nodes, degree, num_degrees, symmetries, adjacency);
   }
-
+  
   int tmp[4];
   if(get_random(2) == 0){ // u[0]--v[1], v[0]--u[1]
     tmp[0] = LOCAL_INDEX_GENERAL(v[1], u[0], nodes, symmetries);
@@ -759,7 +751,7 @@ static bool mutate_adjacency_2opt_general_s(const int nodes, const int degree, c
   adjacency[v[0]%based_nodes][v_d[0]] = tmp[2];
   adjacency[v[1]%based_nodes][v_d[1]] = tmp[3];
 
-  return check_isolated_vertices_general(u, v, nodes, symmetries, degree, num_degrees, adjacency);
+  return true;
 }
 
 void ODP_Mutate_adjacency_general_s(const int nodes, const int degree, const int *num_degrees,
