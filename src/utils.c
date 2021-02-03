@@ -761,7 +761,6 @@ static bool mutate_adjacency_2opt_general_s(const int nodes, const int degree, c
   adjacency[u[1]%based_nodes][u_d[1]] = tmp[1];
   adjacency[v[0]%based_nodes][v_d[0]] = tmp[2];
   adjacency[v[1]%based_nodes][v_d[1]] = tmp[3];
-
   return true;
 }
 
@@ -812,8 +811,6 @@ static bool mutate_adjacency_1opt_grid_s(const int u, const int u_d, const int w
     set_adjacency(new_v, u_d, u, width, height, degree, symmetries, adjacency);
     set_adjacency(new_u, v_d, v, width, height, degree, symmetries, adjacency);
   }
-
-
   return true;
 }
 
@@ -976,7 +973,6 @@ static bool mutate_adjacency_2opt_grid_s(const int width, const int height, cons
   set_adjacency(u[1], u_d[1], tmp[1], width, height, degree, symmetries, adjacency);
   set_adjacency(v[0], v_d[0], tmp[2], width, height, degree, symmetries, adjacency);
   set_adjacency(v[1], v_d[1], tmp[3], width, height, degree, symmetries, adjacency);
-
   return true;
 }
 
