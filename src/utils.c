@@ -871,7 +871,7 @@ static bool mutate_adjacency_2opt_grid_s(const int width, const int height, cons
       set_adjacency(u[0], u_d[0], tmp[0], width, height, degree, symmetries, adjacency);
       set_adjacency(u[1], u_d[1], tmp[1], width, height, degree, symmetries, adjacency);
     }
-    return check_isolated_vertices_grid(u, v, width, height, symmetries, degree, num_degrees, adjacency);
+    return true;
   }
   else if(IS_DIAMETER_GRID(u[0], v[0], width, height, symmetries) || IS_DIAMETER_GRID(u[1], v[1], width, height, symmetries)){
     if(IS_DIAMETER_GRID(u[1], v[1], width, height, symmetries)){
@@ -927,16 +927,13 @@ static bool mutate_adjacency_2opt_grid_s(const int width, const int height, cons
     set_adjacency(v[0], v_d[0], tmp[2], width, height, degree, symmetries, adjacency);
     set_adjacency(v[1], v_d[1], tmp[3], width, height, degree, symmetries, adjacency);
 
-    return check_isolated_vertices_grid(u, v, width, height, symmetries, degree, num_degrees, adjacency);
+    return true;
   }
   else{ // The two selected edges are symmetrical
     if(symmetries == 2){
       if(u[0] == ROTATE(u[1], width, height, symmetries, 180) && v[0] == ROTATE(v[1], width, height, symmetries, 180) ||
 	 u[0] == ROTATE(v[1], width, height, symmetries, 180) && v[0] == ROTATE(u[1], width, height, symmetries, 180)){
-	if(!mutate_adjacency_1opt_grid_s(u[0], u_d[0], width, height, degree, num_degrees, length, symmetries, adjacency))
-	  return false;
-	
-	return check_isolated_vertices_grid(u, v, width, height, symmetries, degree, num_degrees, adjacency);
+	return mutate_adjacency_1opt_grid_s(u[0], u_d[0], width, height, degree, num_degrees, length, symmetries, adjacency);
       }
     }
     else if(symmetries == 4){
@@ -946,10 +943,7 @@ static bool mutate_adjacency_2opt_grid_s(const int width, const int height, cons
 	 u[0] == ROTATE(v[1], width, height, symmetries,  90) && v[0] == ROTATE(u[1], width, height, symmetries,  90) ||
 	 u[0] == ROTATE(v[1], width, height, symmetries, 180) && v[0] == ROTATE(u[1], width, height, symmetries, 180) ||
 	 u[0] == ROTATE(v[1], width, height, symmetries, 270) && v[0] == ROTATE(u[1], width, height, symmetries, 270)){
-	if(!mutate_adjacency_1opt_grid_s(u[0], u_d[0], width, height, degree, num_degrees, length, symmetries, adjacency))
-	  return false;
-	
-	return check_isolated_vertices_grid(u, v, width, height, symmetries, degree, num_degrees, adjacency);
+	return mutate_adjacency_1opt_grid_s(u[0], u_d[0], width, height, degree, num_degrees, length, symmetries, adjacency);
       }
     }
   }
@@ -983,7 +977,7 @@ static bool mutate_adjacency_2opt_grid_s(const int width, const int height, cons
   set_adjacency(v[0], v_d[0], tmp[2], width, height, degree, symmetries, adjacency);
   set_adjacency(v[1], v_d[1], tmp[3], width, height, degree, symmetries, adjacency);
 
-  return check_isolated_vertices_grid(u, v, width, height, symmetries, degree, num_degrees, adjacency);
+  return true;
 }
 
 void ODP_Mutate_adjacency_grid_s(const int width, const int height, const int degree,
