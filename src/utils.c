@@ -786,7 +786,7 @@ static bool mutate_adjacency_1opt_grid_s(const int u, const int u_d, const int w
   int v_d = get_degree_index_grid(u, v, u_d, width, height, symmetries, degree, num_degrees, adjacency);
 
   int rnd = get_random(symmetries), tmp[2];
-  if(rnd != symmetries-1){ // rnd == 0
+  if(rnd != symmetries-1){
     int new_v = ROTATE(v, width, height, symmetries, (rnd+1)*(360/symmetries));
     int new_u = ROTATE(u, width, height, symmetries, (symmetries-rnd-1)*(360/symmetries));
     if(!CHECK_LENGTH(u,new_v,height,length)) return false;
