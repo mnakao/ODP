@@ -237,9 +237,8 @@ void ODP_Set_degrees(int nodes, int lines, int edge[lines][2], int num_degrees[n
 * [IN] edge : Edge list of a graph.
 * [OUT] num_degrees : Degree in each vertex.
 
-### Srand
-Set seed for random numbers.
-Random numbers are used in ODP_Generate_random_\*() and ODP_Mutate_adjacency_\*(), so ODP_Srand() must be executed before those functions.
+### Seed for a random number
+Since a random number is used in ODP_Generate_random_\*() and ODP_Mutate_adjacency_\*(), ODP_Srand() must be executed before those functions.
 ```
 void ODP_Srand(unsigned int seed)
 ```
@@ -384,9 +383,9 @@ The edges plus 6 (`= nodes/symmetries`) matches the 1st row in the next group (i
 Here, 19 + 6 = 25, but the number of nodes is 24, so it goes around and becomes 25 - 24 = 1.
 This rule holds for all groups.
 
-Since the remaining elements can be calculated from the first (nodes/symmetries) lines of the adjacency matrix,
-the size of the adjacency matrix is `int adjacency[nodes/symmetries][degree]`.
-Since the edge list is used for input and output, the size is `int edge[lines][2]`, which is the same as a normal graph.
+The remaining elements can be calculated from the first (nodes/symmetries) lines of the adjacency matrix.
+Thus, the size of the adjacency matrix is `int adjacency[nodes/symmetries][degree]`.
+However, since the edge list is used for input and output, the size is `int edge[lines][2]`, which is the same as a normal graph.
 
 ### Initialize
 These functions can be used instead of the ODP_Init_aspl\*().
