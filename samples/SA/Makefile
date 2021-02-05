@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-O3 -I..
-CLIBS=../../src/libodp.a
+CLIBS=../../src/libodp.a -lm
 
 all: general.x grid.x general_s.x grid_s.x
 general.x: general.c common.o common.h
