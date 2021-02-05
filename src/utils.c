@@ -772,6 +772,24 @@ void ODP_Mutate_adjacency_general_s(const int nodes, const int degree, const int
   }
 }
 
+static bool check_rotated_edges_overlap(const int u0, const int v0, const int u1, const int v1,
+					const int width, const int height, const int symmetries)
+{
+  if(symmetries == 2){
+    return (u0 == ROTATE(u1, width, height, symmetries, 180) && v0 == ROTATE(v1, width, height, symmetries, 180) ||
+	    u0 == ROTATE(v1, width, height, symmetries, 180) && v0 == ROTATE(u1, width, height, symmetries, 180));
+  }
+  else if(symmetries == 4){
+    return (u0 == ROTATE(u1, width, height, symmetries,  90) && v0 == ROTATE(v1, width, height, symmetries,  90) ||
+	    u0 == ROTATE(u1, width, height, symmetries, 180) && v0 == ROTATE(v1, width, height, symmetries, 180) ||
+	    u0 == ROTATE(u1, width, height, symmetries, 270) && v0 == ROTATE(v1, width, height, symmetries, 270) ||
+	    u0 == ROTATE(v1, width, height, symmetries,  90) && v0 == ROTATE(u1, width, height, symmetries,  90) ||
+	    u0 == ROTATE(v1, width, height, symmetries, 180) && v0 == ROTATE(u1, width, height, symmetries, 180) ||
+	    u0 == ROTATE(v1, width, height, symmetries, 270) && v0 == ROTATE(u1, width, height, symmetries, 270));
+  }
+  return false; 
+}
+
 void ODP_Mutate_adjacency_general(const int nodes, const int degree, const int *num_degrees,
 				  int adjacency[nodes][degree])
 {
@@ -783,6 +801,8 @@ static bool mutate_adjacency_1opt_grid_s(const int u, const int u_d, const int w
 {
   int v   = GLOBAL_ADJ_GRID(width, height, degree, symmetries, adjacency, u, u_d);
   if(IS_DIAMETER_GRID(u, v, width, height, symmetries)) return false;
+  else if(symmetries == 2 && u == ROTATE(v, width, height, symmetries, 180)) return false;
+  else if(symmetries == 4 && (u == ROTATE(v, width, height, symmetries, 90) || u == ROTATE(v, width, height, symmetries, 270))) return false;
   int v_d = get_degree_index_grid(u, v, u_d, width, height, symmetries, degree, num_degrees, adjacency);
 
   int rnd = get_random(symmetries), tmp[2];
@@ -913,32 +933,21 @@ static bool mutate_adjacency_2opt_grid_s(const int width, const int height, cons
     set_adjacency(u[1], u_d[1], tmp[1], width, height, degree, symmetries, adjacency);
     set_adjacency(v[0], v_d[0], tmp[2], width, height, degree, symmetries, adjacency);
     set_adjacency(v[1], v_d[1], tmp[3], width, height, degree, symmetries, adjacency);
-
     return true;
   }
-  else{ // The two selected edges are symmetrical
-    if(symmetries == 2){
-      if(u[0] == ROTATE(u[1], width, height, symmetries, 180) && v[0] == ROTATE(v[1], width, height, symmetries, 180) ||
-	 u[0] == ROTATE(v[1], width, height, symmetries, 180) && v[0] == ROTATE(u[1], width, height, symmetries, 180)){
-	return mutate_adjacency_1opt_grid_s(u[0], u_d[0], width, height, degree, num_degrees, length, symmetries, adjacency);
-      }
-    }
-    else if(symmetries == 4){
-      if(u[0] == ROTATE(u[1], width, height, symmetries,  90) && v[0] == ROTATE(v[1], width, height, symmetries,  90) ||
-	 u[0] == ROTATE(u[1], width, height, symmetries, 180) && v[0] == ROTATE(v[1], width, height, symmetries, 180) ||
-	 u[0] == ROTATE(u[1], width, height, symmetries, 270) && v[0] == ROTATE(v[1], width, height, symmetries, 270) ||
-	 u[0] == ROTATE(v[1], width, height, symmetries,  90) && v[0] == ROTATE(u[1], width, height, symmetries,  90) ||
-	 u[0] == ROTATE(v[1], width, height, symmetries, 180) && v[0] == ROTATE(u[1], width, height, symmetries, 180) ||
-	 u[0] == ROTATE(v[1], width, height, symmetries, 270) && v[0] == ROTATE(u[1], width, height, symmetries, 270)){
-	return mutate_adjacency_1opt_grid_s(u[0], u_d[0], width, height, degree, num_degrees, length, symmetries, adjacency);
-      }
-    }
-  }
+
+  if(check_rotated_edges_overlap(u[0], v[0], u[1], v[1], width, height, symmetries))
+    return mutate_adjacency_1opt_grid_s(u[0], u_d[0], width, height, degree, num_degrees, length, symmetries, adjacency);
 
   int tmp[4];
   if(get_random(2) == 0){ // u[0]--v[1], v[0]--u[1]
     if(!CHECK_LENGTH(u[0], v[1], height, length) || !CHECK_LENGTH(v[0], u[1], height, length))
       return false;
+    else if(IS_DIAMETER_GRID(u[0], v[1], width, height, symmetries) || IS_DIAMETER_GRID(v[0], u[1], width, height, symmetries))
+      return false;
+    else if(check_rotated_edges_overlap(u[0], v[1], v[0], u[1], width, height, symmetries))
+      return false;
+	 
     tmp[0] = v[1];
     tmp[1] = v[0];
     tmp[2] = u[1];
@@ -946,6 +955,10 @@ static bool mutate_adjacency_2opt_grid_s(const int width, const int height, cons
   }
   else{ // u[0]--u[1], v[0]--v[1]
     if(!CHECK_LENGTH(u[0], u[1], height, length) || !CHECK_LENGTH(v[0], v[1], height, length))
+      return false;
+    else if(IS_DIAMETER_GRID(u[0], u[1], width, height, symmetries) || IS_DIAMETER_GRID(v[0], v[1], width, height, symmetries))
+      return false;
+    else if(check_rotated_edges_overlap(u[0], u[1], v[0], v[1], width, height, symmetries))
       return false;
     tmp[0] = u[1];
     tmp[1] = u[0];
