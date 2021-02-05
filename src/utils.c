@@ -612,14 +612,25 @@ static bool mutate_adjacency_1opt_general_s(const int u, const int u_d, const in
   int based_nodes = nodes/symmetries;
   int v = GLOBAL_ADJ_GENERAL(nodes, degree, symmetries, adjacency, u, u_d);
   if(IS_DIAMETER_GENERAL(u, v, nodes, symmetries)) return false;
-  if((u-v)%based_nodes == 0) return false;
   int v_d = get_degree_index_general(u, v, u_d, nodes, symmetries, degree, num_degrees, adjacency);
-  int rnd   = (symmetries%2 == 1)? get_random(symmetries-1) : get_random(symmetries);
-  int new_v = (rnd != symmetries-1)? v + based_nodes*(rnd+1) : u + based_nodes*(symmetries/2);
-  //  int rnd   = get_random(symmetries-1);
-  //  int new_v = v + based_nodes*(rnd+1);
+  int new_v;
+  if((u-v)%based_nodes == 0){
+    if(symmetries <= 4) return false;
+    while(1){
+      new_v = v + based_nodes * get_random(symmetries);
+      if(u == new_v || v == new_v) continue;
+      else if(NORM(u-v, nodes) == NORM(new_v-u, nodes)) continue;
+      else if(nodes%2 == 1) break;
+      else if(/* nodes%2 == 0 && */ (u-new_v)%(nodes/2) != 0) break;
+    }
+  }
+  else{
+    int rnd   = (symmetries%2 == 1)? get_random(symmetries-1) : get_random(symmetries);
+    new_v = (rnd != symmetries-1)? v + based_nodes*(rnd+1) : u + based_nodes*(symmetries/2);
+    //  int rnd   = get_random(symmetries-1);
+    //  new_v = v + based_nodes*(rnd+1);
+  }
   int new_u = v - (new_v - u);
-
   int tmp[2] = {LOCAL_INDEX_GENERAL(new_v, u, nodes, symmetries), LOCAL_INDEX_GENERAL(new_u, v, nodes, symmetries)};
    if(!check_multiple_edges_general_s(u%based_nodes, u_d, tmp[0], nodes, degree, num_degrees, symmetries, adjacency) ||
       !check_multiple_edges_general_s(v%based_nodes, v_d, tmp[1], nodes, degree, num_degrees, symmetries, adjacency))
@@ -741,7 +752,7 @@ static bool mutate_adjacency_2opt_general_s(const int nodes, const int degree, c
     return mutate_adjacency_1opt_general_s(u[0], u_d[0], nodes, degree, num_degrees, symmetries, adjacency);
   
   int tmp[4];
-  if(get_random(2) == 0){ // u[0]--v[1], v[0]--u[1]
+  if(get_random(2)){ // u[0]--v[1], v[0]--u[1]
     if(IS_DIAMETER_GENERAL(u[0], v[1], nodes, symmetries) || IS_DIAMETER_GENERAL(v[0], u[1], nodes, symmetries))
       return false;
     else if(check_rotated_edges_overlap_general(u[0], v[1], v[0], u[1], nodes, symmetries))
@@ -813,7 +824,7 @@ void ODP_Mutate_adjacency_general(const int nodes, const int degree, const int *
 static bool mutate_adjacency_1opt_grid_s(const int u, const int u_d, const int width, const int height, const int degree,
 					 const int *num_degrees, const int length, const int symmetries, int (*adjacency)[degree])
 {
-  int v   = GLOBAL_ADJ_GRID(width, height, degree, symmetries, adjacency, u, u_d);
+  int v = GLOBAL_ADJ_GRID(width, height, degree, symmetries, adjacency, u, u_d);
   if(IS_DIAMETER_GRID(u, v, width, height, symmetries)) return false;
   else if(symmetries == 2 && u == ROTATE(v, width, height, symmetries, 180)) return false;
   else if(symmetries == 4 && (u == ROTATE(v, width, height, symmetries, 90) || u == ROTATE(v, width, height, symmetries, 270))) return false;
@@ -837,6 +848,7 @@ static bool mutate_adjacency_1opt_grid_s(const int u, const int u_d, const int w
     if(!check_multiple_edges_grid_s(new_v, u_d, u, width, height, degree, num_degrees, symmetries, adjacency) ||
        !check_multiple_edges_grid_s(new_u, v_d, v, width, height, degree, num_degrees, symmetries, adjacency))
       return false;
+    
     set_adjacency(new_v, u_d, u, width, height, degree, symmetries, adjacency);
     set_adjacency(new_u, v_d, v, width, height, degree, symmetries, adjacency);
   }
@@ -846,8 +858,7 @@ static bool mutate_adjacency_1opt_grid_s(const int u, const int u_d, const int w
 static bool mutate_adjacency_2opt_grid_s(const int width, const int height, const int degree, const int *num_degrees,
 					 const int length, const int symmetries, int (*adjacency)[degree])
 {
-  int u[2], v[2], u_d[2], v_d[2], nodes = width*height;
-  int based_nodes = nodes/symmetries;
+  int u[2], v[2], u_d[2], v_d[2], nodes = width*height, based_nodes = nodes/symmetries;
 
   while(1){
     u[0] = get_random(nodes);
@@ -950,11 +961,12 @@ static bool mutate_adjacency_2opt_grid_s(const int width, const int height, cons
     return true;
   }
 
+   // Two selected edges are symmetrical
   if(check_rotated_edges_overlap_grid(u[0], v[0], u[1], v[1], width, height, symmetries))
     return mutate_adjacency_1opt_grid_s(u[0], u_d[0], width, height, degree, num_degrees, length, symmetries, adjacency);
 
   int tmp[4];
-  if(get_random(2) == 0){ // u[0]--v[1], v[0]--u[1]
+  if(get_random(2)){ // u[0]--v[1], v[0]--u[1]
     if(!CHECK_LENGTH(u[0], v[1], height, length) || !CHECK_LENGTH(v[0], u[1], height, length))
       return false;
     else if(IS_DIAMETER_GRID(u[0], v[1], width, height, symmetries) || IS_DIAMETER_GRID(v[0], u[1], width, height, symmetries))
