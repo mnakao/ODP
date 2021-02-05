@@ -162,12 +162,14 @@ int main(int argc, char *argv[])
   ODP_Conv_adjacency2edge_grid_s(width, height, degree, NULL, adjacency, symmetries, edge);
   
   printf("---\n");
-  printf("Diameter       = %d\n", best_diameter);
-  printf("Diameter Gap   = %d (%d - %d)\n", best_diameter - low_diameter, best_diameter, low_diameter);
-  printf("ASPL           = %.10f (%ld/%.0f)\n", best_ASPL, best_sum, (double)nodes*(nodes-1)/2);
-  printf("ASPL Gap       = %.10f (%.10f - %.10f)\n", best_ASPL - low_ASPL, best_ASPL, low_ASPL);
-  printf("Time           = %f/%f sec. (Create Graph/SA)\n", create_time, sa_time);
-  printf("ASPL priority? = %s\n", (enable_ASPL_priority)? "Yes" : "No");
+  printf("Diameter        = %d\n", best_diameter);
+  printf("Diameter Gap    = %d (%d - %d)\n", best_diameter - low_diameter, best_diameter, low_diameter);
+  printf("ASPL            = %.10f (%ld/%.0f)\n", best_ASPL, best_sum, (double)nodes*(nodes-1)/2);
+  printf("ASPL Gap        = %.10f (%.10f - %.10f)\n", best_ASPL - low_ASPL, best_ASPL, low_ASPL);
+  printf("Time            = %f/%f sec. (Create Graph/SA)\n", create_time, sa_time);
+  printf("ASPL Priority?  = %s\n", (enable_ASPL_priority)? "Yes" : "No");
+  printf("Loop ?          = %s\n", (ODP_Check_loop(lines, edge))? "Yes" : "No");
+  printf("Multiple Edges? = %s\n", (ODP_Check_multiple_edges(lines, edge))? "Yes" : "No");
   
   //  ODP_Write_edge_grid(lines, height, edge, fname);
   //  printf("Generate ./%s\n", fname);
