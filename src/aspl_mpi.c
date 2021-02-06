@@ -10,6 +10,7 @@ static MPI_Comm _comm;
 
 extern bool ODP_Check_profile();
 extern double ODP_Get_time();
+extern void ODP_Set_imp(int);
 extern int ODP_LOCAL_INDEX_GRID(const int x, const int width, const int height, const int symmetries);
 extern int ODP_ROTATE(const int v, const int width, const int height, const int symmetries, const int degree);
 extern void ODP_Profile(const char* name, const int kind, const int symmetries, const double mem_usage,
@@ -154,6 +155,8 @@ static void init_aspl_mpi_s(const int nodes, const int degree,
     _num_degrees = malloc(sizeof(int) * nodes);
     memcpy(_num_degrees, num_degrees, sizeof(int) * nodes);
   }
+
+  ODP_Set_imp(IMP_MPI);
 }
 
 void ODP_Init_aspl_mpi_general(const int nodes, const int degree,

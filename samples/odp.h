@@ -39,8 +39,8 @@ extern void ODP_Set_aspl_mpi_grid(char *fname, MPI_Comm comm, int *width, int *h
 
 extern void ODP_Init_aspl_mpi_cuda_general(int nodes, int degree, int* num_degrees, MPI_Comm comm);
 extern void ODP_Init_aspl_mpi_cuda_general_s(int nodes, int degree, int* num_degrees, MPI_Comm comm, int symmetries);
-extern void ODP_Init_aspl_mpi_cuda_grid(int width, int degree, int* num_degrees, MPI_Comm comm);
-extern void ODP_Init_aspl_mpi_cuda_grid_s(int height, int degree, int* num_degrees, MPI_Comm comm, int symmetries);
+extern void ODP_Init_aspl_mpi_cuda_grid(int width, int height, int degree, int* num_degrees, MPI_Comm comm);
+extern void ODP_Init_aspl_mpi_cuda_grid_s(int width, int height, int degree, int* num_degrees, MPI_Comm comm, int symmetries);
 extern void ODP_Finalize_aspl_mpi_cuda();
 extern void ODP_Set_aspl_mpi_cuda(void *adjacency, int *diameter, long *sum, double *ASPL);
 extern void ODP_Set_aspl_mpi_cuda_general(char *fname, MPI_Comm comm, int *nodes, int *degree,

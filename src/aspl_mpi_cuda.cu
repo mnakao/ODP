@@ -11,6 +11,7 @@ static MPI_Comm _comm;
 
 extern "C" bool ODP_Check_profile();
 extern "C" double ODP_Get_time();
+extern "C" void ODP_Set_imp(int);
 extern "C" int ODP_LOCAL_INDEX_GRID(const int x, const int width, const int height, const int symmetries);
 extern "C" int ODP_ROTATE(const int v, const int width, const int height, const int symmetries, const int degree);
 extern "C" void ODP_Profile(const char* name, const int kind, const int symmetries, const double mem_usage,
@@ -162,6 +163,8 @@ static void init_aspl_mpi_cuda_s(const int nodes, const int degree, const int* _
   _is_profile = ODP_Check_profile();
   _elapsed_time = 0;
   _times = 0;
+
+  ODP_Set_imp(IMP_MPI_CUDA);
 }
 
 extern "C" void ODP_Init_aspl_mpi_cuda_general(const int nodes, const int degree,

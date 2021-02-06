@@ -1,5 +1,6 @@
 #include "common.h"
 int _u[2], _v[2], _u_d[2], _v_d[2];
+int _kind = -1;
 
 static int WIDTH(const int v, const int height)
 {
@@ -1766,3 +1767,27 @@ void ODP_Generate_random_grid_s(const int width, const int height, const int deg
 
   free(adjacency);
 }
+
+void ODP_Set_imp(const int implementation)
+{
+  _kind = implementation;
+}
+
+void ODP_Set_aspl(const int* restrict adjacency, int *diameter, long *sum, double *ASPL)
+{
+  if(_kind == IMP_SERIAL)        ODP_Set_aspl_serial(adjacency, diameter, sum, ASPL);
+  else if(_kind == IMP_MPI)      ODP_Set_aspl_mpi(adjacency, diameter, sum, ASPL);
+  else if(_kind == IMP_CUDA)     ODP_Set_aspl_cuda(adjacency, diameter, sum, ASPL);
+  else if(_kind == IMP_MPI_CUDA) ODP_Set_aspl_mpi_cuda(adjacency, diameter, sum, ASPL);
+  else ERROR("ODP_Init_aspl* is not called\n");
+}
+
+void ODP_Finalize_aspl()
+{
+  if(_kind == IMP_SERIAL)        ODP_Finalize_aspl_serial();
+  else if(_kind == IMP_MPI)      ODP_Finalize_aspl_mpi();
+  else if(_kind == IMP_CUDA)     ODP_Finalize_aspl_cuda();
+  else if(_kind == IMP_MPI_CUDA) ODP_Finalize_aspl_mpi_cuda();
+  else ERROR("ODP_Init_aspl* is not called\n");
+}
+

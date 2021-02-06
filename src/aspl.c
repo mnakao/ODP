@@ -8,6 +8,7 @@ static bool _enable_avx2 = false, _is_profile;
 
 extern bool ODP_Check_profile();
 extern double ODP_Get_time();
+extern void ODP_Set_imp(int);
 extern int ODP_LOCAL_INDEX_GRID(const int x, const int width, const int height, const int symmetries);
 extern int ODP_ROTATE(const int v, const int width, const int height, const int symmetries, const int degree);
 extern void ODP_Profile(const char* name, const int kind, const int symmetries, const double mem_usage,
@@ -137,6 +138,8 @@ static void init_aspl_s(const int nodes, const int degree, const int* num_degree
     _num_degrees = malloc(sizeof(int) * nodes);
     memcpy(_num_degrees, num_degrees, sizeof(int) * nodes);
   }
+
+  ODP_Set_imp(IMP_SERIAL);
 }
 
 void ODP_Init_aspl_general(const int nodes, const int degree, const int* num_degrees)
@@ -198,7 +201,7 @@ void ODP_Init_aspl_grid_s(const int width, const int height, const int degree, c
   }
 }
 
-void ODP_Finalize_aspl()
+void ODP_Finalize_aspl_serial()
 {
   ODP_Free(_A, _enable_avx2);
   ODP_Free(_B, _enable_avx2);
@@ -216,7 +219,7 @@ void ODP_Finalize_aspl()
   }
 }
 
-void ODP_Set_aspl(const int* restrict adjacency, int *diameter, long *sum, double *ASPL)
+void ODP_Set_aspl_serial(const int* restrict adjacency, int *diameter, long *sum, double *ASPL)
 {
   double t = ODP_Get_time();
   
