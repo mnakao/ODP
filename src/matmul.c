@@ -141,7 +141,7 @@ void ODP_Matmul(const uint64_t *restrict A, uint64_t *restrict B, const int node
   }
 #else
   if(symmetries == 1){
-    matmul(A, B, nodes, height, degree, num_degrees, adjacency, elements);
+    matmul(A, B, nodes, degree, num_degrees, adjacency, elements);
   }
   else{
     matmul_s(A, B, nodes, height, degree, num_degrees, adjacency, elements, symmetries, itable);
@@ -287,7 +287,7 @@ void ODP_Matmul_CHUNK(const uint64_t *restrict A, uint64_t *restrict B, const in
   }
 #else
   if(symmetries == 1){
-    matmul_CHUNK(A, B, nodes, height, degree, num_degrees, adjacency);
+    matmul_CHUNK(A, B, nodes, degree, num_degrees, adjacency);
   }
   else{ // symmetries != 1
     matmul_CHUNK_s(A, B, nodes, height, degree, num_degrees, adjacency, symmetries, itable);
