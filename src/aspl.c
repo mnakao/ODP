@@ -197,9 +197,11 @@ void ODP_Init_aspl_grid_s(const int width, const int height, const int degree, c
   else{
     init_aspl_s(nodes, degree, NULL, symmetries);
   }
-  
-  _itable = malloc(sizeof(int) * nodes);
-  ODP_Create_itable(width, height, symmetries, _itable);
+
+  if(symmetries > 1){
+    _itable = malloc(sizeof(int) * nodes);
+    ODP_Create_itable(width, height, symmetries, _itable);
+  }
 }
 
 void ODP_Finalize_aspl()

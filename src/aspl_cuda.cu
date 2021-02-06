@@ -209,9 +209,11 @@ extern "C" void ODP_Init_aspl_cuda_grid_s(const int width, const int height, con
   else{
     init_aspl_cuda_s(nodes, degree, NULL, symmetries);
   }
-  
-  _itable = (int *)malloc(sizeof(int) * nodes);
-  ODP_Create_itable(width, height, symmetries, _itable);
+
+  if(symmetries > 1){
+    _itable = (int *)malloc(sizeof(int) * nodes);
+    ODP_Create_itable(width, height, symmetries, _itable);
+  }
 }
 
 extern "C" void ODP_Finalize_aspl()

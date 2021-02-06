@@ -5,8 +5,8 @@ static void print_help(char *argv)
   ERROR("%s -W width -H height -D degree -L length -S symmetries [-o <output>] [-s <seed>] [-n <calcs>] [-w <max_temp>] [-c <min_temp>] [-A]\n", argv);
 }
 
-static void set_args(const int argc, char **argv, int *width, int *height, int *degree, int *length, int *symmetries,
-		     char *fname, int *seed, long *ncalcs, double *max_temp, double *min_temp, bool *enable_ASPL_priority)
+static void set_args(const int argc, char **argv, int *width, int *height, int *degree, int *length, int *symmetries, char *outfname,
+		     bool *enable_output, int *seed, long *ncalcs, double *max_temp, double *min_temp, bool *enable_ASPL_priority)
 {
   int result;
   while((result = getopt(argc,argv,"W:H:D:L:S:o:s:n:w:c:A"))!=-1){
@@ -39,7 +39,8 @@ static void set_args(const int argc, char **argv, int *width, int *height, int *
     case 'o':
       if(strlen(optarg) > MAX_FILENAME_LENGTH)
         ERROR("Output filename is long (%s).\n", optarg);
-      strcpy(fname, optarg);
+      strcpy(outfname, optarg);
+      *enable_output = true;
       break;
     case 's':
       *seed = atoi(optarg);
@@ -72,14 +73,15 @@ static void set_args(const int argc, char **argv, int *width, int *height, int *
 
 int main(int argc, char *argv[])
 {
-  char *fname="grid_s.edges";
-  bool enable_ASPL_priority = false;
+  char outfname[MAX_FILENAME_LENGTH];
+  bool enable_ASPL_priority = false, enable_output = false;;
   int width = NOT_DEFINED, height = NOT_DEFINED, degree = NOT_DEFINED, length = NOT_DEFINED, symmetries = NOT_DEFINED;
   int seed = 0, diameter, current_diameter, best_diameter, low_diameter;
   long sum, best_sum, ncalcs = 10000;
   double max_temp = 100, min_temp = 0.22, ASPL, current_ASPL, best_ASPL, low_ASPL;
 
-  set_args(argc, argv, &width, &height, &degree, &length, &symmetries, fname, &seed, &ncalcs, &max_temp, &min_temp, &enable_ASPL_priority);
+  set_args(argc, argv, &width, &height, &degree, &length, &symmetries, outfname,
+	   &enable_output, &seed, &ncalcs, &max_temp, &min_temp, &enable_ASPL_priority);
   int nodes = width * height;
   if(width == NOT_DEFINED || height == NOT_DEFINED || degree == NOT_DEFINED || length == NOT_DEFINED || symmetries == NOT_DEFINED)
     print_help(argv[0]);
@@ -170,8 +172,10 @@ int main(int argc, char *argv[])
   printf("Loop ?          = %s\n", (ODP_Check_loop(lines, edge))? "Yes" : "No");
   printf("Multiple Edges? = %s\n", (ODP_Check_multiple_edges(lines, edge))? "Yes" : "No");
   
-  //  ODP_Write_edge_grid(lines, height, edge, fname);
-  //  printf("Generate ./%s\n", fname);
+  if(enable_output){
+    ODP_Write_edge_grid(lines, height, edge, outfname);
+    printf("Generate ./%s\n", outfname);
+  }
   
   free(edge);
   free(adjacency);

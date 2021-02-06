@@ -216,9 +216,11 @@ void ODP_Init_aspl_mpi_grid_s(const int width, const int height, const int degre
   else{
     init_aspl_mpi_s(nodes, degree, NULL, comm, symmetries);
   }
-  
-  _itable = malloc(sizeof(int) * nodes);
-  ODP_Create_itable(width, height, symmetries, _itable);
+
+  if(symmetries > 1){
+    _itable = malloc(sizeof(int) * nodes);
+    ODP_Create_itable(width, height, symmetries, _itable);
+  }
 }
 
 void ODP_Finalize_aspl()
