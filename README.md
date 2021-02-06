@@ -139,12 +139,6 @@ void ODP_Init_aspl_mpi_cuda_grid   (int width, int height, int degree, int num_d
 * [IN] height : Height of a grid graph.
 * [IN] comm : MPI communicator.
 
-### Finalize
-Release the resources allocated in ODP_Init_aspl\*().
-```
-void ODP_Finalize_aspl()
-```
-
 ### Set diameter, sum, and ASPL
 Set diameter, sum, and ASPL. Note that these functions must be executed between ODP_Init_aspl\*() and ODP_Finalize_aspl().
 In the case of an unconnected graph, INT_MAX, LONG_MAX, and DBL_MAX are assigned to the values of diameter, sum, and ASPL, respectively.
@@ -155,6 +149,12 @@ void ODP_Set_aspl(int adjacency[nodes][degree], int *diameter, long *sum, double
 * [OUT] diameter : Diameter of a graph.
 * [OUT] sum : Total value of the distances between each vertex in a graph.
 * [OUT] ASPL : Average shortest path length of a graph (sum = ASPL*(nodes*(nodes-1)/2)).
+
+### Finalize
+Release the resources allocated in ODP_Init_aspl\*().
+```
+void ODP_Finalize_aspl()
+```
 
 ## Utility
 ### Read an edge from a file
