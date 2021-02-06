@@ -81,8 +81,8 @@ This environment variable can specify the algorithm to use.
 
 ### ODP_PROFILE=1
 
-Output the performance profile for ODP_Set_aspl\*(). 
-This profile is output when ODP_Finalize_aspl\*() is executed.
+Output the performance profile for ODP_Set_aspl(). 
+This profile is output when ODP_Finalize_aspl() is executed.
 ```
 $ ODP_ASPL=SAVING ODP_PROFILE=1 ./general.x ./graphs/general/n16d4.edges
 ------ Profile for SET_ASPL ------
@@ -107,9 +107,9 @@ ASPL Gap     = 0.1833333333 (1.9166666667 - 1.7333333333)
 The meaning of each item in the profile is as follows.
 * Date : The time when the profile was output.
 * Hostname : Name of the machine on which the program was run.
-* Number of Times : Number of times ODP_Set_aspl\*() was executed.
-* Total Time : Total execution time of ODP_Set_aspl\*()
-* Average Time : Average execution time of ODP_Set_aspl\*()
+* Number of Times : Number of times ODP_Set_aspl() was executed.
+* Total Time : Total execution time of ODP_Set_aspl()
+* Average Time : Average execution time of ODP_Set_aspl()
 * Algorithm : NORMAL or SAVING. The parentheses are the types of libraries used. That is, SERIAL, THREADS, MPI, MPI+THREADS, CUDA, or MPI+CUDA.
 * Symmetries : When using ODP_Init_aspl\*_s(), the value is `symmetries`. Otherwise, the value is 1.
 * Memory Usage : Amount of memory used in the library.
@@ -121,7 +121,7 @@ Note that there are no special functions for the threaded versions.
 Thread parallelization is performed automatically depending on the library to be linked.
 
 ### Initialize
-Perform the initialization process before executing ODP_Set_aspl\*().
+Perform the initialization process before executing ODP_Set_aspl().
 ```
 void ODP_Init_aspl_general         (int nodes, int degree, int num_degrees[nodes])
 void ODP_Init_aspl_grid            (int width, int height, int degree, int num_degrees[nodes])
@@ -143,19 +143,13 @@ void ODP_Init_aspl_mpi_cuda_grid   (int width, int height, int degree, int num_d
 Release the resources allocated in ODP_Init_aspl\*().
 ```
 void ODP_Finalize_aspl()
-void ODP_Finalize_aspl_mpi()
-void ODP_Finalize_aspl_cuda()
-void ODP_Finalize_aspl_mpi_cuda()
 ```
 
 ### Set diameter, sum, and ASPL
-Set diameter, sum, and ASPL. Note that these functions must be executed between ODP_Init_aspl\*() and ODP_Finalize_aspl\*().
+Set diameter, sum, and ASPL. Note that these functions must be executed between ODP_Init_aspl\*() and ODP_Finalize_aspl().
 In the case of an unconnected graph, INT_MAX, LONG_MAX, and DBL_MAX are assigned to the values of diameter, sum, and ASPL, respectively.
 ```
-void ODP_Set_aspl         (int adjacency[nodes][degree], int *diameter, long *sum, double *ASPL)
-void ODP_Set_aspl_mpi     (int adjacency[nodes][degree], int *diameter, long *sum, double *ASPL)
-void ODP_Set_aspl_cuda    (int adjacency[nodes][degree], int *diameter, long *sum, double *ASPL)
-void ODP_Set_aspl_mpi_cuda(int adjacency[nodes][degree], int *diameter, long *sum, double *ASPL)
+void ODP_Set_aspl(int adjacency[nodes][degree], int *diameter, long *sum, double *ASPL)
 ```
 * [IN] adjacency : Adjacency matrix of a graph.
 * [OUT] diameter : Diameter of a graph.
@@ -414,7 +408,7 @@ void ODP_Init_aspl_mpi_cuda_grid_s   (int width, int height, int degree, int num
 * [IN] comm : MPI communicator.
 * [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes. If it is 1, it works the same as ODP_Init_aspl\*().
 
-Note that the ODP_Set_aspl\*() and ODP_Finalize_aspl\*() can be used in common.
+Note that the ODP_Set_aspl() and ODP_Finalize_aspl() can be used in common.
 
 ### Convert an edge list to an adjacency matrix
 ```
