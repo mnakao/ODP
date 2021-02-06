@@ -179,7 +179,7 @@ extern "C" void ODP_Init_aspl_mpi_cuda_general_s(const int nodes, const int degr
         tmp_num_degrees[i*based_nodes+j] = num_degrees[j];
 
     init_aspl_mpi_cuda_s(nodes, degree, tmp_num_degrees, comm, symmetries);
-    free(tmp_num_degree);
+    free(tmp_num_degrees);
   }
   else{
     init_aspl_mpi_cuda_s(nodes, degree, NULL, comm, symmetries);
@@ -193,7 +193,7 @@ extern "C" void ODP_Init_aspl_mpi_cuda_grid(const int width, const int height, c
   init_aspl_mpi_cuda_s(nodes, degree, num_degrees, comm, 1);
 }
 
-extern "C" void ODP_Init_aspl_mpi_cuda_grid_s(const int nodes, const int degree,
+extern "C" void ODP_Init_aspl_mpi_cuda_grid_s(const int width, const int height, const int degree,
 					      const int* __restrict__ num_degrees, const MPI_Comm comm, const int symmetries)
 {
   int nodes = width * height;

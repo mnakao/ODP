@@ -166,7 +166,7 @@ extern "C" void ODP_Init_aspl_cuda_general_s(const int nodes, const int degree, 
         tmp_num_degrees[i*based_nodes+j] = num_degrees[j];
     
     init_aspl_cuda_s(nodes, degree, tmp_num_degrees, symmetries);
-    free(tmp_num_degree);
+    free(tmp_num_degrees);
   }
   else{
     init_aspl_cuda_s(nodes, degree, NULL, symmetries);
