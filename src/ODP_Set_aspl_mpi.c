@@ -47,7 +47,7 @@ void ODP_Set_aspl_mpi_grid(const char *fname, const MPI_Comm comm, int *width, i
   int *num_degrees = malloc(sizeof(int) * nodes);
   ODP_Set_degrees(nodes, lines, edge, num_degrees);
 
-  ODP_Init_aspl_mpi_grid(width, height, *degree, num_degrees, comm);
+  ODP_Init_aspl_mpi_grid(*width, *height, *degree, num_degrees, comm);
   ODP_Set_aspl_mpi((int*)adjacency, diameter, sum, ASPL);
   ODP_Finalize_aspl_mpi();
   

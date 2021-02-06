@@ -173,7 +173,7 @@ void ODP_Init_aspl_mpi_general_s(const int nodes, const int degree,
     init_aspl_mpi_s(nodes, degree, tmp_num_degrees, comm, symmetries);
     free(tmp_num_degrees);
   }
-  eles{
+  else{
     init_aspl_mpi_s(nodes, degree, NULL, comm, symmetries);
   }
 }
@@ -219,7 +219,7 @@ void ODP_Finalize_aspl_mpi()
 {
   ODP_Free(_A, _enable_avx2);
   ODP_Free(_B, _enable_avx2);
-  if(!_num_degrees)
+  if(_num_degrees)
     free(_num_degrees);
   
   if(_rank == 0 && _is_profile){

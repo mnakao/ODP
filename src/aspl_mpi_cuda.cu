@@ -172,7 +172,7 @@ extern "C" void ODP_Init_aspl_mpi_cuda_general_s(const int nodes, const int degr
 						 const MPI_Comm comm, const int symmetries)
 {
   if(num_degrees){
-    int *tmp_num_degrees = malloc(sizeof(int) * nodes);
+    int *tmp_num_degrees = (int *)malloc(sizeof(int) * nodes);
     int based_nodes = nodes/symmetries;
     for(int i=0;i<symmetries;i++)
       for(int j=0;j<based_nodes;j++)
@@ -198,7 +198,7 @@ extern "C" void ODP_Init_aspl_mpi_cuda_grid_s(const int nodes, const int degree,
 {
   int nodes = width * height;
   if(num_degrees){
-    int *tmp_num_degrees = malloc(sizeof(int) * nodes);
+    int *tmp_num_degrees = (int *)malloc(sizeof(int) * nodes);
     int based_nodes = nodes/symmetries;
     if(symmetries == 2){
       for(int i=0;i<based_nodes;i++){

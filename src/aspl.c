@@ -189,7 +189,7 @@ void ODP_Init_aspl_grid_s(const int width, const int height, const int degree, c
       }
     }
     init_aspl_s(nodes, degree, tmp_num_degrees, symmetries);
-    free(tmp_num_degree);
+    free(tmp_num_degrees);
   }
   else{
     init_aspl_s(nodes, degree, NULL, symmetries);
@@ -200,7 +200,7 @@ void ODP_Finalize_aspl()
 {
   ODP_Free(_A, _enable_avx2);
   ODP_Free(_B, _enable_avx2);
-  if(!_num_degrees)
+  if(_num_degrees)
     free(_num_degrees);
 
   if(_is_profile){
