@@ -37,7 +37,7 @@ __global__ void ODP_Popcnt(const uint64_t* __restrict__ B, const int nodes,
 }
 
 __global__ void ODP_Matmul_cuda(const uint64_t* __restrict__ A, uint64_t* __restrict__ B, const int* __restrict__ adjacency,
-				const int* __restrict__ num_degrees, const int nodes, const int degree, const unsigned int elements, const int symmetries, const int itable[nodes])
+				const int* __restrict__ num_degrees, const int nodes, const int degree, const unsigned int elements, const int symmetries, const int *itable)
 {
   int based_nodes = nodes/symmetries;
   int tid = threadIdx.x + blockIdx.x * blockDim.x;
@@ -78,7 +78,7 @@ __global__ void ODP_Matmul_cuda(const uint64_t* __restrict__ A, uint64_t* __rest
 }
 
 __global__ void ODP_Matmul_CHUNK_cuda(const uint64_t* __restrict__ A, uint64_t* __restrict__ B, const int* __restrict__ adjacency,
-				      const int* __restrict__ num_degrees, const int nodes, const int degree, const int symmetries, const int itable[nodes])
+				      const int* __restrict__ num_degrees, const int nodes, const int degree, const int symmetries, const int *itable)
 {
   int based_nodes = nodes/symmetries;
   int tid = threadIdx.x + blockIdx.x * blockDim.x;

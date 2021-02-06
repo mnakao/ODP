@@ -24,9 +24,9 @@ extern __global__ void ODP_Clear_buffers(uint64_t* __restrict__ A, uint64_t* __r
 extern __global__ void ODP_Popcnt(const uint64_t* __restrict__ B, const int nodes,
 				  const unsigned int elements, uint64_t* __restrict__ result);
 extern __global__ void ODP_Matmul_cuda(const uint64_t* __restrict__ A, uint64_t* __restrict__ B, const int* __restrict__ adjacency,
-				       const int* __restrict__ num_degrees, const int nodes, const int degree, const unsigned int elements, const int symmetries, const int itable[nodes]);
+				       const int* __restrict__ num_degrees, const int nodes, const int degree, const unsigned int elements, const int symmetries, const int *itable);
 extern __global__ void ODP_Matmul_CHUNK_cuda(const uint64_t* __restrict__ A, uint64_t* __restrict__ B, const int* __restrict__ adjacency,
-					     const int* __restrict__ num_degrees, const int nodes, const int degree, const int symmetries, const int itable[nodes]);
+					     const int* __restrict__ num_degrees, const int nodes, const int degree, const int symmetries, const int *itable);
 
 static __global__ void init_buffers(uint64_t* __restrict__ A, uint64_t* __restrict__ B,
 				    const int nodes, const int symmetries, const int t, const int chunk)
@@ -225,7 +225,7 @@ extern "C" void ODP_Init_aspl_mpi_cuda_grid_s(const int width, const int height,
     init_aspl_mpi_cuda_s(nodes, degree, NULL, comm, symmetries);
   }
 
-  _itable = malloc(sizeof(int) * nodes);
+  _itable = (int *)malloc(sizeof(int) * nodes);
   ODP_Create_itable(width, height, symmetries, _itable);
 }
 

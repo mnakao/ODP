@@ -258,8 +258,8 @@ void ODP_Matmul(const uint64_t *restrict A, uint64_t *restrict B, const int node
     else            matmul_regular(A, B, nodes, degree, adjacency, elements);
   }
   else{
-    if(num_degrees) matmul_nregular_s(A, B, nodes, degree, num_degrees, adjacency, elements, nodes/symmetries);
-    else            matmul_regular_s(A, B, nodes, degree, adjacency, elements, nodes/symmetries);
+    if(num_degrees) matmul_nregular_s(A, B, nodes, degree, num_degrees, adjacency, elements, symmetries, itable);
+    else            matmul_regular_s(A, B, nodes, degree, adjacency, elements, symmetries, itable);
   }
 #endif
 }
@@ -519,8 +519,8 @@ void ODP_Matmul_CHUNK(const uint64_t *restrict A, uint64_t *restrict B, const in
     else            matmul_regular_CHUNK(A, B, nodes, degree, adjacency);
   }
   else{ // symmetries != 1
-    if(num_degrees) matmul_nregular_CHUNK_s(A, B, nodes, degree, num_degrees, adjacency, nodes/symmetries);
-    else            matmul_regular_CHUNK_s(A, B, nodes, degree, adjacency, nodes/symmetries);
+    if(num_degrees) matmul_nregular_CHUNK_s(A, B, nodes, degree, num_degrees, adjacency, symmetries, itable);
+    else            matmul_regular_CHUNK_s(A, B, nodes, degree, adjacency, symmetries, itable);
   }
 #endif
 }
