@@ -2,13 +2,14 @@
 #include <mpi.h>
 static uint64_t *_A_dev, *_B_dev;
 static uint64_t *_result, *_result_dev;
-static int *_adjacency_dev, *_num_degrees_dev;
+static int *_adjacency_dev, *_num_degrees_dev = NULL, *_itable = NULL;
 static bool _is_profile;
 static int _nodes, _degree, _symmetries, _rank, _procs, _kind;
 static double _mem_usage, _elapsed_time;
 static unsigned int _times;
 static MPI_Comm _comm;
 
+extern "C" void ODP_Create_itable(const int width, const int height, const int symmetries, int *_itable);
 extern "C" bool ODP_Check_profile();
 extern "C" double ODP_Get_time();
 extern "C" int ODP_LOCAL_INDEX_GRID(const int x, const int width, const int height, const int symmetries);
@@ -23,9 +24,9 @@ extern __global__ void ODP_Clear_buffers(uint64_t* __restrict__ A, uint64_t* __r
 extern __global__ void ODP_Popcnt(const uint64_t* __restrict__ B, const int nodes,
 				  const unsigned int elements, uint64_t* __restrict__ result);
 extern __global__ void ODP_Matmul_cuda(const uint64_t* __restrict__ A, uint64_t* __restrict__ B, const int* __restrict__ adjacency,
-				       const int* __restrict__ num_degrees, const int nodes, const int degree, const unsigned int elements, const int based_nodes);
+				       const int* __restrict__ num_degrees, const int nodes, const int degree, const unsigned int elements, const int symmetries, const int itable[nodes]);
 extern __global__ void ODP_Matmul_CHUNK_cuda(const uint64_t* __restrict__ A, uint64_t* __restrict__ B, const int* __restrict__ adjacency,
-					     const int* __restrict__ num_degrees, const int nodes, const int degree, const int based_nodes);
+					     const int* __restrict__ num_degrees, const int nodes, const int degree, const int symmetries, const int itable[nodes]);
 
 static __global__ void init_buffers(uint64_t* __restrict__ A, uint64_t* __restrict__ B,
 				    const int nodes, const int symmetries, const int t, const int chunk)
@@ -56,7 +57,7 @@ static void aspl_mpi_cuda_mat(const int* __restrict__ adjacency,
 
     for(kk=0;kk<_nodes;kk++){
       ODP_Matmul_cuda <<< BLOCKS, THREADS >>> (_A_dev, _B_dev, _adjacency_dev, _num_degrees_dev,
-						_nodes, _degree, chunk, _nodes/_symmetries);
+					       _nodes, _degree, chunk, _symmetries, _itable);
       ODP_Popcnt      <<< BLOCKS, THREADS >>> (_B_dev, _nodes, chunk, _result_dev);
 
       cudaMemcpy(_result, _result_dev, sizeof(uint64_t)*BLOCKS, cudaMemcpyDeviceToHost);
@@ -101,7 +102,7 @@ static void aspl_mpi_cuda_mat_saving(const int* __restrict__ adjacency,
 
     for(kk=0;kk<_nodes;kk++){
       ODP_Matmul_CHUNK_cuda <<< BLOCKS, THREADS >>> (_A_dev, _B_dev, _adjacency_dev, _num_degrees_dev,
-						      _nodes, _degree, _nodes/_symmetries);
+						     _nodes, _degree, _symmetries, _itable);
       ODP_Popcnt            <<< BLOCKS, THREADS >>> (_B_dev, _nodes, GPU_CHUNK, _result_dev);
 
       cudaMemcpy(_result, _result_dev, sizeof(uint64_t)*BLOCKS, cudaMemcpyDeviceToHost);
@@ -223,6 +224,9 @@ extern "C" void ODP_Init_aspl_mpi_cuda_grid_s(const int width, const int height,
   else{
     init_aspl_mpi_cuda_s(nodes, degree, NULL, comm, symmetries);
   }
+
+  _itable = malloc(sizeof(int) * nodes);
+  ODP_Create_itable(width, height, symmetries, _itable);
 }
 
 extern "C" void ODP_Finalize_aspl()
@@ -232,8 +236,8 @@ extern "C" void ODP_Finalize_aspl()
   cudaFreeHost(_result);
   cudaFree(_result_dev);
   cudaFree(_adjacency_dev);
-  if(_num_degrees_dev)
-    cudaFree(_num_degrees_dev);
+  if(_num_degrees_dev) cudaFree(_num_degrees_dev);
+  if(_itable)          free(_itable);
 
   if(_rank == 0 && _is_profile)
     ODP_Profile("MPI+CUDA", _kind, _symmetries, _mem_usage,

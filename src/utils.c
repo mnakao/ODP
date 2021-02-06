@@ -1766,3 +1766,28 @@ void ODP_Generate_random_grid_s(const int width, const int height, const int deg
 
   free(adjacency);
 }
+
+void ODP_Create_itable(const int width, const int height, const int symmetries, int *itable)
+{
+  int based_nodes = (width*height)/symmetries;
+  if(symmetries == 1){
+    for(int i=0;i<based_nodes;i++)
+      itable[i] = i;
+  }
+  else if(symmetries == 2){
+    for(int i=0;i<based_nodes;i++){
+      itable[i] = i;
+      itable[ODP_ROTATE(i, width, height, symmetries, 180)] = i + based_nodes;
+    }
+  }
+  else{ // symmetries == 4
+    for(int i=0;i<based_nodes;i++){
+      int v = ODP_LOCAL_INDEX_GRID(i,width,height,symmetries);
+      itable[v] = i;
+      itable[ODP_ROTATE(v, width, height, symmetries,  90)] = i + based_nodes;
+      itable[ODP_ROTATE(v, width, height, symmetries, 180)] = i + based_nodes * 2;
+      itable[ODP_ROTATE(v, width, height, symmetries, 270)] = i + based_nodes * 3;
+    }
+  }
+}
+

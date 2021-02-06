@@ -68,42 +68,89 @@ static void matmul_regular(const uint64_t *restrict A, uint64_t *restrict B, con
 #ifdef __AVX2__
 static void matmul_nregular_avx2_s(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
                                    const int *restrict num_degrees, const int *restrict adjacency, const int elements,
-                                   const int quarter_elements, const int based_nodes)
+                                   const int quarter_elements, const int symmetries, const int itable[nodes])
 {
+  int based_nodes = nodes/symmetries;
+  if(!itable){
 #pragma omp parallel for
-  for(int i=0;i<nodes;i++){
-    __m256i *b = (__m256i *)(B + i*elements);
-    int p = i/based_nodes;
-    int m = i - p * based_nodes;
-    for(int j=0;j<num_degrees[i];j++){
-      int n = *(adjacency + m * degree + j) + p * based_nodes;
-      if(n >= nodes) n -= nodes;
-      __m256i *a = (__m256i *)(A + n*elements);
-      for(int k=0;k<quarter_elements;k++){
-        __m256i aa = _mm256_load_si256(a+k);
-        __m256i bb = _mm256_load_si256(b+k);
-        _mm256_store_si256(b+k, _mm256_or_si256(aa, bb));
+    for(int i=0;i<nodes;i++){
+      __m256i *b = (__m256i *)(B + i*elements);
+      int p = i/based_nodes;
+      int m = i - p * based_nodes;
+      for(int j=0;j<num_degrees[i];j++){
+	int n = *(adjacency + m * degree + j) + p * based_nodes;
+	if(n >= nodes) n -= nodes;
+	__m256i *a = (__m256i *)(A + n*elements);
+	for(int k=0;k<quarter_elements;k++){
+	  __m256i aa = _mm256_load_si256(a+k);
+	  __m256i bb = _mm256_load_si256(b+k);
+	  _mm256_store_si256(b+k, _mm256_or_si256(aa, bb));
+	}
+      }
+    }
+  }
+  else{
+#pragma omp parallel for
+    for(int i=0;i<nodes;i++){
+      int ii = itable[i];
+      __m256i *b = (__m256i *)(B + ii*elements);
+      int p = ii/based_nodes;
+      int m = ii - p * based_nodes;
+      for(int j=0;j<num_degrees[ii];j++){
+        int n = *(adjacency + m * degree + j) + p * based_nodes;
+	int nn = itable[n];
+      	if(nn >= nodes) nn -= nodes;
+        __m256i *a = (__m256i *)(A + nn*elements);
+        for(int k=0;k<quarter_elements;k++){
+          __m256i aa = _mm256_load_si256(a+k);
+          __m256i bb = _mm256_load_si256(b+k);
+          _mm256_store_si256(b+k, _mm256_or_si256(aa, bb));
+      	}
       }
     }
   }
 }
 
 static void matmul_regular_avx2_s(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
-                                  const int *restrict adjacency, const int elements, const int quarter_elements, const int based_nodes)
+                                  const int *restrict adjacency, const int elements, const int quarter_elements,
+				  const int symmetries, const int itable[nodes])
 {
+  int based_nodes = nodes/symmetries;
+  if(!itable){
 #pragma omp parallel for
-  for(int i=0;i<nodes;i++){
-    __m256i *b = (__m256i *)(B + i*elements);
-    int p = i/based_nodes;
-    int m = i - p * based_nodes;
-    for(int j=0;j<degree;j++){
-      int n = *(adjacency + m * degree + j) + p * based_nodes;
-      if(n >= nodes) n -= nodes;
-      __m256i *a = (__m256i *)(A + n*elements);
-      for(int k=0;k<quarter_elements;k++){
-        __m256i aa = _mm256_load_si256(a+k);
-        __m256i bb = _mm256_load_si256(b+k);
-        _mm256_store_si256(b+k, _mm256_or_si256(aa, bb));
+    for(int i=0;i<nodes;i++){
+      __m256i *b = (__m256i *)(B + i*elements);
+      int p = i/based_nodes;
+      int m = i - p * based_nodes;
+      for(int j=0;j<degree;j++){
+	int n = *(adjacency + m * degree + j) + p * based_nodes;
+	if(n >= nodes) n -= nodes;
+	__m256i *a = (__m256i *)(A + n*elements);
+	for(int k=0;k<quarter_elements;k++){
+	  __m256i aa = _mm256_load_si256(a+k);
+	  __m256i bb = _mm256_load_si256(b+k);
+	  _mm256_store_si256(b+k, _mm256_or_si256(aa, bb));
+	}
+      }
+    }
+  }
+  else{
+#pragma omp parallel for
+    for(int i=0;i<nodes;i++){
+      int ii = itable[i];
+      __m256i *b = (__m256i *)(B + ii*elements);
+      int p = ii/based_nodes;
+      int m = ii - p * based_nodes;
+      for(int j=0;j<degree;j++){
+        int n = *(adjacency + m * degree + j) + p * based_nodes;
+	int nn = itable[n];
+        if(nn >= nodes) nn -= nodes;
+        __m256i *a = (__m256i *)(A + nn*elements);
+        for(int k=0;k<quarter_elements;k++){
+          __m256i aa = _mm256_load_si256(a+k);
+          __m256i bb = _mm256_load_si256(b+k);
+          _mm256_store_si256(b+k, _mm256_or_si256(aa, bb));
+	}
       }
     }
   }
@@ -111,40 +158,78 @@ static void matmul_regular_avx2_s(const uint64_t *restrict A, uint64_t *restrict
 #endif
 
 static void matmul_nregular_s(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
-                              const int *num_degrees, const int *restrict adjacency,  const int elements, const int based_nodes)
+                              const int *num_degrees, const int *restrict adjacency,  const int elements,
+			      const int symmetries, const int itable[nodes])
 {
+  int based_nodes = nodes/symmetries;
+  if(!itable){
 #pragma omp parallel for
-  for(int i=0;i<nodes;i++){
-    int p = i/based_nodes;
-    int m = i - p * based_nodes;
-    for(int j=0;j<num_degrees[i];j++){
-      int n = *(adjacency + m * degree + j) + p * based_nodes;
-      if(n >= nodes) n -= nodes;
-      for(int k=0;k<elements;k++)
-        B[i*elements+k] |= A[n*elements+k];
+    for(int i=0;i<nodes;i++){
+      int p = i/based_nodes;
+      int m = i - p * based_nodes;
+      for(int j=0;j<num_degrees[i];j++){
+	int n = *(adjacency + m * degree + j) + p * based_nodes;
+	if(n >= nodes) n -= nodes;
+	for(int k=0;k<elements;k++)
+	  B[i*elements+k] |= A[n*elements+k];
+      }
+    }
+  }
+  else{
+#pragma omp parallel for
+    for(int i=0;i<nodes;i++){
+      int ii = itable[i];
+      int p = ii/based_nodes;
+      int m = ii - p * based_nodes;
+      for(int j=0;j<num_degrees[i];j++){
+        int n = *(adjacency + m * degree + j) + p * based_nodes;
+	int nn = itable[n];
+        if(nn >= nodes) nn -= nodes;
+        for(int k=0;k<elements;k++)
+          B[ii*elements+k] |= A[nn*elements+k];
+      }
     }
   }
 }
 
 static void matmul_regular_s(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
-                             const int *restrict adjacency,  const int elements, const int based_nodes)
+                             const int *restrict adjacency,  const int elements, const int symmetries,
+			     const int itable[nodes])
 {
+  int based_nodes = nodes/symmetries;
+  if(!itable){
 #pragma omp parallel for
-  for(int i=0;i<nodes;i++){
-    int p = i/based_nodes;
-    int m = i - p * based_nodes;
-    for(int j=0;j<degree;j++){
-      int n = *(adjacency + m * degree + j) + p * based_nodes;
-      if(n >= nodes) n -= nodes;
-      for(int k=0;k<elements;k++)
-        B[i*elements+k] |= A[n*elements+k];
+    for(int i=0;i<nodes;i++){
+      int p = i/based_nodes;
+      int m = i - p * based_nodes;
+      for(int j=0;j<degree;j++){
+	int n = *(adjacency + m * degree + j) + p * based_nodes;
+	if(n >= nodes) n -= nodes;
+	for(int k=0;k<elements;k++)
+	  B[i*elements+k] |= A[n*elements+k];
+      }
+    }
+  }
+  else{
+#pragma omp parallel for
+    for(int i=0;i<nodes;i++){
+      int ii = itable[i];
+      int p = ii/based_nodes;
+      int m = ii - p * based_nodes;
+      for(int j=0;j<degree;j++){
+        int n = *(adjacency + m * degree + j) + p * based_nodes;
+	int nn = itable[n];
+        if(nn >= nodes) nn -= nodes;
+        for(int k=0;k<elements;k++)
+          B[ii*elements+k] |= A[nn*elements+k];
+      }
     }
   }
 }
 
 void ODP_Matmul(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
                 const int *restrict num_degrees, const int *restrict adjacency, const bool enable_avx2,
-                const int elements, const int symmetries)
+                const int elements, const int symmetries, const int itable[nodes])
 {
 #ifdef __AVX2__
   if(symmetries == 1){
@@ -159,12 +244,12 @@ void ODP_Matmul(const uint64_t *restrict A, uint64_t *restrict B, const int node
   }
   else{
     if(enable_avx2){
-      if(num_degrees) matmul_nregular_avx2_s(A, B, nodes, degree, num_degrees, adjacency, elements, elements/4, nodes/symmetries);
-      else            matmul_regular_avx2_s(A, B, nodes, degree, adjacency, elements, elements/4, nodes/symmetries);
+      if(num_degrees) matmul_nregular_avx2_s(A, B, nodes, degree, num_degrees, adjacency, elements, elements/4, symmetries, itable);
+      else            matmul_regular_avx2_s(A, B, nodes, degree, adjacency, elements, elements/4, symmetries, itable);
     }
     else{
-      if(num_degrees) matmul_nregular_s(A, B, nodes, degree, num_degrees, adjacency, elements, nodes/symmetries);
-      else            matmul_regular_s(A, B, nodes, degree, adjacency, elements, nodes/symmetries);
+      if(num_degrees) matmul_nregular_s(A, B, nodes, degree, num_degrees, adjacency, elements, symmetries, itable);
+      else            matmul_regular_s(A, B, nodes, degree, adjacency, elements, symmetries, itable);
     }
   }
 #else
@@ -245,42 +330,89 @@ static void matmul_regular_CHUNK(const uint64_t *restrict A, uint64_t *restrict 
 
 #ifdef __AVX2__
 static void matmul_nregular_avx2_CHUNK_s(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
-                                         const int *num_degrees, const int *restrict adjacency, const int based_nodes)
+                                         const int *num_degrees, const int *restrict adjacency, const int symmetries,
+					 const int itable[nodes])
 {
+  int based_nodes = nodes/symmetries;
+  if(!itable){
 #pragma omp parallel for
-  for(int i=0;i<nodes;i++){
-    __m256i *b = (__m256i *)(B + i*CPU_CHUNK);
-    int p = i/based_nodes;
-    int m = i - p * based_nodes;
-    for(int j=0;j<num_degrees[i];j++){
-      int n = *(adjacency + m * degree + j) + p * based_nodes;
-      if(n >= nodes) n -= nodes;
-      __m256i *a = (__m256i *)(A + n*CPU_CHUNK);
-      for(int k=0;k<CPU_CHUNK/4;k++){
-        __m256i aa = _mm256_load_si256(a+k);
-        __m256i bb = _mm256_load_si256(b+k);
-        _mm256_store_si256(b+k, _mm256_or_si256(aa, bb));
+    for(int i=0;i<nodes;i++){
+      __m256i *b = (__m256i *)(B + i*CPU_CHUNK);
+      int p = i/based_nodes;
+      int m = i - p * based_nodes;
+      for(int j=0;j<num_degrees[i];j++){
+	int n = *(adjacency + m * degree + j) + p * based_nodes;
+	if(n >= nodes) n -= nodes;
+	__m256i *a = (__m256i *)(A + n*CPU_CHUNK);
+	for(int k=0;k<CPU_CHUNK/4;k++){
+	  __m256i aa = _mm256_load_si256(a+k);
+	  __m256i bb = _mm256_load_si256(b+k);
+	  _mm256_store_si256(b+k, _mm256_or_si256(aa, bb));
+	}
+      }
+    }
+  }
+  else{
+#pragma omp parallel for
+    for(int i=0;i<nodes;i++){
+      int ii = itable[i];
+      __m256i *b = (__m256i *)(B + ii*CPU_CHUNK);
+      int p = ii/based_nodes;
+      int m = ii - p * based_nodes;
+      for(int j=0;j<num_degrees[ii];j++){
+        int n = *(adjacency + m * degree + j) + p * based_nodes;
+	int nn = itable[n];
+        if(nn >= nodes) nn -= nodes;
+        __m256i *a = (__m256i *)(A + nn*CPU_CHUNK);
+        for(int k=0;k<CPU_CHUNK/4;k++){
+          __m256i aa = _mm256_load_si256(a+k);
+          __m256i bb = _mm256_load_si256(b+k);
+          _mm256_store_si256(b+k, _mm256_or_si256(aa, bb));
+        }
       }
     }
   }
 }
 
 static void matmul_regular_avx2_CHUNK_s(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
-                                        const int *restrict adjacency, const int based_nodes)
+                                        const int *restrict adjacency, const int symmetries, const int itable[nodes])
 {
+  int based_nodes = nodes/symmetries;
+  if(!itable){
 #pragma omp parallel for
-  for(int i=0;i<nodes;i++){
-    __m256i *b = (__m256i *)(B + i*CPU_CHUNK);
-    int p = i/based_nodes;
-    int m = i - p * based_nodes;
-    for(int j=0;j<degree;j++){
-      int n = *(adjacency + m * degree + j) + p * based_nodes;
-      if(n >= nodes) n -= nodes;
-      __m256i *a = (__m256i *)(A + n*CPU_CHUNK);
-      for(int k=0;k<CPU_CHUNK/4;k++){
-        __m256i aa = _mm256_load_si256(a+k);
-        __m256i bb = _mm256_load_si256(b+k);
-        _mm256_store_si256(b+k, _mm256_or_si256(aa, bb));
+    for(int i=0;i<nodes;i++){
+      __m256i *b = (__m256i *)(B + i*CPU_CHUNK);
+      int p = i/based_nodes;
+      int m = i - p * based_nodes;
+      for(int j=0;j<degree;j++){
+	int n = *(adjacency + m * degree + j) + p * based_nodes;
+	if(n >= nodes) n -= nodes;
+	__m256i *a = (__m256i *)(A + n*CPU_CHUNK);
+	for(int k=0;k<CPU_CHUNK/4;k++){
+	  __m256i aa = _mm256_load_si256(a+k);
+	  __m256i bb = _mm256_load_si256(b+k);
+	  _mm256_store_si256(b+k, _mm256_or_si256(aa, bb));
+	}
+      }
+    }
+  }
+  else{
+#pragma omp parallel for
+    for(int i=0;i<nodes;i++){
+      int ii = itable[i];
+      __m256i *b = (__m256i *)(B + ii*CPU_CHUNK);
+      int p = ii/based_nodes;
+      int m = ii - p * based_nodes;
+      for(int j=0;j<degree;j++){
+        int n = *(adjacency + m * degree + j) + p * based_nodes;
+	int nn = itable[n];
+        if(nn >= nodes) nn -= nodes;
+        __m256i *a = (__m256i *)(A + nn*CPU_CHUNK);
+        for(int k=0;k<CPU_CHUNK/4;k++){
+          __m256i aa = _mm256_load_si256(a+k);
+          __m256i bb = _mm256_load_si256(b+k);
+          _mm256_store_si256(b+k, _mm256_or_si256(aa, bb));
+        }
       }
     }
   }
@@ -288,39 +420,77 @@ static void matmul_regular_avx2_CHUNK_s(const uint64_t *restrict A, uint64_t *re
 #endif
 
 static void matmul_nregular_CHUNK_s(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
-                                    const int *num_degrees, const int *restrict adjacency, const int based_nodes)
+                                    const int *num_degrees, const int *restrict adjacency,
+				    const int symmetries, const int itable[nodes])
 {
+  int based_nodes = nodes/symmetries;
+  if(!itable){
 #pragma omp parallel for
-  for(int i=0;i<nodes;i++){
-    int p = i/based_nodes;
-    int m = i - p * based_nodes;
-    for(int j=0;j<num_degrees[i];j++){
-      int n = *(adjacency + m * degree + j) + p * based_nodes;
-      if(n >= nodes) n -= nodes;
-      for(int k=0;k<CPU_CHUNK;k++)
-        B[i*CPU_CHUNK+k] |= A[n*CPU_CHUNK+k];
+    for(int i=0;i<nodes;i++){
+      int p = i/based_nodes;
+      int m = i - p * based_nodes;
+      for(int j=0;j<num_degrees[i];j++){
+	int n = *(adjacency + m * degree + j) + p * based_nodes;
+	if(n >= nodes) n -= nodes;
+	for(int k=0;k<CPU_CHUNK;k++)
+	  B[i*CPU_CHUNK+k] |= A[n*CPU_CHUNK+k];
+      }
+    }
+  }
+  else{
+#pragma omp parallel for
+    for(int i=0;i<nodes;i++){
+      int ii = itable[i];
+      int p = ii/based_nodes;
+      int m = ii - p * based_nodes;
+      for(int j=0;j<num_degrees[ii];j++){
+        int n = *(adjacency + m * degree + j) + p * based_nodes;
+	int nn = itable[n];
+        if(nn >= nodes) nn -= nodes;
+        for(int k=0;k<CPU_CHUNK;k++)
+          B[ii*CPU_CHUNK+k] |= A[nn*CPU_CHUNK+k];
+      }
     }
   }
 }
 
 static void matmul_regular_CHUNK_s(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
-                                   const int *restrict adjacency, const int based_nodes)
+                                   const int *restrict adjacency, const int symmetries, const int itable[nodes])
 {
+  int based_nodes = nodes/symmetries;
+  if(!itable){
 #pragma omp parallel for
-  for(int i=0;i<nodes;i++){
-    int p = i/based_nodes;
-    int m = i - p * based_nodes;
-    for(int j=0;j<degree;j++){
-      int n = *(adjacency + m * degree + j) + p * based_nodes;
-      if(n >= nodes) n -= nodes;
-      for(int k=0;k<CPU_CHUNK;k++)
-        B[i*CPU_CHUNK+k] |= A[n*CPU_CHUNK+k];
+    for(int i=0;i<nodes;i++){
+      int p = i/based_nodes;
+      int m = i - p * based_nodes;
+      for(int j=0;j<degree;j++){
+	int n = *(adjacency + m * degree + j) + p * based_nodes;
+	if(n >= nodes) n -= nodes;
+	for(int k=0;k<CPU_CHUNK;k++)
+	  B[i*CPU_CHUNK+k] |= A[n*CPU_CHUNK+k];
+      }
+    }
+  }
+  else{
+#pragma omp parallel for
+    for(int i=0;i<nodes;i++){
+      int ii = itable[i];
+      int p = ii/based_nodes;
+      int m = ii - p * based_nodes;
+      for(int j=0;j<degree;j++){
+        int n = *(adjacency + m * degree + j) + p * based_nodes;
+	int nn = itable[n];
+      	if(nn >= nodes) nn -= nodes;
+      	for(int k=0;k<CPU_CHUNK;k++)
+          B[ii*CPU_CHUNK+k] |= A[nn*CPU_CHUNK+k];
+      }
     }
   }
 }
 
 void ODP_Matmul_CHUNK(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
-                      const int *num_degrees, const int *restrict adjacency, const bool enable_avx2, const int symmetries)
+                      const int *num_degrees, const int *restrict adjacency, const bool enable_avx2, const int symmetries,
+		      const int itable[nodes])
 {
 #ifdef __AVX2__
   if(symmetries == 1){
@@ -335,12 +505,12 @@ void ODP_Matmul_CHUNK(const uint64_t *restrict A, uint64_t *restrict B, const in
   }
   else{ // symmetries != 1
     if(enable_avx2){
-      if(num_degrees) matmul_nregular_avx2_CHUNK_s(A, B, nodes, degree, num_degrees, adjacency, nodes/symmetries);
-      else            matmul_regular_avx2_CHUNK_s(A, B, nodes, degree, adjacency, nodes/symmetries);
+      if(num_degrees) matmul_nregular_avx2_CHUNK_s(A, B, nodes, degree, num_degrees, adjacency, symmetries, itable);
+      else            matmul_regular_avx2_CHUNK_s(A, B, nodes, degree, adjacency, symmetries, itable);
     }
     else{
-      if(num_degrees) matmul_nregular_CHUNK_s(A, B, nodes, degree, num_degrees, adjacency, nodes/symmetries);
-      else            matmul_regular_CHUNK_s(A, B, nodes, degree, adjacency, nodes/symmetries);
+      if(num_degrees) matmul_nregular_CHUNK_s(A, B, nodes, degree, num_degrees, adjacency, symmetries, itable);
+      else            matmul_regular_CHUNK_s(A, B, nodes, degree, adjacency, symmetries, itable);
     }
   }
 #else
