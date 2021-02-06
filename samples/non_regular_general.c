@@ -16,7 +16,7 @@ int main()
 
   // In a regular graph, the third argument is NULL.
   // In a non-regular graph, the third argument is the number of edges that each vertex has.
-  ODP_Init_aspl(nodes, degree, num_degrees);
+  ODP_Init_aspl_general(nodes, degree, num_degrees);
   ODP_Set_aspl(adjacency, &diameter, &sum, &ASPL);
   ODP_Finalize_aspl();
   

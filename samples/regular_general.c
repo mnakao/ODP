@@ -13,7 +13,7 @@ int main()
   ODP_Conv_edge2adjacency(nodes, lines, degree, edge, adjacency);
   // adjacency[][] = {{10,3,4}, {8,3,7}, {8,9,6}, {0,1,5}, {0,9,10}, {3,11,6}, {2,5,7}, {1,6,11}, {1,2,11}, {2,4,10}, {0,4,9}, {5,7,8}};
 
-  ODP_Init_aspl(nodes, degree, NULL);
+  ODP_Init_aspl_general(nodes, degree, NULL);
   ODP_Set_aspl(adjacency, &diameter, &sum, &ASPL);
   ODP_Finalize_aspl();
 

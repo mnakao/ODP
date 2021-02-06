@@ -53,7 +53,7 @@ static bool CHECK_LENGTH(const int u, const int v, const int height, const int l
   return (DISTANCE(u, v, height) <= length);
 }
 
-static int ROTATE(const int v, const int width, const int height, const int symmetries, const int degree)
+int ROTATE(const int v, const int width, const int height, const int symmetries, const int degree)
 {
   if(symmetries != 2 && symmetries != 4)
     ERROR("Invalid symmetries(%d)\n", symmetries);
@@ -199,7 +199,7 @@ static int GLOBAL_ADJ_GENERAL(const int nodes, const int degree, const int symme
 }
 
 // Returns the local index of the vertices in the first quadrant
-static int LOCAL_INDEX_GRID(const int x, const int width, const int height, const int symmetries)
+int LOCAL_INDEX_GRID(const int x, const int width, const int height, const int symmetries)
 {
   CHECK_SYMMETRIES_GRID(symmetries);
 

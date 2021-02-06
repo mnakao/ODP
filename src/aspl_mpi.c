@@ -2,7 +2,7 @@
 #include <mpi.h>
 static uint64_t *_A, *_B;
 static int _nodes, _degree, _symmetries, _kind, _rank, _procs;
-static const int* _num_degrees;
+static const int* _num_degrees = NULL;
 static unsigned int _elements, _total_elements, _times;
 static double _mem_usage, _elapsed_time;
 static bool _enable_avx2 = false, _is_profile;
@@ -114,8 +114,8 @@ static void aspl_mpi_mat_saving(const int* restrict adjacency,
   *sum /= 2.0;
 }
 
-void ODP_Init_aspl_mpi_s(const int nodes, const int degree,
-			 const int* restrict num_degrees, const MPI_Comm comm, const int symmetries)
+static void init_aspl_mpi_s(const int nodes, const int degree,
+			    const int* restrict num_degrees, const MPI_Comm comm, const int symmetries)
 {
   if(nodes % symmetries != 0)
     ERROR("nodes(%d) must be divisible by symmetries(%d)\n", nodes, symmetries);
@@ -142,7 +142,6 @@ void ODP_Init_aspl_mpi_s(const int nodes, const int degree,
   
   _nodes = nodes;
   _degree = degree;
-  _num_degrees = num_degrees;
   _symmetries = symmetries;
   _comm = comm;
   _is_profile = ODP_Check_profile();
@@ -150,10 +149,63 @@ void ODP_Init_aspl_mpi_s(const int nodes, const int degree,
   _times = 0;
 }
 
-void ODP_Init_aspl_mpi(const int nodes, const int degree,
-		       const int* restrict num_degrees, MPI_Comm comm)
+void ODP_Init_aspl_mpi_general(const int nodes, const int degree,
+			       const int* restrict num_degrees, MPI_Comm comm)
 {
-  ODP_Init_aspl_mpi_s(nodes, degree, num_degrees, comm, 1);
+  init_aspl_mpi_s(nodes, degree, num_degrees, comm, 1);
+  if(!num_degrees){
+    _num_degrees = malloc(sizeof(int) * nodes);
+    memcpy(_num_degrees, num_degrees, sizeof(int) * nodes);
+  }
+}
+
+void ODP_Init_aspl_mpi_general_s(const int nodes, const int degree,
+				 const int* restrict num_degrees, MPI_Comm comm, const int symmetries)
+{
+  init_aspl_mpi_s(nodes, degree, num_degrees, comm, symmetries);
+  if(!num_degrees){
+    _num_degrees = malloc(sizeof(int) * nodes/symmetries);
+    int based_nodes = nodes/symmetries;
+    for(int i=0;i<symmetries;i++)
+      for(int j=0;j<based_nodes;j++)
+        _num_degrees[i*based_nodes+j] = num_degrees[j];
+  }
+}
+
+void ODP_Init_aspl_mpi_grid(const int width, const int height, const int degree,
+			    const int* restrict num_degrees, MPI_Comm comm)
+{
+  int nodes = width * height;
+  init_aspl_mpi_s(nodes, degree, num_degrees, comm, symmetries);
+  if(!num_degrees){
+    _num_degrees = malloc(sizeof(int) * nodes);
+    memcpy(_num_degrees, num_degrees, sizeof(int) * nodes);
+  }
+}
+
+void ODP_Init_aspl_mpi_grid_s(const int width, const int height, const int degree, const int* num_degrees, const int symmetries)
+{
+  int nodes = width * height;
+  init_aspl_mpi_s(nodes, degree, num_degrees, comm, symmetries);
+  if(!num_degrees){
+    _num_degrees = malloc(sizeof(int) * nodes/symmetries);
+    int based_nodes = nodes/symmetries;
+    if(symmetries == 2){
+      for(int i=0;i<based_nodes;i++){
+        _num_degrees[i] = num_degrees[i];
+        _num_degrees[ROTATE(i, width, height, symmetries, 180)] = num_degrees[i];
+      }
+    }
+    else if(symmetries == 4){
+      for(int i=0;i<based_nodes;i++){
+        int v = LOCAL_INDEX_GRID(i,width,height,symmetries);
+        _num_degrees[v] = num_degrees[i];
+        _num_degrees[ROTATE(v, width, height, symmetries,  90)] = num_degrees[i];
+        _num_degrees[ROTATE(v, width, height, symmetries, 180)] = num_degrees[i];
+        _num_degrees[ROTATE(v, width, height, symmetries, 270)] = num_degrees[i];
+      }
+    }
+  }
 }
 
 void ODP_Finalize_aspl_mpi()

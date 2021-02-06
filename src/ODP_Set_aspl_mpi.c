@@ -1,6 +1,7 @@
 #include "common.h"
 #include <mpi.h>
-extern void ODP_Init_aspl_mpi(const int nodes, const int degree, const int* restrict num_degrees, MPI_Comm comm);
+extern void ODP_Init_aspl_mpi_general(const int nodes, const int degree, const int* restrict num_degrees, MPI_Comm comm);
+extern void ODP_Init_aspl_mpi_grid(const int width, const int height, const int degree, const int* restrict num_degrees, MPI_Comm comm);
 extern void ODP_Set_aspl_mpi(const int* restrict adjacency, int *diameter, long *sum, double *ASPL);
 extern void ODP_Finalize_aspl_mpi();
 
@@ -20,7 +21,7 @@ void ODP_Set_aspl_mpi_general(const char *fname, const MPI_Comm comm, int *nodes
   int *num_degrees = malloc(sizeof(int) * (*nodes));
   ODP_Set_degrees(*nodes, lines, edge, num_degrees);
 
-  ODP_Init_aspl_mpi(*nodes, *degree, num_degrees, comm);
+  ODP_Init_aspl_mpi_general(*nodes, *degree, num_degrees, comm);
   ODP_Set_aspl_mpi((int*)adjacency, diameter, sum, ASPL);
   ODP_Finalize_aspl_mpi();
 
@@ -46,7 +47,7 @@ void ODP_Set_aspl_mpi_grid(const char *fname, const MPI_Comm comm, int *width, i
   int *num_degrees = malloc(sizeof(int) * nodes);
   ODP_Set_degrees(nodes, lines, edge, num_degrees);
 
-  ODP_Init_aspl_mpi(nodes, *degree, num_degrees, comm);
+  ODP_Init_aspl_mpi_grid(width, height, *degree, num_degrees, comm);
   ODP_Set_aspl_mpi((int*)adjacency, diameter, sum, ASPL);
   ODP_Finalize_aspl_mpi();
   

@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
   create_time = get_time() - create_time;
   ODP_Conv_edge2adjacency_general_s(nodes, lines, degree, edge, symmetries, adjacency);
 
-  ODP_Init_aspl_s(nodes, degree, NULL, symmetries);
+  ODP_Init_aspl_general_s(nodes, degree, NULL, symmetries);
   ODP_Set_aspl(adjacency, &diameter, &sum, &ASPL);
   ODP_Conv_adjacency2edge_general_s(nodes, degree, NULL, adjacency, symmetries, edge);
 
@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
 
       ODP_Mutate_adjacency_general_s(nodes, degree, NULL, symmetries, adjacency);
       ODP_Set_aspl(adjacency, &diameter, &sum, &ASPL);
-
+      
       if(diameter < best_diameter || (diameter == best_diameter && ASPL < best_ASPL)){
 	best_diameter = diameter;
 	best_sum      = sum;

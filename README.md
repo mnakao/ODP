@@ -123,14 +123,20 @@ Thread parallelization is performed automatically depending on the library to be
 ### Initialize
 Perform the initialization process before executing ODP_Set_aspl\*().
 ```
-void ODP_Init_aspl         (int nodes, int degree, int num_degrees[nodes])
-void ODP_Init_aspl_mpi     (int nodes, int degree, int num_degrees[nodes], MPI_Comm comm)
-void ODP_Init_aspl_cuda    (int nodes, int degree, int num_degrees[nodes])
-void ODP_Init_aspl_mpi_cuda(int nodes, int degree, int num_degrees[nodes], MPI_Comm comm)
+void ODP_Init_aspl_general         (int nodes, int degree, int num_degrees[nodes])
+void ODP_Init_aspl_grid            (int width, int height, int degree, int num_degrees[nodes])
+void ODP_Init_aspl_mpi_general     (int nodes, int degree, int num_degrees[nodes], MPI_Comm comm)
+void ODP_Init_aspl_mpi_grid        (int width, int height, int degree, int num_degrees[nodes], MPI_Comm comm)
+void ODP_Init_aspl_cuda_general    (int nodes, int degree, int num_degrees[nodes])
+void ODP_Init_aspl_cuda_grid       (int width, int height, int degree, int num_degrees[nodes])
+void ODP_Init_aspl_mpi_cuda_general(int nodes, int degree, int num_degrees[nodes], MPI_Comm comm)
+void ODP_Init_aspl_mpi_cuda_grid   (int width, int height, int degree, int num_degrees[nodes], MPI_Comm comm)
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] degree: Degree in a graph.
 * [IN] num_degrees : Specify NULL for a regular graph. Or specify the degrees in each vertex for a non-regular graph.
+* [IN] width : Width of a grid graph.
+* [IN] height : Height of a grid graph.
 * [IN] comm : MPI communicator.
 
 ### Finalize
@@ -391,14 +397,20 @@ However, since the edge list is used for input and output, the size is `int edge
 These functions can be used instead of the ODP_Init_aspl\*().
 
 ```
-void ODP_Init_aspl_s         (int nodes, int degree, int num_degrees[nodes], int symmetries)
-void ODP_Init_aspl_mpi_s     (int nodes, int degree, int num_degrees[nodes], MPI_Comm comm, int symmetries)
-void ODP_Init_aspl_cuda_s    (int nodes, int degree, int num_degrees[nodes], int symmetries)
-void ODP_Init_aspl_mpi_cuda_s(int nodes, int degree, int num_degrees[nodes], MPI_Comm comm, int symmetries)
+void ODP_Init_aspl_general_s         (int nodes, int degree, int num_degrees[nodes/symmetries], int symmetries)
+void ODP_Init_aspl_grid_s            (int width, int height, int degree, int num_degrees[nodes/symmetries], int symmetries)
+void ODP_Init_aspl_mpi_general_s     (int nodes, int degree, int num_degrees[nodes/symmetries], MPI_Comm comm, int symmetries)
+void ODP_Init_aspl_mpi_grid_s        (int width, int height, int degree, int num_degrees[nodes/symmetries], MPI_Comm comm, int symmetries)
+void ODP_Init_aspl_cuda_general_s    (int nodes, int degree, int num_degrees[nodes/symmetries], int symmetries)
+void ODP_Init_aspl_cuda_grid_s       (int width, int height, int degree, int num_degrees[nodes/symmetries], int symmetries)
+void ODP_Init_aspl_mpi_cuda_general_s(int nodes, int degree, int num_degrees[nodes/symmetries], MPI_Comm comm, int symmetries)
+void ODP_Init_aspl_mpi_cuda_grid_s   (int width, int height, int degree, int num_degrees[nodes/symmetries], MPI_Comm comm, int symmetries)
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] degree: Degree in a graph.
 * [IN] num_degrees : Specify NULL for a regular graph. If not, specify the degrees for each vertex.
+* [IN] width : Width of a grid graph.
+* [IN] height : Height of a grid graph.
 * [IN] comm : MPI communicator.
 * [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes. If it is 1, it works the same as ODP_Init_aspl\*().
 

@@ -106,8 +106,7 @@ int main(int argc, char *argv[])
   create_time = get_time() - create_time;
   ODP_Conv_edge2adjacency_grid_s(width, height, lines, degree, edge, symmetries, adjacency);
   
-  ODP_Init_aspl(nodes, degree, NULL);
-  
+  ODP_Init_aspl_grid_s(width, height, degree, NULL, 1);
   int adjacency2[nodes][degree], edge2[lines][2];
   ODP_Conv_adjacency2edge_grid_s(width, height, degree, NULL, adjacency, symmetries, edge2);
   ODP_Conv_edge2adjacency(nodes, lines, degree, edge2, adjacency2);

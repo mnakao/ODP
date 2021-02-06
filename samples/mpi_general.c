@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
   int (*adjacency)[degree] = malloc(sizeof(int) * nodes * degree); // int adjacency[nodes][degree];
   ODP_Conv_edge2adjacency(nodes, lines, degree, edge, adjacency);
 
-  ODP_Init_aspl_mpi(nodes, degree, NULL, MPI_COMM_WORLD);
+  ODP_Init_aspl_mpi_general(nodes, degree, NULL, MPI_COMM_WORLD);
   ODP_Set_aspl_mpi(adjacency, &diameter, &sum, &ASPL);
   ODP_Finalize_aspl_mpi();
 

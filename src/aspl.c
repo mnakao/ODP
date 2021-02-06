@@ -1,7 +1,7 @@
 #include "common.h"
 static uint64_t *_A, *_B;
 static int _nodes, _degree, _symmetries, _kind;
-static const int* _num_degrees;
+static int* _num_degrees = NULL;
 static unsigned int _elements, _times;
 static double _mem_usage, _elapsed_time;
 static bool _enable_avx2 = false, _is_profile;
@@ -9,18 +9,18 @@ static bool _enable_avx2 = false, _is_profile;
 extern bool ODP_Check_profile();
 extern double ODP_Get_time();
 extern void ODP_Profile(const char* name, const int kind, const int symmetries, const double mem_usage,
-                         const double elapsed_time, const unsigned int times, const int procs);
+			const double elapsed_time, const unsigned int times, const int procs);
 extern int ODP_Get_kind(const int nodes, const int degree, const int* num_degrees, const int symmetries,
-			 const int procs, const bool is_cpu);
+			const int procs, const bool is_cpu);
 extern double ODP_Get_mem_usage(const int kind, const int nodes, const int degree, const int symmetries,
-                                 const int *num_degrees, const int procs, const bool is_cpu);
+				const int *num_degrees, const int procs, const bool is_cpu);
 extern void ODP_Matmul(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
-			const int *restrict num_degrees, const int *restrict adjacency, const bool enable_avx2, const int elements, const int symmetries);
+		       const int *restrict num_degrees, const int *restrict adjacency, const bool enable_avx2, const int elements, const int symmetries);
 extern void ODP_Matmul_CHUNK(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
-			      const int *restrict num_degrees, const int *restrict adjacency, const bool enable_avx2, const int symmetries);
+			     const int *restrict num_degrees, const int *restrict adjacency, const bool enable_avx2, const int symmetries);
 extern void ODP_Malloc(uint64_t **a, const size_t s, const bool enable_avx2);
 extern void ODP_Free(uint64_t *a, const bool enable_avx2);
-
+  
 static void aspl_mat(const int* restrict adjacency,
 		     int *diameter, long *sum, double *ASPL)
 {
@@ -103,7 +103,7 @@ static void aspl_mat_saving(const int* restrict adjacency,
   *sum /= 2.0;
 }
 
-void ODP_Init_aspl_s(const int nodes, const int degree, const int* num_degrees, const int symmetries)
+static void init_aspl_s(const int nodes, const int degree, const int* num_degrees, const int symmetries)
 {
   if(nodes % symmetries != 0)
     ERROR("nodes(%d) must be divisible by symmetries(%d)\n", nodes, symmetries);
@@ -126,22 +126,74 @@ void ODP_Init_aspl_s(const int nodes, const int degree, const int* num_degrees, 
 
   _nodes = nodes;
   _degree = degree;
-  _num_degrees = num_degrees;
   _symmetries = symmetries;
   _is_profile = ODP_Check_profile();
   _elapsed_time = 0;
   _times = 0;
 }
 
-void ODP_Init_aspl(const int nodes, const int degree, const int* num_degrees)
+void ODP_Init_aspl_general(const int nodes, const int degree, const int* num_degrees)
 {
-  ODP_Init_aspl_s(nodes, degree, num_degrees, 1);
+  init_aspl_s(nodes, degree, num_degrees, 1);
+  if(!num_degrees){
+    _num_degrees = malloc(sizeof(int) * nodes);
+    memcpy(_num_degrees, num_degrees, sizeof(int) * nodes);
+  }
+}
+
+void ODP_Init_aspl_general_s(const int nodes, const int degree, const int* num_degrees, const int symmetries)
+{
+  init_aspl_s(nodes, degree, num_degrees, symmetries);
+  if(!num_degrees){
+    _num_degrees = malloc(sizeof(int) * nodes/symmetries);
+    int based_nodes = nodes/symmetries;
+    for(int i=0;i<symmetries;i++)
+      for(int j=0;j<based_nodes;j++)
+	_num_degrees[i*based_nodes+j] = num_degrees[j];
+  }
+}
+
+void ODP_Init_aspl_grid(const int width, const int height, const int degree, const int* num_degrees)
+{
+  int nodes = width * height;
+  init_aspl_s(nodes, degree, num_degrees, 1);
+  if(!num_degrees){
+    _num_degrees = malloc(sizeof(int) * nodes);
+    memcpy(_num_degrees, num_degrees, sizeof(int) * nodes);
+  }
+}
+
+void ODP_Init_aspl_grid_s(const int width, const int height, const int degree, const int* num_degrees, const int symmetries)
+{
+  int nodes = width * height;
+  init_aspl_s(nodes, degree, num_degrees, symmetries);
+  if(!num_degrees){
+    _num_degrees = malloc(sizeof(int) * nodes/symmetries);
+    int based_nodes = nodes/symmetries;
+    if(symmetries == 2){
+      for(int i=0;i<based_nodes;i++){
+	_num_degrees[i] = num_degrees[i];
+	_num_degrees[ROTATE(i, width, height, symmetries, 180)] = num_degrees[i];
+      }
+    }
+    else if(symmetries == 4){
+      for(int i=0;i<based_nodes;i++){
+	int v = LOCAL_INDEX_GRID(i,width,height,symmetries);
+	_num_degrees[v] = num_degrees[i];
+	_num_degrees[ROTATE(v, width, height, symmetries,  90)] = num_degrees[i];
+	_num_degrees[ROTATE(v, width, height, symmetries, 180)] = num_degrees[i];
+	_num_degrees[ROTATE(v, width, height, symmetries, 270)] = num_degrees[i];
+      }
+    }
+  }
 }
 
 void ODP_Finalize_aspl()
 {
   ODP_Free(_A, _enable_avx2);
   ODP_Free(_B, _enable_avx2);
+  if(!_num_degrees)
+    free(_num_degrees);
 
   if(_is_profile){
 #ifdef _OPENMP

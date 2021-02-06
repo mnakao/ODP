@@ -18,7 +18,7 @@ int main()
   int (*adjacency)[degree] = malloc(sizeof(int) * nodes * degree); // int adjacency[nodes][degree];
   ODP_Conv_edge2adjacency(nodes, lines, degree, edge, adjacency);
 
-  ODP_Init_aspl(nodes, degree, NULL);
+  ODP_Init_aspl_grid(width, height, degree, NULL);
   ODP_Set_aspl(adjacency, &diameter, &sum, &ASPL);
   ODP_Finalize_aspl();
 

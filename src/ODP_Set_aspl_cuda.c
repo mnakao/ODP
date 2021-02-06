@@ -1,6 +1,7 @@
 #include "common.h"
 
-extern void ODP_Init_aspl_cuda(const int nodes, const int degree, const int* num_degrees);
+extern void ODP_Init_aspl_cuda_general(const int nodes, const int degree, const int* num_degrees);
+extern void ODP_Init_aspl_cuda_grid(const int width, const int height, const int degree, const int* num_degrees);
 extern void ODP_Set_aspl_cuda(const int* adjacency, int *diameter, long *sum, double *ASPL);
 extern void ODP_Finalize_aspl_cuda();
 
@@ -20,7 +21,7 @@ void ODP_Set_aspl_cuda_general(const char *fname, int *nodes, int *degree,
   int *num_degrees = malloc(sizeof(int) * (*nodes));
   ODP_Set_degrees(*nodes, lines, edge, num_degrees);
 
-  ODP_Init_aspl_cuda(*nodes, *degree, num_degrees);
+  ODP_Init_aspl_cuda_general(*nodes, *degree, num_degrees);
   ODP_Set_aspl_cuda((int *)adjacency, diameter, sum, ASPL);
   ODP_Finalize_aspl_cuda();
 
@@ -46,7 +47,7 @@ void ODP_Set_aspl_cuda_grid(const char *fname, int *width, int *height, int *deg
   int *num_degrees = malloc(sizeof(int) * nodes);
   ODP_Set_degrees(nodes, lines, edge, num_degrees);
   
-  ODP_Init_aspl_cuda(nodes, *degree, num_degrees);
+  ODP_Init_aspl_cuda_grid(*width, *height, *degree, num_degrees);
   ODP_Set_aspl_cuda((int *)adjacency, diameter, sum, ASPL);
   ODP_Finalize_aspl_cuda();
 
