@@ -30,10 +30,6 @@
 #define NOT_VISITED 0
 #define VISITED     1
 #define NOT_DEFINED -1
-#define IMP_SERIAL   1
-#define IMP_MPI      2
-#define IMP_CUDA     3
-#define IMP_MPI_CUDA 4
 
 #ifdef __NVCC__
 #define POPCNT(a) __popcll(a)
@@ -52,12 +48,4 @@ extern int ODP_Get_lines(const char* fname);
 extern int ODP_Get_nodes(const int lines, const int (*edge)[2]);
 extern int ODP_Get_degree(const int nodes, const int lines, const int (*edge)[2]);
 extern int ODP_Get_length(const int lines, const int (*edge)[2], const int height);
-extern void ODP_Set_aspl_serial(const int* restrict adjacency, int *diameter, long *sum, double *ASPL);
-extern void ODP_Set_aspl_mpi(const int* restrict adjacency, int *diameter, long *sum, double *ASPL);
-extern void ODP_Set_aspl_cuda(const int* __restrict__ adjacency, int *diameter, long *sum, double *ASPL);
-extern void ODP_Set_aspl_mpi_cuda(const int* __restrict__ adjacency, int *diameter, long *sum, double *ASPL);
-extern void ODP_Finalize_aspl_serial();
-extern void ODP_Finalize_aspl_mpi();
-extern void ODP_Finalize_aspl_cuda();
-extern void ODP_Finalize_aspl_mpi_cuda();
 #endif

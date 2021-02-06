@@ -11,7 +11,6 @@ extern "C" int ODP_LOCAL_INDEX_GRID(const int x, const int width, const int heig
 extern "C" int ODP_ROTATE(const int v, const int width, const int height, const int symmetries, const int degree);
 extern "C" bool ODP_Check_profile();
 extern "C" double ODP_Get_time();
-extern "C" void ODP_Set_imp(int);
 extern "C" void ODP_Profile(const char* name, const int kind, const int symmetries, const double mem_usage,
 			    const double elapsed_time, const unsigned int times, const int procs);
 extern "C" double ODP_Get_mem_usage(const int kind, const int nodes, const int degree, const int symmetries,
@@ -152,8 +151,6 @@ static void init_aspl_cuda_s(const int nodes, const int degree,
     cudaMalloc((void**)&_num_degrees_dev, sizeof(int)*nodes);
     cudaMemcpy(_num_degrees_dev, num_degrees, sizeof(int)*nodes, cudaMemcpyHostToDevice);
   }
-
-  ODP_Set_imp(IMP_CUDA);
 }
 
 extern "C" void ODP_Init_aspl_cuda_general(const int nodes, const int degree, const int* num_degrees)
@@ -213,7 +210,7 @@ extern "C" void ODP_Init_aspl_cuda_grid_s(const int width, const int height, con
   }
 }
 
-extern "C" void ODP_Finalize_aspl_cuda()
+extern "C" void ODP_Finalize_aspl()
 {
   cudaFree(_A_dev);
   cudaFree(_B_dev);
@@ -228,8 +225,8 @@ extern "C" void ODP_Finalize_aspl_cuda()
 		_elapsed_time, _times, 1);
 }
 
-extern "C" void ODP_Set_aspl_cuda(const int* __restrict__ adjacency,
-				  int *diameter, long *sum, double *ASPL)
+extern "C" void ODP_Set_aspl(const int* __restrict__ adjacency,
+			     int *diameter, long *sum, double *ASPL)
 {
   double t = ODP_Get_time();
   
