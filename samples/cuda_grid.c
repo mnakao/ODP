@@ -23,8 +23,8 @@ int main(int argc, char *argv[])
   ODP_Conv_edge2adjacency(nodes, lines, degree, edge, adjacency);
   
   ODP_Init_aspl_cuda_grid(width, height, degree, NULL);
-  ODP_Set_aspl_cuda(adjacency, &diameter, &sum, &ASPL);
-  ODP_Finalize_aspl_cuda();
+  ODP_Set_aspl(adjacency, &diameter, &sum, &ASPL);
+  ODP_Finalize_aspl();
   
   int length = ODP_Get_length(lines, edge, height);
   ODP_Set_lbounds_grid(width, height, degree, length, &low_diameter, &low_ASPL);

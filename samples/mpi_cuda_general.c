@@ -26,8 +26,8 @@ int main(int argc, char *argv[])
   ODP_Conv_edge2adjacency(nodes, lines, degree, edge, adjacency);
   
   ODP_Init_aspl_mpi_cuda_general(nodes, degree, NULL, MPI_COMM_WORLD);
-  ODP_Set_aspl_mpi_cuda(adjacency, &diameter, &sum, &ASPL);
-  ODP_Finalize_aspl_mpi_cuda();
+  ODP_Set_aspl(adjacency, &diameter, &sum, &ASPL);
+  ODP_Finalize_aspl();
 
   if(rank == 0){
     ODP_Set_lbounds_general(nodes, degree, &low_diameter, &low_ASPL);

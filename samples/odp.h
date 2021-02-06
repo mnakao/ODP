@@ -17,8 +17,6 @@ extern void ODP_Init_aspl_cuda_general(int nodes, int degree, int* num_degrees);
 extern void ODP_Init_aspl_cuda_general_s(int nodes, int degree, int* num_degrees, int symmetries);
 extern void ODP_Init_aspl_cuda_grid(int width, int height, int degree, int* num_degrees);
 extern void ODP_Init_aspl_cuda_grid_s(int width, int height, int degree, int* num_degrees, int symmetries);
-extern void ODP_Finalize_aspl_cuda();
-extern void ODP_Set_aspl_cuda(void *adjacency, int *diameter, long *sum, double *ASPL);
 extern void ODP_Set_aspl_cuda_general(char *fname, int *nodes, int *degree, int *low_diameter,
 				      double *low_ASPL, int *diameter, long *sum, double *ASPL);
 extern void ODP_Set_aspl_cuda_grid(char *fname, int *width, int *height, int *degree, int *length,
@@ -30,8 +28,6 @@ extern void ODP_Init_aspl_mpi_general(int nodes, int degree, int* num_degrees, M
 extern void ODP_Init_aspl_mpi_general_s(int nodes, int degree, int* num_degrees, MPI_Comm comm, int symmetries);
 extern void ODP_Init_aspl_mpi_grid(int width, int height, int degree, int* num_degrees, MPI_Comm comm);
 extern void ODP_Init_aspl_mpi_grid_s(int widht, int height, int degree, int* num_degrees, MPI_Comm comm, int symmetries);
-extern void ODP_Finalize_aspl_mpi();
-extern void ODP_Set_aspl_mpi(void *adjacency, int *diameter, long *sum, double *ASPL);
 extern void ODP_Set_aspl_mpi_general(char *fname, MPI_Comm comm, int *nodes, int *degree,
 				     int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL);
 extern void ODP_Set_aspl_mpi_grid(char *fname, MPI_Comm comm, int *width, int *height, int *degree, int *length,
@@ -41,8 +37,6 @@ extern void ODP_Init_aspl_mpi_cuda_general(int nodes, int degree, int* num_degre
 extern void ODP_Init_aspl_mpi_cuda_general_s(int nodes, int degree, int* num_degrees, MPI_Comm comm, int symmetries);
 extern void ODP_Init_aspl_mpi_cuda_grid(int width, int height, int degree, int* num_degrees, MPI_Comm comm);
 extern void ODP_Init_aspl_mpi_cuda_grid_s(int width, int height, int degree, int* num_degrees, MPI_Comm comm, int symmetries);
-extern void ODP_Finalize_aspl_mpi_cuda();
-extern void ODP_Set_aspl_mpi_cuda(void *adjacency, int *diameter, long *sum, double *ASPL);
 extern void ODP_Set_aspl_mpi_cuda_general(char *fname, MPI_Comm comm, int *nodes, int *degree,
 					  int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL);
 extern void ODP_Set_aspl_mpi_cuda_grid(char *fname, MPI_Comm comm, int *width, int *height, int *degree, int *length,
