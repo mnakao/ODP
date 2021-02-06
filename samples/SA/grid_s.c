@@ -105,14 +105,13 @@ int main(int argc, char *argv[])
   double create_time = get_time();
   ODP_Srand(seed);
   ODP_Generate_random_grid_s(width, height, degree, length, symmetries, edge);
+
   create_time = get_time() - create_time;
   ODP_Conv_edge2adjacency_grid_s(width, height, lines, degree, edge, symmetries, adjacency);
-  
-  ODP_Init_aspl_grid_s(width, height, degree, NULL, 1);
-  int adjacency2[nodes][degree], edge2[lines][2];
-  ODP_Conv_adjacency2edge_grid_s(width, height, degree, NULL, adjacency, symmetries, edge2);
-  ODP_Conv_edge2adjacency(nodes, lines, degree, edge2, adjacency2);
-  ODP_Set_aspl(adjacency2, &diameter, &sum, &ASPL);
+
+  ODP_Init_aspl_grid_s(width, height, degree, NULL, symmetries);
+  ODP_Set_aspl(adjacency, &diameter, &sum, &ASPL);
+
   best_diameter = current_diameter = diameter;
   best_sum      = sum;
   best_ASPL     = current_ASPL     = ASPL;
@@ -132,10 +131,7 @@ int main(int argc, char *argv[])
 	printf("%ld\t%f\t%d\t%f\n", i, temp, best_diameter-low_diameter, best_ASPL-low_ASPL);
 
       ODP_Mutate_adjacency_grid_s(width, height, degree, NULL, length, symmetries, adjacency);
-      
-      ODP_Conv_adjacency2edge_grid_s(width, height, degree, NULL, adjacency, symmetries, edge2);
-      ODP_Conv_edge2adjacency(nodes, lines, degree, edge2, adjacency2);
-      ODP_Set_aspl(adjacency2, &diameter, &sum, &ASPL);
+      ODP_Set_aspl(adjacency, &diameter, &sum, &ASPL);
 
       if(diameter < best_diameter || (diameter == best_diameter && ASPL < best_ASPL)){
 	best_diameter = diameter;

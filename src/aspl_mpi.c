@@ -1,7 +1,7 @@
 #include "common.h"
 #include <mpi.h>
 static uint64_t *_A, *_B;
-static int _nodes, _degree, _symmetries, _kind, _rank, _procs;
+static int _nodes, _degree, _symmetries, _kind, _rank, _procs, _height;
 static int* _num_degrees = NULL, *_itable = NULL;
 static unsigned int _elements, _total_elements, _times;
 static double _mem_usage, _elapsed_time;
@@ -19,9 +19,9 @@ extern int ODP_Get_kind(const int nodes, const int degree, const int* num_degree
 			const int procs, const bool is_cpu);
 extern double ODP_Get_mem_usage(const int kind, const int nodes, const int degree, const int symmetries,
 				const int *num_degrees, const int procs, const bool is_cpu);
-extern void ODP_Matmul(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
+extern void ODP_Matmul(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int height, const int degree,
 		       const int *restrict num_degrees, const int *restrict adjacency, const bool enable_avx2, const int elements, const int symmetries, const int itable[nodes]);
-extern void ODP_Matmul_CHUNK(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
+extern void ODP_Matmul_CHUNK(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int height, const int degree,
 			     const int *restrict num_degrees, const int *restrict adjacency, const bool enable_avx2, const int symmetries, const int itable[nodes]);
 extern void ODP_Malloc(uint64_t **a, const size_t s, const bool enable_avx2);
 extern void ODP_Free(uint64_t *a, const bool enable_avx2);
@@ -45,7 +45,7 @@ static void aspl_mpi_mat(const int* restrict adjacency,
     }
 
     for(kk=0;kk<_nodes;kk++){
-      ODP_Matmul(_A, _B, _nodes, _degree, _num_degrees, adjacency,
+      ODP_Matmul(_A, _B, _nodes, _height, _degree, _num_degrees, adjacency,
 		 _enable_avx2, _elements, _symmetries, _itable);
 
       uint64_t num = 0;
@@ -91,7 +91,7 @@ static void aspl_mpi_mat_saving(const int* restrict adjacency,
     }
 
     for(kk=0;kk<_nodes;kk++){
-      ODP_Matmul_CHUNK(_A, _B, _nodes, _degree, _num_degrees, adjacency, _enable_avx2, _symmetries, _itable);
+      ODP_Matmul_CHUNK(_A, _B, _nodes, _height, _degree, _num_degrees, adjacency, _enable_avx2, _symmetries, _itable);
 
       uint64_t num = 0;
 #pragma omp parallel for reduction(+:num)
@@ -185,6 +185,7 @@ void ODP_Init_aspl_mpi_grid(const int width, const int height, const int degree,
 			    const int* restrict num_degrees, const MPI_Comm comm)
 {
   int nodes = width * height;
+  _height = height;
   init_aspl_mpi_s(nodes, degree, num_degrees, comm, 1);
 }
 
@@ -192,6 +193,7 @@ void ODP_Init_aspl_mpi_grid_s(const int width, const int height, const int degre
 			      const MPI_Comm comm, const int symmetries)
 {
   int nodes = width * height;
+  _height = height;
   if(num_degrees){
     int *tmp_num_degrees = malloc(sizeof(int) * nodes);
     int based_nodes = nodes/symmetries;

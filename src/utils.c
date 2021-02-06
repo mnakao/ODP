@@ -223,11 +223,9 @@ int ODP_LOCAL_INDEX_GRID(const int x, const int width, const int height, const i
 }
 
 // return adjacency[v][d];
-static int GLOBAL_ADJ_GRID(const int width, const int height, const int degree, const int symmetries,
-			   const int (*adjacency)[degree], const int v, const int d)
+int ODP_GLOBAL_ADJ_GRID(const int width, const int height, const int degree, const int symmetries,
+			const int (*adjacency)[degree], const int v, const int d)
 {
-  CHECK_SYMMETRIES_GRID(symmetries);
-  
   if(symmetries == 1){
     return adjacency[v][d];
   }
@@ -494,7 +492,7 @@ static bool check_multiple_edges_grid_s(const int u, const int u_d, const int v,
 {
   int d = (!num_degrees)? degree : num_degrees[global2local_vertex_grid(u, width, height, symmetries)];
   for(int i=0;i<d;i++)
-    if(i!=u_d && GLOBAL_ADJ_GRID(width, height, degree, symmetries, adjacency, u, i) == v)
+    if(i!=u_d && ODP_GLOBAL_ADJ_GRID(width, height, degree, symmetries, adjacency, u, i) == v)
       return false;
 
   return true;
@@ -577,7 +575,7 @@ static int get_degree_index_grid(const int u, const int v, const int u_d, const 
   if(u == v){ // loop
     int d = (!num_degrees)? degree : num_degrees[global2local_vertex_grid(v, width, height, symmetries)];
     for(int i=0;i<d;i++)
-      if(GLOBAL_ADJ_GRID(width, height, degree, symmetries, adjacency, v, i) == u && i != u_d)
+      if(ODP_GLOBAL_ADJ_GRID(width, height, degree, symmetries, adjacency, v, i) == u && i != u_d)
 	return i;
   }
   else if(symmetries != 1 && u == ODP_ROTATE(v, width, height, symmetries, 180)){
@@ -586,7 +584,7 @@ static int get_degree_index_grid(const int u, const int v, const int u_d, const 
   else{
     int d = (!num_degrees)? degree : num_degrees[global2local_vertex_grid(v, width, height, symmetries)];
     for(int i=0;i<d;i++){
-      if(GLOBAL_ADJ_GRID(width, height, degree, symmetries, adjacency, v, i) == u)
+      if(ODP_GLOBAL_ADJ_GRID(width, height, degree, symmetries, adjacency, v, i) == u)
 	return i;
     }
   }
@@ -824,7 +822,7 @@ void ODP_Mutate_adjacency_general(const int nodes, const int degree, const int *
 static bool mutate_adjacency_1opt_grid_s(const int u, const int u_d, const int width, const int height, const int degree,
 					 const int *num_degrees, const int length, const int symmetries, int (*adjacency)[degree])
 {
-  int v = GLOBAL_ADJ_GRID(width, height, degree, symmetries, adjacency, u, u_d);
+  int v = ODP_GLOBAL_ADJ_GRID(width, height, degree, symmetries, adjacency, u, u_d);
   if(IS_DIAMETER_GRID(u, v, width, height, symmetries)) return false;
   else if(symmetries == 2 && u == ODP_ROTATE(v, width, height, symmetries, 180)) return false;
   else if(symmetries == 4 && (u == ODP_ROTATE(v, width, height, symmetries, 90) || u == ODP_ROTATE(v, width, height, symmetries, 270))) return false;
@@ -866,11 +864,11 @@ static bool mutate_adjacency_2opt_grid_s(const int width, const int height, cons
     if(u[0] == u[1]) continue;
 
     u_d[0] = (!num_degrees)? get_random(degree) : get_random(num_degrees[global2local_vertex_grid(u[0],width,height,symmetries)]);
-    v[0] = GLOBAL_ADJ_GRID(width, height, degree, symmetries, adjacency, u[0], u_d[0]);
+    v[0] = ODP_GLOBAL_ADJ_GRID(width, height, degree, symmetries, adjacency, u[0], u_d[0]);
     if(v[0] == u[1]) continue;
 
     u_d[1] = (!num_degrees)? get_random(degree) : get_random(num_degrees[global2local_vertex_grid(u[1],width,height,symmetries)]);
-    v[1] = GLOBAL_ADJ_GRID(width, height, degree, symmetries, adjacency, u[1], u_d[1]);
+    v[1] = ODP_GLOBAL_ADJ_GRID(width, height, degree, symmetries, adjacency, u[1], u_d[1]);
     if(v[1] == u[0] || v[0] == v[1]) continue;
     break;
   }
@@ -1777,13 +1775,16 @@ void ODP_Create_itable(const int width, const int height, const int symmetries, 
     }
   }
   else if(symmetries == 4){
+    int based_height = height/2;
     for(int i=0;i<based_nodes;i++){
-      int v = ODP_LOCAL_INDEX_GRID(i,width,height,symmetries);
+      int v = (i/based_height) * height + (i%based_height);
       itable[v] = i;
       itable[ODP_ROTATE(v, width, height, symmetries,  90)] = i + based_nodes;
       itable[ODP_ROTATE(v, width, height, symmetries, 180)] = i + based_nodes * 2;
       itable[ODP_ROTATE(v, width, height, symmetries, 270)] = i + based_nodes * 3;
     }
   }
+  else
+    ERROR("Something Wrong !");
 }
 

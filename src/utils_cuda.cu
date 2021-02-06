@@ -37,11 +37,12 @@ __global__ void ODP_Popcnt(const uint64_t* __restrict__ B, const int nodes,
 }
 
 __global__ void ODP_Matmul_cuda(const uint64_t* __restrict__ A, uint64_t* __restrict__ B, const int* __restrict__ adjacency,
-				const int* __restrict__ num_degrees, const int nodes, const int degree, const unsigned int elements, const int symmetries, const int *itable)
+				const int* __restrict__ num_degrees, const int nodes, const int height, const int degree,
+				const unsigned int elements, const int symmetries, const int *itable)
 {
   int based_nodes = nodes/symmetries;
   int tid = threadIdx.x + blockIdx.x * blockDim.x;
-  if(!num_degrees){
+  if(itable){
     while (tid < nodes*elements) {
       int i = tid / elements;
       int k = tid % elements;
@@ -49,8 +50,9 @@ __global__ void ODP_Matmul_cuda(const uint64_t* __restrict__ A, uint64_t* __rest
       int h = t * based_nodes;
       int m = i - h;
       uint64_t tmp = B[tid];
-      for(int j=0;j<degree;j++){
-        int n = *(adjacency + m * degree + j) + h; // int n = adjacency[i][j] <- adjacency[m][j] + t*based_nodes;
+      int d = (!num_degrees)? degree : num_degrees[i];
+      for(int j=0;j<d;j++){
+	int n = *(adjacency + m * degree + j) + h; // int n = adjacency[i][j] <- adjacency[m][j] + t*based_nodes;
 	if(n >= nodes) n -= nodes;
 	tmp |= A[n*elements+k];
       }
@@ -59,17 +61,15 @@ __global__ void ODP_Matmul_cuda(const uint64_t* __restrict__ A, uint64_t* __rest
     }
   }
   else{
+    int width = nodes/height;
     while (tid < nodes*elements) {
       int i = tid / elements;
       int k = tid % elements;
-      int t = i / based_nodes;
-      int h = t * based_nodes;
-      int m = i - h;
-      uint64_t tmp = B[tid];
-      for(int j=0;j<num_degrees[i];j++){
-        int n = *(adjacency + m * degree + j) + h; // int n = adjacency[i][j] <- adjacency[m][j] + t*based_nodes;
-        if(n >= nodes) n -= nodes;
-        tmp |= A[n*elements+k];
+      uint64_t tmp = B[itable[i]*elements+k];
+      int d = (!num_degrees)? degree : num_degrees[i];
+      for(int j=0;j<d;j++){
+	int n = ODP_GLOBAL_ADJ_GRID(width, height, degree, symmetries, adjacency, i, j);
+	tmp |= A[itable[n]*elements+k];
       }
       B[tid] = tmp;
       tid += blockDim.x * gridDim.x;
@@ -78,11 +78,12 @@ __global__ void ODP_Matmul_cuda(const uint64_t* __restrict__ A, uint64_t* __rest
 }
 
 __global__ void ODP_Matmul_CHUNK_cuda(const uint64_t* __restrict__ A, uint64_t* __restrict__ B, const int* __restrict__ adjacency,
-				      const int* __restrict__ num_degrees, const int nodes, const int degree, const int symmetries, const int *itable)
+				      const int* __restrict__ num_degrees, const int nodes, const int height, const int degree,
+				      const int symmetries, const int *itable)
 {
   int based_nodes = nodes/symmetries;
   int tid = threadIdx.x + blockIdx.x * blockDim.x;
-  if(!num_degrees){
+  if(!itable){
     while (tid < nodes*GPU_CHUNK) {
       int i = tid / GPU_CHUNK;
       int k = tid % GPU_CHUNK;
@@ -90,7 +91,8 @@ __global__ void ODP_Matmul_CHUNK_cuda(const uint64_t* __restrict__ A, uint64_t* 
       int h = t * based_nodes;
       int m = i - h;
       uint64_t tmp = B[tid];
-      for(int j=0;j<degree;j++){
+      int d = (!num_degrees)? degree : num_degrees[i];
+      for(int j=0;j<d;j++){
         int n = *(adjacency + m * degree + j) + h; // int n = adjacency[i][j] <- adjacency[m][j] + t*based_nodes;
 	if(n >= nodes) n -= nodes;
         tmp |= A[n*GPU_CHUNK+k];
@@ -103,14 +105,11 @@ __global__ void ODP_Matmul_CHUNK_cuda(const uint64_t* __restrict__ A, uint64_t* 
     while (tid < nodes*GPU_CHUNK) {
       int i = tid / GPU_CHUNK;
       int k = tid % GPU_CHUNK;
-      int t = i / based_nodes;
-      int h = t * based_nodes;
-      int m = i - h;
-      uint64_t tmp = B[tid];
-      for(int j=0;j<num_degrees[i];j++){
-        int n = *(adjacency + m * degree + j) + h;
-	if(n >= nodes) n -= nodes;
-        tmp |= A[n*GPU_CHUNK+k];
+      uint64_t tmp = B[itable[i]*GPU_CHUNK+k];
+      int d = (!num_degrees)? degree : num_degrees[i];
+      for(int j=0;j<d;j++){
+	int n = ODP_GLOBAL_ADJ_GRID(width, height, degree, symmetries, adjacency, i, j);
+        tmp |= A[itable[n]*GPU_CHUNK+k];
       }
       B[tid] = tmp;
       tid += blockDim.x * gridDim.x;
