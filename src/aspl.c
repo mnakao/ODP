@@ -130,26 +130,33 @@ static void init_aspl_s(const int nodes, const int degree, const int* num_degree
   _is_profile = ODP_Check_profile();
   _elapsed_time = 0;
   _times = 0;
-}
 
-void ODP_Init_aspl_general(const int nodes, const int degree, const int* num_degrees)
-{
-  init_aspl_s(nodes, degree, num_degrees, 1);
-  if(!num_degrees){
+  if(num_degrees){
     _num_degrees = malloc(sizeof(int) * nodes);
     memcpy(_num_degrees, num_degrees, sizeof(int) * nodes);
   }
 }
 
+void ODP_Init_aspl_general(const int nodes, const int degree, const int* num_degrees)
+{
+  init_aspl_s(nodes, degree, num_degrees, 1);
+}
+
 void ODP_Init_aspl_general_s(const int nodes, const int degree, const int* num_degrees, const int symmetries)
 {
-  init_aspl_s(nodes, degree, num_degrees, symmetries);
-  if(!num_degrees){
-    _num_degrees = malloc(sizeof(int) * nodes/symmetries);
+
+  if(num_degrees){
+    int *tmp_num_degrees = malloc(sizeof(int) * nodes);
     int based_nodes = nodes/symmetries;
     for(int i=0;i<symmetries;i++)
       for(int j=0;j<based_nodes;j++)
-	_num_degrees[i*based_nodes+j] = num_degrees[j];
+        tmp_num_degrees[i*based_nodes+j] = num_degrees[j];
+
+    init_aspl_s(nodes, degree, tmp_num_degrees, symmetries);
+    free(tmp_num_degrees);
+  }
+  else{
+    init_aspl_s(nodes, degree, NULL, symmetries);
   }
 }
 
@@ -157,34 +164,35 @@ void ODP_Init_aspl_grid(const int width, const int height, const int degree, con
 {
   int nodes = width * height;
   init_aspl_s(nodes, degree, num_degrees, 1);
-  if(!num_degrees){
-    _num_degrees = malloc(sizeof(int) * nodes);
-    memcpy(_num_degrees, num_degrees, sizeof(int) * nodes);
-  }
 }
 
 void ODP_Init_aspl_grid_s(const int width, const int height, const int degree, const int* num_degrees, const int symmetries)
+
 {
   int nodes = width * height;
-  init_aspl_s(nodes, degree, num_degrees, symmetries);
-  if(!num_degrees){
-    _num_degrees = malloc(sizeof(int) * nodes/symmetries);
+  if(num_degrees){
+    int *tmp_num_degrees = malloc(sizeof(int) * nodes);
     int based_nodes = nodes/symmetries;
     if(symmetries == 2){
       for(int i=0;i<based_nodes;i++){
-	_num_degrees[i] = num_degrees[i];
-	_num_degrees[ROTATE(i, width, height, symmetries, 180)] = num_degrees[i];
+	tmp_num_degrees[i] = num_degrees[i];
+	tmp_num_degrees[ROTATE(i, width, height, symmetries, 180)] = num_degrees[i];
       }
     }
     else if(symmetries == 4){
       for(int i=0;i<based_nodes;i++){
 	int v = LOCAL_INDEX_GRID(i,width,height,symmetries);
-	_num_degrees[v] = num_degrees[i];
-	_num_degrees[ROTATE(v, width, height, symmetries,  90)] = num_degrees[i];
-	_num_degrees[ROTATE(v, width, height, symmetries, 180)] = num_degrees[i];
-	_num_degrees[ROTATE(v, width, height, symmetries, 270)] = num_degrees[i];
+	tmp_num_degrees[v] = num_degrees[i];
+	tmp_num_degrees[ROTATE(v, width, height, symmetries,  90)] = num_degrees[i];
+	tmp_num_degrees[ROTATE(v, width, height, symmetries, 180)] = num_degrees[i];
+	tmp_num_degrees[ROTATE(v, width, height, symmetries, 270)] = num_degrees[i];
       }
     }
+    init_aspl_s(nodes, degree, tmp_num_degrees, symmetries);
+    free(tmp_num_degree);
+  }
+  else{
+    init_aspl_s(nodes, degree, NULL, symmetries);
   }
 }
 

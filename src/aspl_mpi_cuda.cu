@@ -3,7 +3,7 @@
 static uint64_t *_A_dev, *_B_dev;
 static uint64_t *_result, *_result_dev;
 static int *_adjacency_dev, *_num_degrees_dev;
-static bool _num_degrees_flag = false, _is_profile;
+static bool _is_profile;
 static int _nodes, _degree, _symmetries, _rank, _procs, _kind;
 static double _mem_usage, _elapsed_time;
 static unsigned int _times;
@@ -127,8 +127,8 @@ static void aspl_mpi_cuda_mat_saving(const int* __restrict__ adjacency,
   *sum /= 2.0;
 }
 
-extern "C" void ODP_Init_aspl_mpi_cuda_s(const int nodes, const int degree,
-					 const int* __restrict__ num_degrees, MPI_Comm comm, const int symmetries)
+static void init_aspl_mpi_cuda_s(const int nodes, const int degree, const int* __restrict__ num_degrees,
+				 const MPI_Comm comm, const int symmetries)
 {
   cuInit(0);
   
@@ -156,17 +156,71 @@ extern "C" void ODP_Init_aspl_mpi_cuda_s(const int nodes, const int degree,
   if(num_degrees){
     cudaMalloc((void**)&_num_degrees_dev, sizeof(int)*nodes);
     cudaMemcpy(_num_degrees_dev, num_degrees, sizeof(int)*nodes, cudaMemcpyHostToDevice);
-    _num_degrees_flag = true;
   }
   _is_profile = ODP_Check_profile();
   _elapsed_time = 0;
   _times = 0;
 }
 
-extern "C" void ODP_Init_aspl_mpi_cuda(const int nodes, const int degree,
-				       const int* __restrict__ num_degrees, MPI_Comm comm)
+extern "C" void ODP_Init_aspl_mpi_cuda_general(const int nodes, const int degree,
+					       const int* __restrict__ num_degrees, const MPI_Comm comm)
 {
-  ODP_Init_aspl_mpi_cuda_s(nodes, degree, num_degrees, comm, 1);
+  init_aspl_mpi_cuda_s(nodes, degree, num_degrees, comm, 1);
+}
+
+extern "C" void ODP_Init_aspl_mpi_cuda_general_s(const int nodes, const int degree, const int* __restrict__ num_degrees,
+						 const MPI_Comm comm, const int symmetries)
+{
+  if(num_degrees){
+    int *tmp_num_degrees = malloc(sizeof(int) * nodes);
+    int based_nodes = nodes/symmetries;
+    for(int i=0;i<symmetries;i++)
+      for(int j=0;j<based_nodes;j++)
+        tmp_num_degrees[i*based_nodes+j] = num_degrees[j];
+
+    init_aspl_mpi_cuda_s(nodes, degree, tmp_num_degrees, comm, symmetries);
+    free(tmp_num_degree);
+  }
+  else{
+    init_aspl_mpi_cuda_s(nodes, degree, NULL, comm, symmetries);
+  }
+}
+
+extern "C" void ODP_Init_aspl_mpi_cuda_grid(const int width, const int height, const int degree,
+					    const int* __restrict__ num_degrees, const MPI_Comm comm)
+{
+  int nodes = width * height;
+  init_aspl_mpi_cuda_s(nodes, degree, num_degrees, comm, 1);
+}
+
+extern "C" void ODP_Init_aspl_mpi_cuda_grid_s(const int nodes, const int degree,
+					      const int* __restrict__ num_degrees, const MPI_Comm comm, const int symmetries)
+{
+  int nodes = width * height;
+  if(num_degrees){
+    int *tmp_num_degrees = malloc(sizeof(int) * nodes);
+    int based_nodes = nodes/symmetries;
+    if(symmetries == 2){
+      for(int i=0;i<based_nodes;i++){
+        tmp_num_degrees[i] = num_degrees[i];
+        tmp_num_degrees[ROTATE(i, width, height, symmetries, 180)] = num_degrees[i];
+      }
+    }
+    else if(symmetries == 4){
+      for(int i=0;i<based_nodes;i++){
+        int v = LOCAL_INDEX_GRID(i,width,height,symmetries);
+        tmp_num_degrees[v] = num_degrees[i];
+        tmp_num_degrees[ROTATE(v, width, height, symmetries,  90)] = num_degrees[i];
+        tmp_num_degrees[ROTATE(v, width, height, symmetries, 180)] = num_degrees[i];
+        tmp_num_degrees[ROTATE(v, width, height, symmetries, 270)] = num_degrees[i];
+      }
+    }
+    init_aspl_mpi_cuda_s(nodes, degree, tmp_num_degrees, comm, symmetries);
+    free(tmp_num_degrees);
+  }
+  else{
+    init_aspl_mpi_cuda_s(nodes, degree, NULL, comm, symmetries);
+  }
 }
 
 extern "C" void ODP_Finalize_aspl_mpi_cuda()
@@ -176,7 +230,7 @@ extern "C" void ODP_Finalize_aspl_mpi_cuda()
   cudaFreeHost(_result);
   cudaFree(_result_dev);
   cudaFree(_adjacency_dev);
-  if(_num_degrees_flag)
+  if(_num_degrees_dev)
     cudaFree(_num_degrees_dev);
 
   if(_rank == 0 && _is_profile)

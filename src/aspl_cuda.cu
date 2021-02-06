@@ -1,8 +1,8 @@
 #include "common.h"
 static uint64_t *_A_dev, *_B_dev;
 static uint64_t *_result, *_result_dev;
-static int *_adjacency_dev, *_num_degrees_dev;
-static bool _num_degrees_flag = false, _is_profile;
+static int *_adjacency_dev, *_num_degrees_dev = NULL;
+static bool _is_profile;
 static int _nodes, _degree, _symmetries, _kind;
 static double _mem_usage, _elapsed_time;
 static unsigned int _times;
@@ -120,8 +120,8 @@ static void aspl_cuda_mat_saving(const int* __restrict__ adjacency,
   *sum /= 2.0;
 }
 
-extern "C" void ODP_Init_aspl_cuda_s(const int nodes, const int degree,
-				     const int* __restrict__ num_degrees, const int symmetries)
+static void init_aspl_cuda_s(const int nodes, const int degree,
+			     const int* __restrict__ num_degrees, const int symmetries)
 {
   cuInit(0);
 
@@ -142,19 +142,71 @@ extern "C" void ODP_Init_aspl_cuda_s(const int nodes, const int degree,
   cudaHostAlloc((void**)&_result,     sizeof(uint64_t)*BLOCKS, cudaHostAllocDefault);
   cudaMalloc((void**)&_result_dev,    sizeof(uint64_t)*BLOCKS);
   cudaMalloc((void**)&_adjacency_dev, sizeof(int)*(nodes/symmetries)*degree);
-  if(num_degrees){
-    cudaMalloc((void**)&_num_degrees_dev, sizeof(int)*nodes);
-    cudaMemcpy(_num_degrees_dev, num_degrees, sizeof(int)*nodes, cudaMemcpyHostToDevice);
-    _num_degrees_flag = true;
-  }
   _is_profile = ODP_Check_profile();
   _elapsed_time = 0;
   _times = 0;
+  if(!num_degrees){
+    cudaMalloc((void**)&_num_degrees_dev, sizeof(int)*nodes);
+    cudaMemcpy(_num_degrees_dev, num_degrees, sizeof(int)*nodes, cudaMemcpyHostToDevice);
+  }
 }
 
-extern "C" void ODP_Init_aspl_cuda(const int nodes, const int degree, const int* __restrict__ num_degrees)
+extern "C" void ODP_Init_aspl_cuda_general(const int nodes, const int degree, const int* num_degrees)
 {
-  ODP_Init_aspl_cuda_s(nodes, degree, num_degrees, 1);
+  init_aspl_cuda_s(nodes, degree, num_degrees, 1);
+}
+
+extern "C" void ODP_Init_aspl_cuda_general_s(const int nodes, const int degree, const int* num_degrees, const int symmetries)
+{
+  if(!num_degrees){
+    int *_num_degrees = malloc(sizeof(int) * nodes);
+    int based_nodes = nodes/symmetries;
+    for(int i=0;i<symmetries;i++)
+      for(int j=0;j<based_nodes;j++)
+        _num_degrees[i*based_nodes+j] = num_degrees[j];
+    
+    init_aspl_cuda_s(nodes, degree, _num_degrees, symmetries);
+    free(_num_degree);
+  }
+  else{
+    init_aspl_cuda_s(nodes, degree, NULL, symmetries);
+  }
+}
+
+extern "C" void ODP_Init_aspl_cuda_grid(const int width, const int height, const int degree, const int* num_degrees)
+{
+  int nodes = width * height;
+  init_aspl_cuda_s(nodes, degree, num_degrees, 1);
+}
+
+extern "C" void ODP_Init_aspl_cuda_grid_s(const int width, const int height, const int degree, const int* num_degrees, const int symmetries)
+{
+  int nodes = width * height;
+  if(!num_degrees){
+    int *_num_degrees = malloc(sizeof(int) * nodes);
+    int based_nodes = nodes/symmetries;
+    if(symmetries == 2){
+      for(int i=0;i<based_nodes;i++){
+        _num_degrees[i] = num_degrees[i];
+        _num_degrees[ROTATE(i, width, height, symmetries, 180)] = num_degrees[i];
+      }
+    }
+    else if(symmetries == 4){
+      for(int i=0;i<based_nodes;i++){
+        int v = LOCAL_INDEX_GRID(i,width,height,symmetries);
+        _num_degrees[v] = num_degrees[i];
+        _num_degrees[ROTATE(v, width, height, symmetries,  90)] = num_degrees[i];
+        _num_degrees[ROTATE(v, width, height, symmetries, 180)] = num_degrees[i];
+        _num_degrees[ROTATE(v, width, height, symmetries, 270)] = num_degrees[i];
+      }
+    }
+    
+    init_aspl_cuda_s(nodes, degree, num_degrees, symmetries);
+    free(_num_degrees);
+  }
+  else{
+    init_aspl_cuda_s(nodes, degree, NULL, symmetries);
+  }
 }
 
 extern "C" void ODP_Finalize_aspl_cuda()
@@ -164,7 +216,7 @@ extern "C" void ODP_Finalize_aspl_cuda()
   cudaFreeHost(_result);
   cudaFree(_result_dev);
   cudaFree(_adjacency_dev);
-  if(_num_degrees_flag)
+  if(_num_degrees_dev)
     cudaFree(_num_degrees_dev);
 
   if(_is_profile)
