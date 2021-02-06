@@ -7,6 +7,8 @@ static int _nodes, _degree, _symmetries, _kind;
 static double _mem_usage, _elapsed_time;
 static unsigned int _times;
 
+extern "C" int ODP_LOCAL_INDEX_GRID(const int x, const int width, const int height, const int symmetries);
+extern "C" int ODP_ROTATE(const int v, const int width, const int height, const int symmetries, const int degree);
 extern "C" bool ODP_Check_profile();
 extern "C" double ODP_Get_time();
 extern "C" void ODP_Profile(const char* name, const int kind, const int symmetries, const double mem_usage,
@@ -188,16 +190,16 @@ extern "C" void ODP_Init_aspl_cuda_grid_s(const int width, const int height, con
     if(symmetries == 2){
       for(int i=0;i<based_nodes;i++){
         tmp_num_degrees[i] = num_degrees[i];
-        tmp_num_degrees[ROTATE(i, width, height, symmetries, 180)] = num_degrees[i];
+        tmp_num_degrees[ODP_ROTATE(i, width, height, symmetries, 180)] = num_degrees[i];
       }
     }
     else if(symmetries == 4){
       for(int i=0;i<based_nodes;i++){
-        int v = LOCAL_INDEX_GRID(i,width,height,symmetries);
+        int v = ODP_LOCAL_INDEX_GRID(i,width,height,symmetries);
         tmp_num_degrees[v] = num_degrees[i];
-        tmp_num_degrees[ROTATE(v, width, height, symmetries,  90)] = num_degrees[i];
-        tmp_num_degrees[ROTATE(v, width, height, symmetries, 180)] = num_degrees[i];
-        tmp_num_degrees[ROTATE(v, width, height, symmetries, 270)] = num_degrees[i];
+        tmp_num_degrees[ODP_ROTATE(v, width, height, symmetries,  90)] = num_degrees[i];
+        tmp_num_degrees[ODP_ROTATE(v, width, height, symmetries, 180)] = num_degrees[i];
+        tmp_num_degrees[ODP_ROTATE(v, width, height, symmetries, 270)] = num_degrees[i];
       }
     }
     init_aspl_cuda_s(nodes, degree, tmp_num_degrees, symmetries);

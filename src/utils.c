@@ -53,7 +53,7 @@ static bool CHECK_LENGTH(const int u, const int v, const int height, const int l
   return (DISTANCE(u, v, height) <= length);
 }
 
-int ROTATE(const int v, const int width, const int height, const int symmetries, const int degree)
+int ODP_ROTATE(const int v, const int width, const int height, const int symmetries, const int degree)
 {
   if(symmetries != 2 && symmetries != 4)
     ERROR("Invalid symmetries(%d)\n", symmetries);
@@ -96,7 +96,7 @@ static bool IS_DIAMETER_GRID(const int u, const int v, const int width, const in
   if(symmetries == 1)
     return false;
   else
-    return (u == ROTATE(v, width, height, symmetries, 180));
+    return (u == ODP_ROTATE(v, width, height, symmetries, 180));
 }
 
 static void CHECK_SYMMETRIES(const int nodes, const int symmetries)
@@ -158,7 +158,7 @@ void ODP_Conv_adjacency2edge_grid_s(const int width, const int height, const int
       for(int k=0;k<d;k++){
         int v = adjacency[i][k];
         tmp[i][k] = v;
-        tmp[ROTATE(i, width, height, symmetries, 180)][k] = ROTATE(v, width, height, symmetries, 180);
+        tmp[ODP_ROTATE(i, width, height, symmetries, 180)][k] = ODP_ROTATE(v, width, height, symmetries, 180);
       }
     }
   }
@@ -170,9 +170,9 @@ void ODP_Conv_adjacency2edge_grid_s(const int width, const int height, const int
       for(int k=0;k<d;k++){
         int v = adjacency[i][k];
         tmp[j][k] = v;
-        tmp[ROTATE(j, width, height, symmetries,  90)][k] = ROTATE(v, width, height, symmetries,  90);
-        tmp[ROTATE(j, width, height, symmetries, 180)][k] = ROTATE(v, width, height, symmetries, 180);
-        tmp[ROTATE(j, width, height, symmetries, 270)][k] = ROTATE(v, width, height, symmetries, 270);
+        tmp[ODP_ROTATE(j, width, height, symmetries,  90)][k] = ODP_ROTATE(v, width, height, symmetries,  90);
+        tmp[ODP_ROTATE(j, width, height, symmetries, 180)][k] = ODP_ROTATE(v, width, height, symmetries, 180);
+        tmp[ODP_ROTATE(j, width, height, symmetries, 270)][k] = ODP_ROTATE(v, width, height, symmetries, 270);
       }
     }
   }
@@ -199,7 +199,7 @@ static int GLOBAL_ADJ_GENERAL(const int nodes, const int degree, const int symme
 }
 
 // Returns the local index of the vertices in the first quadrant
-int LOCAL_INDEX_GRID(const int x, const int width, const int height, const int symmetries)
+int ODP_LOCAL_INDEX_GRID(const int x, const int width, const int height, const int symmetries)
 {
   CHECK_SYMMETRIES_GRID(symmetries);
 
@@ -236,30 +236,30 @@ static int GLOBAL_ADJ_GRID(const int width, const int height, const int degree, 
     if(WIDTH(v,height) < based_width)
       return adjacency[v][d];
     else{
-      int y = adjacency[ROTATE(v, width, height, symmetries, 180)][d];
-      return ROTATE(y, width, height, symmetries, 180);
+      int y = adjacency[ODP_ROTATE(v, width, height, symmetries, 180)][d];
+      return ODP_ROTATE(y, width, height, symmetries, 180);
     }
   }
   else{ // symmetries == 4
     int based_width  = width/2;
     int based_height = height/2;
     if(WIDTH(v,height) < based_width && HEIGHT(v,height) < based_height){
-      return adjacency[LOCAL_INDEX_GRID(v,width,height,symmetries)][d];
+      return adjacency[ODP_LOCAL_INDEX_GRID(v,width,height,symmetries)][d];
     }
     else if(WIDTH(v,height) < based_width && HEIGHT(v,height) >= based_height){
-      int x = ROTATE(v, width, height, symmetries, 270);
-      int y = adjacency[LOCAL_INDEX_GRID(x,width,height,symmetries)][d];
-      return ROTATE(y, width, height, symmetries, 90);
+      int x = ODP_ROTATE(v, width, height, symmetries, 270);
+      int y = adjacency[ODP_LOCAL_INDEX_GRID(x,width,height,symmetries)][d];
+      return ODP_ROTATE(y, width, height, symmetries, 90);
     }
     else if(WIDTH(v,height) >= based_width && HEIGHT(v,height) >= based_height){
-      int x = ROTATE(v, width, height, symmetries, 180);
-      int y = adjacency[LOCAL_INDEX_GRID(x,width,height,symmetries)][d];
-      return ROTATE(y, width, height, symmetries, 180);
+      int x = ODP_ROTATE(v, width, height, symmetries, 180);
+      int y = adjacency[ODP_LOCAL_INDEX_GRID(x,width,height,symmetries)][d];
+      return ODP_ROTATE(y, width, height, symmetries, 180);
     }
     else{
-      int x = ROTATE(v, width, height, symmetries, 90);
-      int y = adjacency[LOCAL_INDEX_GRID(x,width,height,symmetries)][d];
-      return ROTATE(y, width, height, symmetries, 270);
+      int x = ODP_ROTATE(v, width, height, symmetries, 90);
+      int y = adjacency[ODP_LOCAL_INDEX_GRID(x,width,height,symmetries)][d];
+      return ODP_ROTATE(y, width, height, symmetries, 270);
     }
   }
 }
@@ -370,22 +370,22 @@ static int global2local_vertex_grid(const int v, const int width, const int heig
     if(WIDTH(v,height) < based_width)
       return v;
     else
-      return ROTATE(v,width,height,symmetries,180);
+      return ODP_ROTATE(v,width,height,symmetries,180);
   }
   else{ //  symmetries == 4
     int based_width  = width/2;
     int based_height = height/2;
     if(WIDTH(v,height) < based_width && HEIGHT(v,height) < based_height){
-      return LOCAL_INDEX_GRID(v,width,height,symmetries);
+      return ODP_LOCAL_INDEX_GRID(v,width,height,symmetries);
     }
     else if(WIDTH(v,height) < based_width && HEIGHT(v,height) >= based_height){
-      return LOCAL_INDEX_GRID(ROTATE(v,width,height,symmetries,270),width,height,symmetries);
+      return ODP_LOCAL_INDEX_GRID(ODP_ROTATE(v,width,height,symmetries,270),width,height,symmetries);
     }
     else if(WIDTH(v,height) >= based_width && HEIGHT(v,height) >= based_height){
-      return LOCAL_INDEX_GRID(ROTATE(v,width,height,symmetries,180),width,height,symmetries);
+      return ODP_LOCAL_INDEX_GRID(ODP_ROTATE(v,width,height,symmetries,180),width,height,symmetries);
     }
     else{
-      return LOCAL_INDEX_GRID(ROTATE(v,width,height,symmetries,90),width,height,symmetries);
+      return ODP_LOCAL_INDEX_GRID(ODP_ROTATE(v,width,height,symmetries,90),width,height,symmetries);
     }
   }
 }
@@ -439,25 +439,25 @@ static void set_adjacency(const int v, const int v_d, const int u, const int wid
       adjacency[v][v_d] = u;
     }
     else{
-      int x = ROTATE(v, width, height, symmetries, 180);
-      adjacency[x][v_d] = ROTATE(u, width, height, symmetries, 180);
+      int x = ODP_ROTATE(v, width, height, symmetries, 180);
+      adjacency[x][v_d] = ODP_ROTATE(u, width, height, symmetries, 180);
     }
   }
   else if(symmetries == 4){
     if(WIDTH(v,height) < based_width && HEIGHT(v,height) < based_height){
-      adjacency[LOCAL_INDEX_GRID(v,width,height,symmetries)][v_d] = u;
+      adjacency[ODP_LOCAL_INDEX_GRID(v,width,height,symmetries)][v_d] = u;
     }
     else if(WIDTH(v,height) < based_width && HEIGHT(v,height) >= based_height){
-      int x = ROTATE(v, width, height, symmetries, 270);
-      adjacency[LOCAL_INDEX_GRID(x,width,height,symmetries)][v_d] = ROTATE(u, width, height, symmetries, 270);
+      int x = ODP_ROTATE(v, width, height, symmetries, 270);
+      adjacency[ODP_LOCAL_INDEX_GRID(x,width,height,symmetries)][v_d] = ODP_ROTATE(u, width, height, symmetries, 270);
     }
     else if(WIDTH(v,height) >= based_width && HEIGHT(v,height) >= based_height){
-      int x = ROTATE(v, width, height, symmetries, 180);
-      adjacency[LOCAL_INDEX_GRID(x,width,height,symmetries)][v_d] = ROTATE(u, width, height, symmetries, 180);
+      int x = ODP_ROTATE(v, width, height, symmetries, 180);
+      adjacency[ODP_LOCAL_INDEX_GRID(x,width,height,symmetries)][v_d] = ODP_ROTATE(u, width, height, symmetries, 180);
     }
     else{
-      int x = ROTATE(v, width, height, symmetries, 90);
-      adjacency[LOCAL_INDEX_GRID(x,width,height,symmetries)][v_d] = ROTATE(u, width, height, symmetries,  90);
+      int x = ODP_ROTATE(v, width, height, symmetries, 90);
+      adjacency[ODP_LOCAL_INDEX_GRID(x,width,height,symmetries)][v_d] = ODP_ROTATE(u, width, height, symmetries,  90);
     }
   }
 }
@@ -580,7 +580,7 @@ static int get_degree_index_grid(const int u, const int v, const int u_d, const 
       if(GLOBAL_ADJ_GRID(width, height, degree, symmetries, adjacency, v, i) == u && i != u_d)
 	return i;
   }
-  else if(symmetries != 1 && u == ROTATE(v, width, height, symmetries, 180)){
+  else if(symmetries != 1 && u == ODP_ROTATE(v, width, height, symmetries, 180)){
     return u_d;
   }
   else{
@@ -801,16 +801,16 @@ static bool check_rotated_edges_overlap_grid(const int u0, const int v0, const i
 					     const int width, const int height, const int symmetries)
 {
   if(symmetries == 2){
-    return (u0 == ROTATE(u1, width, height, symmetries, 180) && v0 == ROTATE(v1, width, height, symmetries, 180) ||
-	    u0 == ROTATE(v1, width, height, symmetries, 180) && v0 == ROTATE(u1, width, height, symmetries, 180));
+    return (u0 == ODP_ROTATE(u1, width, height, symmetries, 180) && v0 == ODP_ROTATE(v1, width, height, symmetries, 180) ||
+	    u0 == ODP_ROTATE(v1, width, height, symmetries, 180) && v0 == ODP_ROTATE(u1, width, height, symmetries, 180));
   }
   else if(symmetries == 4){
-    return (u0 == ROTATE(u1, width, height, symmetries,  90) && v0 == ROTATE(v1, width, height, symmetries,  90) ||
-	    u0 == ROTATE(u1, width, height, symmetries, 180) && v0 == ROTATE(v1, width, height, symmetries, 180) ||
-	    u0 == ROTATE(u1, width, height, symmetries, 270) && v0 == ROTATE(v1, width, height, symmetries, 270) ||
-	    u0 == ROTATE(v1, width, height, symmetries,  90) && v0 == ROTATE(u1, width, height, symmetries,  90) ||
-	    u0 == ROTATE(v1, width, height, symmetries, 180) && v0 == ROTATE(u1, width, height, symmetries, 180) ||
-	    u0 == ROTATE(v1, width, height, symmetries, 270) && v0 == ROTATE(u1, width, height, symmetries, 270));
+    return (u0 == ODP_ROTATE(u1, width, height, symmetries,  90) && v0 == ODP_ROTATE(v1, width, height, symmetries,  90) ||
+	    u0 == ODP_ROTATE(u1, width, height, symmetries, 180) && v0 == ODP_ROTATE(v1, width, height, symmetries, 180) ||
+	    u0 == ODP_ROTATE(u1, width, height, symmetries, 270) && v0 == ODP_ROTATE(v1, width, height, symmetries, 270) ||
+	    u0 == ODP_ROTATE(v1, width, height, symmetries,  90) && v0 == ODP_ROTATE(u1, width, height, symmetries,  90) ||
+	    u0 == ODP_ROTATE(v1, width, height, symmetries, 180) && v0 == ODP_ROTATE(u1, width, height, symmetries, 180) ||
+	    u0 == ODP_ROTATE(v1, width, height, symmetries, 270) && v0 == ODP_ROTATE(u1, width, height, symmetries, 270));
   }
   return false; 
 }
@@ -826,14 +826,14 @@ static bool mutate_adjacency_1opt_grid_s(const int u, const int u_d, const int w
 {
   int v = GLOBAL_ADJ_GRID(width, height, degree, symmetries, adjacency, u, u_d);
   if(IS_DIAMETER_GRID(u, v, width, height, symmetries)) return false;
-  else if(symmetries == 2 && u == ROTATE(v, width, height, symmetries, 180)) return false;
-  else if(symmetries == 4 && (u == ROTATE(v, width, height, symmetries, 90) || u == ROTATE(v, width, height, symmetries, 270))) return false;
+  else if(symmetries == 2 && u == ODP_ROTATE(v, width, height, symmetries, 180)) return false;
+  else if(symmetries == 4 && (u == ODP_ROTATE(v, width, height, symmetries, 90) || u == ODP_ROTATE(v, width, height, symmetries, 270))) return false;
   int v_d = get_degree_index_grid(u, v, u_d, width, height, symmetries, degree, num_degrees, adjacency);
 
   int rnd = get_random(symmetries), tmp[2];
   if(rnd != symmetries-1){
-    int new_v = ROTATE(v, width, height, symmetries, (rnd+1)*(360/symmetries));
-    int new_u = ROTATE(u, width, height, symmetries, (symmetries-rnd-1)*(360/symmetries));
+    int new_v = ODP_ROTATE(v, width, height, symmetries, (rnd+1)*(360/symmetries));
+    int new_u = ODP_ROTATE(u, width, height, symmetries, (symmetries-rnd-1)*(360/symmetries));
     if(!CHECK_LENGTH(u,new_v,height,length)) return false;
     if(!check_multiple_edges_grid_s(new_v, v_d, u, width, height, degree, num_degrees, symmetries, adjacency) ||
        !check_multiple_edges_grid_s(new_u, u_d, v, width, height, degree, num_degrees, symmetries, adjacency))
@@ -842,8 +842,8 @@ static bool mutate_adjacency_1opt_grid_s(const int u, const int u_d, const int w
     set_adjacency(new_u, u_d, v, width, height, degree, symmetries, adjacency);
   }
   else{
-    int new_v = ROTATE(u, width, height, symmetries, 180);
-    int new_u = ROTATE(v, width, height, symmetries, 180);
+    int new_v = ODP_ROTATE(u, width, height, symmetries, 180);
+    int new_u = ODP_ROTATE(v, width, height, symmetries, 180);
     if(!CHECK_LENGTH(u,new_v,height,length) || !CHECK_LENGTH(v,new_u,height,length)) return false;
     if(!check_multiple_edges_grid_s(new_v, u_d, u, width, height, degree, num_degrees, symmetries, adjacency) ||
        !check_multiple_edges_grid_s(new_u, v_d, v, width, height, degree, num_degrees, symmetries, adjacency))
@@ -880,10 +880,10 @@ static bool mutate_adjacency_2opt_grid_s(const int width, const int height, cons
   backup_restore_adjacency(u, u_d, v, v_d);
 
   if(IS_DIAMETER_GRID(u[0], v[0], width, height, symmetries) && IS_DIAMETER_GRID(u[1], v[1], width, height, symmetries)){
-    //    if(symmetries == 2 && u[0] == ROTATE(u[1], width, height, symmetries, 180)){
+    //    if(symmetries == 2 && u[0] == ODP_ROTATE(u[1], width, height, symmetries, 180)){
     //      return false; // This case is u[0] == v[1]
     //    }
-    if(symmetries == 4 && (u[0] == ROTATE(u[1], width, height, symmetries, 90) || (u[0] == ROTATE(u[1], width, height, symmetries, 270))))
+    if(symmetries == 4 && (u[0] == ODP_ROTATE(u[1], width, height, symmetries, 90) || (u[0] == ODP_ROTATE(u[1], width, height, symmetries, 270))))
       return false;
 
     int tmp[2];
@@ -913,8 +913,8 @@ static bool mutate_adjacency_2opt_grid_s(const int width, const int height, cons
     }
 
     int rnd = get_random(4), tmp[4];
-    int u1_opposite = ROTATE(u[1], width, height, symmetries, 180);
-    int v1_opposite = ROTATE(v[1], width, height, symmetries, 180);
+    int u1_opposite = ODP_ROTATE(u[1], width, height, symmetries, 180);
+    int v1_opposite = ODP_ROTATE(v[1], width, height, symmetries, 180);
     if(rnd == 0){ // u[0]--v[1], u[1]--u[1]', v[0]--v[1]'
       if(!CHECK_LENGTH(u[0], v[1], height, length) || !CHECK_LENGTH(u[1], u1_opposite, height, length))
 	return false;
@@ -1193,11 +1193,11 @@ void ODP_Conv_edge2adjacency_grid_s(const int width, const int height, const int
     int n1 = edge[i][0];
     int n2 = edge[i][1];    
     if(WIDTH(n1,height)<based_width && HEIGHT(n1,height)<based_height){
-      int local_n1 = LOCAL_INDEX_GRID(n1, width, height, symmetries);
+      int local_n1 = ODP_LOCAL_INDEX_GRID(n1, width, height, symmetries);
       adjacency[local_n1][num_degrees[local_n1]++] = n2;
     }
     if(WIDTH(n2,height)<based_width && HEIGHT(n2,height)<based_height){
-      int local_n2 = LOCAL_INDEX_GRID(n2, width, height, symmetries);
+      int local_n2 = ODP_LOCAL_INDEX_GRID(n2, width, height, symmetries);
       adjacency[local_n2][num_degrees[local_n2]++] = n1;
     }
   }
@@ -1673,14 +1673,14 @@ void ODP_Generate_random_grid_s(const int width, const int height, const int deg
     if(symmetries == 2){
       for(int i=0;i<based_lines;i++)
         for(int j=0;j<2;j++)
-          edge[based_lines+i][j] = ROTATE(edge[i][j], width, height, symmetries, 180);
+          edge[based_lines+i][j] = ODP_ROTATE(edge[i][j], width, height, symmetries, 180);
     }
     else{ // symmetries == 4
       for(int i=0;i<based_lines;i++){
         for(int j=0;j<2;j++){
-          edge[based_lines  +i][j] = ROTATE(edge[i][j], width, height, symmetries,  90);
-          edge[based_lines*2+i][j] = ROTATE(edge[i][j], width, height, symmetries, 180);
-          edge[based_lines*3+i][j] = ROTATE(edge[i][j], width, height, symmetries, 270);
+          edge[based_lines  +i][j] = ODP_ROTATE(edge[i][j], width, height, symmetries,  90);
+          edge[based_lines*2+i][j] = ODP_ROTATE(edge[i][j], width, height, symmetries, 180);
+          edge[based_lines*3+i][j] = ODP_ROTATE(edge[i][j], width, height, symmetries, 270);
         }
       }
     }
@@ -1696,7 +1696,7 @@ void ODP_Generate_random_grid_s(const int width, const int height, const int deg
     if(symmetries == 2){
       for(int i=0;i<based_lines_shrink;i++)
         for(int j=0;j<2;j++)
-          edge[based_lines_shrink+i][j] = ROTATE(edge[i][j], width, height, symmetries, 180);
+          edge[based_lines_shrink+i][j] = ODP_ROTATE(edge[i][j], width, height, symmetries, 180);
 
       int k = based_lines_shrink*symmetries;
       for(int w=0;w<width;w+=2){
@@ -1710,9 +1710,9 @@ void ODP_Generate_random_grid_s(const int width, const int height, const int deg
     else{ // symmetries == 4
       for(int i=0;i<based_lines_shrink;i++){
         for(int j=0;j<2;j++){
-          edge[based_lines_shrink  +i][j] = ROTATE(edge[i][j], width, height, symmetries,  90);
-          edge[based_lines_shrink*2+i][j] = ROTATE(edge[i][j], width, height, symmetries, 180);
-          edge[based_lines_shrink*3+i][j] = ROTATE(edge[i][j], width, height, symmetries, 270);
+          edge[based_lines_shrink  +i][j] = ODP_ROTATE(edge[i][j], width, height, symmetries,  90);
+          edge[based_lines_shrink*2+i][j] = ODP_ROTATE(edge[i][j], width, height, symmetries, 180);
+          edge[based_lines_shrink*3+i][j] = ODP_ROTATE(edge[i][j], width, height, symmetries, 270);
         }
       }
       int k = based_lines_shrink*symmetries;
@@ -1720,12 +1720,12 @@ void ODP_Generate_random_grid_s(const int width, const int height, const int deg
         for(int h=0;h<based_height;h++){
           edge[k  ][0] = w * 2 * height + h;
           edge[k  ][1] = edge[k][0] + height;
-          edge[k+1][0] = ROTATE(edge[k][0], width, height, symmetries,  90);
-          edge[k+1][1] = ROTATE(edge[k][1], width, height, symmetries,  90);
-          edge[k+2][0] = ROTATE(edge[k][0], width, height, symmetries, 180);
-          edge[k+2][1] = ROTATE(edge[k][1], width, height, symmetries, 180);
-          edge[k+3][0] = ROTATE(edge[k][0], width, height, symmetries, 270);
-          edge[k+3][1] = ROTATE(edge[k][1], width, height, symmetries, 270);
+          edge[k+1][0] = ODP_ROTATE(edge[k][0], width, height, symmetries,  90);
+          edge[k+1][1] = ODP_ROTATE(edge[k][1], width, height, symmetries,  90);
+          edge[k+2][0] = ODP_ROTATE(edge[k][0], width, height, symmetries, 180);
+          edge[k+2][1] = ODP_ROTATE(edge[k][1], width, height, symmetries, 180);
+          edge[k+3][0] = ODP_ROTATE(edge[k][0], width, height, symmetries, 270);
+          edge[k+3][1] = ODP_ROTATE(edge[k][1], width, height, symmetries, 270);
           k+=4;
         }
       }
@@ -1733,12 +1733,12 @@ void ODP_Generate_random_grid_s(const int width, const int height, const int deg
         for(int h=0;h<based_height/2;h++){
           edge[k  ][0] = (based_width - 1) * height + h * 2;
           edge[k  ][1] = edge[k][0] + 1;
-          edge[k+1][0] = ROTATE(edge[k][0], width, height, symmetries,  90);
-          edge[k+1][1] = ROTATE(edge[k][1], width, height, symmetries,  90);
-          edge[k+2][0] = ROTATE(edge[k][0], width, height, symmetries, 180);
-          edge[k+2][1] = ROTATE(edge[k][1], width, height, symmetries, 180);
-          edge[k+3][0] = ROTATE(edge[k][0], width, height, symmetries, 270);
-          edge[k+3][1] = ROTATE(edge[k][1], width, height, symmetries, 270);
+          edge[k+1][0] = ODP_ROTATE(edge[k][0], width, height, symmetries,  90);
+          edge[k+1][1] = ODP_ROTATE(edge[k][1], width, height, symmetries,  90);
+          edge[k+2][0] = ODP_ROTATE(edge[k][0], width, height, symmetries, 180);
+          edge[k+2][1] = ODP_ROTATE(edge[k][1], width, height, symmetries, 180);
+          edge[k+3][0] = ODP_ROTATE(edge[k][0], width, height, symmetries, 270);
+          edge[k+3][1] = ODP_ROTATE(edge[k][1], width, height, symmetries, 270);
           k+=4;
         }
         if(based_height%2==1){

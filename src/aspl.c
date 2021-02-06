@@ -8,6 +8,8 @@ static bool _enable_avx2 = false, _is_profile;
 
 extern bool ODP_Check_profile();
 extern double ODP_Get_time();
+extern int ODP_LOCAL_INDEX_GRID(const int x, const int width, const int height, const int symmetries);
+extern int ODP_ROTATE(const int v, const int width, const int height, const int symmetries, const int degree);
 extern void ODP_Profile(const char* name, const int kind, const int symmetries, const double mem_usage,
 			const double elapsed_time, const unsigned int times, const int procs);
 extern int ODP_Get_kind(const int nodes, const int degree, const int* num_degrees, const int symmetries,
@@ -176,16 +178,16 @@ void ODP_Init_aspl_grid_s(const int width, const int height, const int degree, c
     if(symmetries == 2){
       for(int i=0;i<based_nodes;i++){
 	tmp_num_degrees[i] = num_degrees[i];
-	tmp_num_degrees[ROTATE(i, width, height, symmetries, 180)] = num_degrees[i];
+	tmp_num_degrees[ODP_ROTATE(i, width, height, symmetries, 180)] = num_degrees[i];
       }
     }
     else if(symmetries == 4){
       for(int i=0;i<based_nodes;i++){
-	int v = LOCAL_INDEX_GRID(i,width,height,symmetries);
+	int v = ODP_LOCAL_INDEX_GRID(i,width,height,symmetries);
 	tmp_num_degrees[v] = num_degrees[i];
-	tmp_num_degrees[ROTATE(v, width, height, symmetries,  90)] = num_degrees[i];
-	tmp_num_degrees[ROTATE(v, width, height, symmetries, 180)] = num_degrees[i];
-	tmp_num_degrees[ROTATE(v, width, height, symmetries, 270)] = num_degrees[i];
+	tmp_num_degrees[ODP_ROTATE(v, width, height, symmetries,  90)] = num_degrees[i];
+	tmp_num_degrees[ODP_ROTATE(v, width, height, symmetries, 180)] = num_degrees[i];
+	tmp_num_degrees[ODP_ROTATE(v, width, height, symmetries, 270)] = num_degrees[i];
       }
     }
     init_aspl_s(nodes, degree, tmp_num_degrees, symmetries);
