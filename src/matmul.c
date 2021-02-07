@@ -161,26 +161,6 @@ static void matmul_CHUNK(const uint64_t *restrict A, uint64_t *restrict B, const
   }
 }
 
-#ifdef __AVX2__
-static void matmul_avx2_CHUNK(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
-			      const int *num_degrees, const int *restrict adjacency)
-{
-#pragma omp parallel for
-  for(int i=0;i<nodes;i++){
-    __m256i *b = (__m256i *)(B + i*CPU_CHUNK);
-    int d = (!num_degrees)? degree : num_degrees[i];
-    for(int j=0;j<d;j++){
-      int n = *(adjacency + i * degree + j);  // int n = adjacency[i][j];
-      __m256i *a = (__m256i *)(A + n*CPU_CHUNK);
-      for(int k=0;k<CPU_CHUNK/4;k++){
-        __m256i aa = _mm256_load_si256(a+k);
-        __m256i bb = _mm256_load_si256(b+k);
-        _mm256_store_si256(b+k, _mm256_or_si256(aa, bb));
-      }
-    }
-  }
-}
-
 static void matmul_CHUNK_s(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int height,
                            const int degree, const int *num_degrees, const int *restrict adjacency,
                            const int symmetries, const int itable[nodes])
@@ -211,6 +191,26 @@ static void matmul_CHUNK_s(const uint64_t *restrict A, uint64_t *restrict B, con
         int nn = itable[n];
         for(int k=0;k<CPU_CHUNK;k++)
           B[ii*CPU_CHUNK+k] |= A[nn*CPU_CHUNK+k];
+      }
+    }
+  }
+}
+
+#ifdef __AVX2__
+static void matmul_avx2_CHUNK(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int degree,
+			      const int *num_degrees, const int *restrict adjacency)
+{
+#pragma omp parallel for
+  for(int i=0;i<nodes;i++){
+    __m256i *b = (__m256i *)(B + i*CPU_CHUNK);
+    int d = (!num_degrees)? degree : num_degrees[i];
+    for(int j=0;j<d;j++){
+      int n = *(adjacency + i * degree + j);  // int n = adjacency[i][j];
+      __m256i *a = (__m256i *)(A + n*CPU_CHUNK);
+      for(int k=0;k<CPU_CHUNK/4;k++){
+        __m256i aa = _mm256_load_si256(a+k);
+        __m256i bb = _mm256_load_si256(b+k);
+        _mm256_store_si256(b+k, _mm256_or_si256(aa, bb));
       }
     }
   }
