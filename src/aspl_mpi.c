@@ -178,7 +178,7 @@ static void aspl_mpi_bfs(const int* restrict adjacency, int* diameter, long *sum
   *diameter = 0;
   *sum      = 0;
 
-  for(int s=_rank;s<based_nodes;s+=procs){
+  for(int s=_rank;s<based_nodes;s+=_procs){
     int num_frontier = 1, level = 0;
     for(int i=0;i<_nodes;i++)
       _bitmap[i] = NOT_VISITED;
@@ -198,7 +198,7 @@ static void aspl_mpi_bfs(const int* restrict adjacency, int* diameter, long *sum
 
     while(1){
       num_frontier = ODP_top_down_step(level++, num_frontier, adjacency, _nodes, _degree, _num_degrees,
-                                       _enable_grid_s, _width, _height, _symmetries, _frontier, _next, distance, bitmap);
+                                       _enable_grid_s, _width, _height, _symmetries, _frontier, _next, _distance, _bitmap);
       if(num_frontier == 0) break;
 
       int *tmp = _frontier;
@@ -212,7 +212,7 @@ static void aspl_mpi_bfs(const int* restrict adjacency, int* diameter, long *sum
       *sum += (_distance[i] + 1) * _symmetries;
   }
 
-  MPI_BCAST(&reached, 1, MPI_C_BOOL, 0, MPI_COMM_WORLD);
+  MPI_Bcast(&reached, 1, MPI_C_BOOL, 0, MPI_COMM_WORLD);
   if(!reached){
     *diameter = INT_MAX;
     return;

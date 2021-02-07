@@ -1815,7 +1815,7 @@ int ODP_top_down_step(const int level, const int num_frontier, const int* restri
        int v = frontier[i];
        int d = (!num_degrees)? degree : num_degrees[i];
        for(int j=0;j<d;j++){
-         int n = (!enable_grid_s)? *(adjacency+v*degree+j) : ODP_GLOBAL_ADJ_GRID(_width, height, degree, symmetries,
+         int n = (!enable_grid_s)? *(adjacency+v*degree+j) : ODP_GLOBAL_ADJ_GRID(width, height, degree, symmetries,
 										 (int (*)[degree])adjacency, v, j);
          if(bitmap[n] == NOT_VISITED){
            bitmap[n]   = VISITED;
