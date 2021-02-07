@@ -1,16 +1,6 @@
 #include "common.h"
 int _u[2], _v[2], _u_d[2], _v_d[2];
 
-static int WIDTH(const int v, const int height)
-{
-  return  v/height;
-}
-
-static int HEIGHT(const int v, const int height)
-{
-  return v%height;
-}
-
 void ODP_Print_adjacency(const int nodes, const int degree, const int num_degrees[nodes], const int adjacency[nodes][degree])
 {
   for(int i=0;i<nodes;i++){

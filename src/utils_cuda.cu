@@ -1,37 +1,31 @@
 #include "common.h"
-#define WIDTH(v,h) ((v)/(h))
-#define HEIGHT(v,h) ((v)%(h))
 
 __device__ static int rotate(const int v, const int width, const int height, const int symmetries, const int degree)
 {
   int w = WIDTH (v, height);
   int h = HEIGHT(v, height);
-  if(symmetries == 2)
-    return (width-w-1)*height + (height-h-1);
+  
+  if(symmetries == 2) return (width-w-1)*height + (height-h-1);
 
+  // symmetries == 4
   if(degree == 90)       return h*height + (height-w-1);
   else if(degree == 180) return (height-w-1)*height + (height-h-1);
   else                   return (height-h-1)*height + w; // degree == 270
 }
 
-__device__ static int local_index(const int x, const int width, const int height, const int symmetries)
+__device__ static int local_index_grid(const int x, const int width, const int height, const int symmetries)
 {
-  if(symmetries == 2){
-    return x;
-  }
-  else{ // symmetries == 4
-    int based_height = height/2;
-    return WIDTH(x,height)*based_height + HEIGHT(x,height);
-  }
+  if(symmetries == 2) return x;
+
+  // symmetries == 4
+  int based_height = height/2;
+  return WIDTH(x,height)*based_height + HEIGHT(x,height);
 }
 
-__device__ static int global_adj(const int width, const int height, const int degree, const int symmetries,
-				 const int *adjacency, const int v, const int d)
+__device__ static int global_adj_grid(const int width, const int height, const int degree, const int symmetries,
+				      const int *adjacency, const int v, const int d)
 {
-  if(symmetries == 1){
-    return adjacency[v*degree+d];
-  }
-  else if(symmetries == 2){
+  if(symmetries == 2){
     int based_width = width/2;
     if(WIDTH(v,height) < based_width)
       return adjacency[v*degree+d];
@@ -40,27 +34,27 @@ __device__ static int global_adj(const int width, const int height, const int de
       return rotate(y, width, height, symmetries, 180);
     }
   }
-  else{ // symmetries == 4
-    int based_width  = width/2;
-    int based_height = height/2;
-    if(WIDTH(v,height) < based_width && HEIGHT(v,height) < based_height){
-      return adjacency[local_index(v,width,height,symmetries)*degree+d];
-    }
-    else if(WIDTH(v,height) < based_width && HEIGHT(v,height) >= based_height){
-      int x = rotate(v, width, height, symmetries, 270);
-      int y = adjacency[local_index(x,width,height,symmetries)*degree+d];
-      return rotate(y, width, height, symmetries, 90);
-    }
-    else if(WIDTH(v,height) >= based_width && HEIGHT(v,height) >= based_height){
-      int x = rotate(v, width, height, symmetries, 180);
-      int y = adjacency[local_index(x,width,height,symmetries)*degree+d];
-      return rotate(y, width, height, symmetries, 180);
-    }
-    else{
-      int x = rotate(v, width, height, symmetries, 90);
-      int y = adjacency[local_index(x,width,height,symmetries)*degree+d];
-      return rotate(y, width, height, symmetries, 270);
-    }
+  
+  // symmetries == 4
+  int based_width  = width/2;
+  int based_height = height/2;
+  if(WIDTH(v,height) < based_width && HEIGHT(v,height) < based_height){
+    return adjacency[local_index_grid(v,width,height,symmetries)*degree+d];
+  }
+  else if(WIDTH(v,height) < based_width && HEIGHT(v,height) >= based_height){
+    int x = rotate(v, width, height, symmetries, 270);
+    int y = adjacency[local_index_grid(x,width,height,symmetries)*degree+d];
+    return rotate(y, width, height, symmetries, 90);
+  }
+  else if(WIDTH(v,height) >= based_width && HEIGHT(v,height) >= based_height){
+    int x = rotate(v, width, height, symmetries, 180);
+    int y = adjacency[local_index_grid(x,width,height,symmetries)*degree+d];
+    return rotate(y, width, height, symmetries, 180);
+  }
+  else{
+    int x = rotate(v, width, height, symmetries, 90);
+    int y = adjacency[local_index_grid(x,width,height,symmetries)*degree+d];
+    return rotate(y, width, height, symmetries, 270);
   }
 }
 
@@ -148,7 +142,7 @@ __global__ void ODP_Matmul_cuda(const uint64_t* __restrict__ A, uint64_t* __rest
 	uint64_t tmp = B[ii];
 	int d = (!num_degrees)? degree : num_degrees[i];
 	for(int j=0;j<d;j++){
-	  int n = global_adj(width, height, degree, symmetries, adjacency, i, j);
+	  int n = global_adj_grid(width, height, degree, symmetries, adjacency, i, j);
 	  tmp |= A[itable[n]*elements+k];
 	}
 	B[ii] = tmp;
@@ -206,7 +200,7 @@ __global__ void ODP_Matmul_CHUNK_cuda(const uint64_t* __restrict__ A, uint64_t* 
 	uint64_t tmp = B[ii];
 	int d = (!num_degrees)? degree : num_degrees[i];
 	for(int j=0;j<d;j++){
-	  int n = global_adj(width, height, degree, symmetries, adjacency, i, j);
+	  int n = global_adj_grid(width, height, degree, symmetries, adjacency, i, j);
 	  tmp |= A[itable[n]*GPU_CHUNK+k];
 	}
 	B[ii] = tmp;
