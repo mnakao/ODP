@@ -15,7 +15,7 @@ int main()
   ODP_Srand(seed);
   ODP_Generate_random_general(nodes, degree, edge);
   int (*adjacency)[degree] = malloc(sizeof(int) * nodes * degree); // int adjacency[nodes][degree];
-  ODP_Conv_edge2adjacency(nodes, lines, degree, edge, adjacency);
+  ODP_Conv_edge2adjacency_general(nodes, lines, degree, edge, adjacency);
 
   ODP_Init_aspl_general(nodes, degree, NULL);
   ODP_Set_aspl(adjacency, &diameter, &sum, &ASPL);

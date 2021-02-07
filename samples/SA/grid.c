@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
   ODP_Srand(seed);
   ODP_Generate_random_grid(width, height, degree, length, edge);
   create_time = get_time() - create_time;
-  ODP_Conv_edge2adjacency(nodes, lines, degree, edge, adjacency);
+  ODP_Conv_edge2adjacency_grid(width, height, lines, degree, edge, adjacency);
   
   ODP_Init_aspl_grid(width, height, degree, NULL);
   ODP_Set_aspl(adjacency, &diameter, &sum, &ASPL);
@@ -145,7 +145,7 @@ int main(int argc, char *argv[])
   }
   sa_time = get_time() - sa_time;  
   ODP_Finalize_aspl();
-  ODP_Conv_adjacency2edge(nodes, degree, NULL, best_adjacency, edge);
+  ODP_Conv_adjacency2edge_grid(width, height, degree, NULL, best_adjacency, edge);
   
   printf("---\n");
   printf("Diameter        = %d\n", best_diameter);

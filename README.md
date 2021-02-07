@@ -197,22 +197,28 @@ void ODP_Print_edge_grid(int lines, int height, int edge[lines][2])
 
 ### Convert an edge list to an adjacency matrix
 ```
-void ODP_Conv_edge2adjacency(int nodes, int lines, int degree, int edge[lines][2], int adjacency[nodes][degree])
+void ODP_Conv_edge2adjacency_general(int nodes, int lines, int degree, int edge[lines][2], int adjacency[nodes][degree])
+void ODP_Conv_edge2adjacency_grid(int width, int height, int lines, int degree, int edge[lines][2], int adjacency[nodes][degree])
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] lines : Number of lines in an edge list.
 * [IN] degree : Degree in a graph.
 * [IN] edge : Edge list of a graph.
+* [IN] width : Width of a grid graph.
+* [IN] height : Height of a grid graph.
 * [OUT] adjacency : Adjacency matrix of a graph.
 
 ### Convert an adjacency matrix to an edge list
 ```
-void ODP_Conv_adjacency2edge(int nodes, int degree, int num_degrees[nodes], int adjacency[nodes][degree], int edge[lines][2])
+void ODP_Conv_adjacency2edge_general(int nodes, int degree, int num_degrees[nodes], int adjacency[nodes][degree], int edge[lines][2])
+void ODP_Conv_adjacency2edge_grid(int width, int height, int degree, int num_degrees[nodes], int adjacency[nodes][degree], int edge[lines][2])
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] degree : Degree in a graph.
 * [IN] num_degrees : Specify NULL for a regular graph. If not, specify the degrees for each vertex.
 * [IN] adjacency : Adjacency matrix of a graph.
+* [IN] width : Width of a grid graph.
+* [IN] height : Height of a grid graph.
 * [OUT] edge : Edge list of a graph.
 
 ### Set theoretical lower bounds

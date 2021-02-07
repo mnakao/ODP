@@ -15,7 +15,7 @@ void ODP_Set_aspl_mpi_cuda_general(const char *fname, const MPI_Comm comm, int *
   *degree = ODP_Get_degree(*nodes, lines, edge);
 
   int (*adjacency)[*degree] = malloc(sizeof(int) * (*nodes) * (*degree)); // int adjacency[nodes][degree];
-  ODP_Conv_edge2adjacency(*nodes, lines, *degree, edge, (int *)adjacency);
+  ODP_Conv_edge2adjacency_general(*nodes, lines, *degree, edge, (int *)adjacency);
   ODP_Set_lbounds_general(*nodes, *degree, low_diameter, low_ASPL);
 
   int *num_degrees = malloc(sizeof(int) * (*nodes));
@@ -40,7 +40,7 @@ void ODP_Set_aspl_mpi_cuda_grid(const char *fname, const MPI_Comm comm, int *wid
   *degree = ODP_Get_degree(nodes, lines, edge);
 
   int (*adjacency)[*degree] = malloc(sizeof(int) * nodes * (*degree)); // int adjacency[nodes][degree];
-  ODP_Conv_edge2adjacency(nodes, lines, *degree, edge, (int *)adjacency);
+  ODP_Conv_edge2adjacency_grid(*width, *height, lines, *degree, edge, (int *)adjacency);
   *length = ODP_Get_length(lines, edge, *height);
   ODP_Set_lbounds_grid(*width, *height, *degree, *length, low_diameter, low_ASPL);
 
