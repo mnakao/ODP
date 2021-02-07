@@ -1799,3 +1799,59 @@ void ODP_Create_itable(const int width, const int height, const int symmetries, 
     ERROR("Something Wrong !");
 }
 
+#ifdef _OPENMP
+int ODP_top_down_step(const int level, const int num_frontier, const int* restrict adjacency,
+		      const int nodes, const int degree, const int* restrict num_degrees, const bool enable_grid_s,
+		      const int width, const int height, const int symmetries,
+		      int* restrict frontier, int* restrict next, int* restrict distance, char* restrict bitmap)
+{
+  int count = 0;
+  int local_frontier[nodes];
+#pragma omp parallel private(local_frontier)
+  {
+    int local_count = 0;
+#pragma omp for nowait
+     for(int i=0;i<num_frontier;i++){
+       int v = frontier[i];
+       int d = (!num_degrees)? degree : num_degrees[i];
+       for(int j=0;j<d;j++){
+         int n = (!enable_grid_s)? *(adjacency+v*degree+j) : ODP_GLOBAL_ADJ_GRID(_width, height, degree, symmetries,
+										 (int (*)[degree])adjacency, v, j);
+         if(bitmap[n] == NOT_VISITED){
+           bitmap[n]   = VISITED;
+           distance[n] = level;
+           local_frontier[local_count++] = n;
+         }
+       }
+     }  // end for i
+#pragma omp critical
+     {
+       memcpy(&next[count], local_frontier, local_count*sizeof(int));
+       count += local_count;
+     }
+  }
+  return count;
+}
+#else
+int ODP_top_down_step(const int level, const int num_frontier, const int* restrict adjacency,
+		      const int nodes, const int degree, const int* restrict num_degrees, const bool enable_grid_s,
+		      const int width, const int height, const int symmetries,
+		      int* restrict frontier, int* restrict next, int* restrict distance, char* restrict bitmap)
+{
+  int count = 0;
+  for(int i=0;i<num_frontier;i++){
+    int v = frontier[i];
+    int d = (!num_degrees)? degree : num_degrees[i];
+    for(int j=0;j<d;j++){
+      int n = (!enable_grid_s)? *(adjacency + v*degree+j) : ODP_GLOBAL_ADJ_GRID(width, height, degree, symmetries,
+										(int (*)[degree])adjacency, v, j);
+      if(bitmap[n] == NOT_VISITED){
+        bitmap[n]   = VISITED;
+        distance[n] = level;
+        next[count++] = n;
+      }
+    }
+  }
+  return count;
+}
+#endif

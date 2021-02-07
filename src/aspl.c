@@ -25,8 +25,10 @@ extern void ODP_Matmul_CHUNK(const uint64_t *restrict A, uint64_t *restrict B, c
 			     const int *restrict num_degrees, const int *restrict adjacency, const bool enable_avx2, const int symmetries, const int itable[nodes]);
 extern void ODP_Malloc(uint64_t **a, const size_t s, const bool enable_avx2);
 extern void ODP_Free(uint64_t *a, const bool enable_avx2);
-extern int ODP_GLOBAL_ADJ_GRID(const int width, const int height, const int degree, const int symmetries,
-                               const int *adjacency, const int v, const int d);
+extern int ODP_top_down_step(const int level, const int num_frontier, const int* restrict adjacency,
+			     const int nodes, const int degree, const int* restrict num_degrees, const bool enable_grid_s,
+			     const int width, const int height, const int symmetries,
+			     int* restrict frontier, int* restrict next, int* restrict distance, char* restrict bitmap);
   
 static void aspl_mat(const int* restrict adjacency,
 		     int *diameter, long *sum, double *ASPL)
@@ -152,57 +154,6 @@ static void init_aspl_s(const int nodes, const int degree, const int* num_degree
   }
 }
 
-#ifdef _OPENMP
-static int top_down_step(const int level, const int num_frontier, const int* restrict adjacency,
-			 int* restrict frontier, int* restrict next)
-{
-  int count = 0;
-  int local_frontier[nodes];
-#pragma omp parallel private(local_frontier)
-  {
-    int local_count = 0;
-#pragma omp for nowait
-     for(int i=0;i<num_frontier;i++){
-       int v = frontier[i];
-       int d = (!_num_degrees)? _degree : _num_degrees[i];
-       for(int j=0;j<d;j++){
-	 int n = (!_enable_grid_s)? *(adjacency+v*_degree+j) : ODP_GLOBAL_ADJ_GRID(_width, _height, _degree, _symmetries, adjacency, v, j);
-         if(_bitmap[n] == NOT_VISITED){
-           _bitmap[n]   = VISITED;
-           _distance[n] = level;
-           local_frontier[local_count++] = n;
-         }
-       }
-     }  // end for i
-#pragma omp critical
-     {
-       memcpy(&next[count], local_frontier, local_count*sizeof(int));
-       count += local_count;
-     }
-  }
-  return count;
-}
-#else
-static int top_down_step(const int level, const int num_frontier, const int* restrict adjacency,
-			 int* restrict frontier, int* restrict next)
-{
-  int count = 0;
-  for(int i=0;i<num_frontier;i++){
-    int v = frontier[i];
-    int d = (!_num_degrees)? _degree : _num_degrees[i];
-    for(int j=0;j<d;j++){
-      int n = (!_enable_grid_s)? *(adjacency + v*_degree+j) : ODP_GLOBAL_ADJ_GRID(_width, _height, _degree, _symmetries, adjacency, v, j);
-      if(_bitmap[n] == NOT_VISITED){
-	_bitmap[n]   = VISITED;
-	_distance[n] = level;
-	next[count++] = n;
-      }
-    }
-  }
-  return count;
-}
-#endif
-
 static void aspl_bfs(const int* restrict adjacency, int* diameter, long *sum, double* ASPL)
 {
   int based_nodes = _nodes/_symmetries;
@@ -229,7 +180,8 @@ static void aspl_bfs(const int* restrict adjacency, int* diameter, long *sum, do
     }
 
     while(1){
-      num_frontier = top_down_step(level++, num_frontier, adjacency, _frontier, _next);
+      num_frontier = ODP_top_down_step(level++, num_frontier, adjacency, _nodes, _degree, _num_degrees,
+				       _enable_grid_s, _width, _height, _symmetries, _frontier, _next, _distance, _bitmap);
       if(num_frontier == 0) break;
 
       int *tmp = _frontier;

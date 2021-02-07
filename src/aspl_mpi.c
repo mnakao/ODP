@@ -1,11 +1,13 @@
 #include "common.h"
 #include <mpi.h>
 static uint64_t *_A, *_B;
-static int _nodes, _degree, _symmetries, _kind, _rank, _procs, _height;
+static int _nodes, _degree, _symmetries, _kind, _rank, _procs, _width, _height;
 static int* _num_degrees = NULL, *_itable = NULL;
+static int* _frontier = NULL, *_distance = NULL, *_next = NULL;
+static char* _bitmap = NULL;
 static unsigned int _elements, _total_elements, _times;
 static double _mem_usage, _elapsed_time;
-static bool _enable_avx2 = false, _is_profile;
+static bool _enable_avx2 = false, _is_profile = false, _enable_grid_s = false;
 static MPI_Comm _comm;
 
 extern void ODP_Create_itable(const int width, const int height, const int symmetries, int *_itable);
@@ -25,6 +27,10 @@ extern void ODP_Matmul_CHUNK(const uint64_t *restrict A, uint64_t *restrict B, c
 			     const int *restrict num_degrees, const int *restrict adjacency, const bool enable_avx2, const int symmetries, const int itable[nodes]);
 extern void ODP_Malloc(uint64_t **a, const size_t s, const bool enable_avx2);
 extern void ODP_Free(uint64_t *a, const bool enable_avx2);
+extern int ODP_top_down_step(const int level, const int num_frontier, const int* restrict adjacency,
+                             const int nodes, const int degree, const int* restrict num_degrees, const bool enable_grid_s,
+                             const int width, const int height, const int symmetries,
+                             int* restrict frontier, int* restrict next, int* restrict distance, char* restrict bitmap);
 
 static void aspl_mpi_mat(const int* restrict adjacency,
 			 int *diameter, long *sum, double *ASPL)
@@ -139,9 +145,17 @@ static void init_aspl_mpi_s(const int nodes, const int degree,
   }
 #endif
 
-  size_t s = (_kind == ASPL_MATRIX)? _elements : CPU_CHUNK;
-  ODP_Malloc(&_A, nodes*s*sizeof(uint64_t), _enable_avx2); // uint64_t A[nodes][s];
-  ODP_Malloc(&_B, nodes*s*sizeof(uint64_t), _enable_avx2); // uint64_t B[nodes][s];
+  if(_kind == ASPL_MATRIX || _kind == ASPL_MATRIX_SAVING){
+    size_t s = (_kind == ASPL_MATRIX)? _elements : CPU_CHUNK;
+    ODP_Malloc(&_A, nodes*s*sizeof(uint64_t), _enable_avx2); // uint64_t A[nodes][s];
+    ODP_Malloc(&_B, nodes*s*sizeof(uint64_t), _enable_avx2); // uint64_t B[nodes][s];
+  }
+  else{
+    _bitmap   = malloc(sizeof(char) * nodes);
+    _frontier = malloc(sizeof(int)  * nodes);
+    _distance = malloc(sizeof(int)  * nodes);
+    _next     = malloc(sizeof(int)  * nodes);
+  }
   
   _nodes = nodes;
   _degree = degree;
@@ -155,6 +169,58 @@ static void init_aspl_mpi_s(const int nodes, const int degree,
     _num_degrees = malloc(sizeof(int) * nodes);
     memcpy(_num_degrees, num_degrees, sizeof(int) * nodes);
   }
+}
+
+static void aspl_mpi_bfs(const int* restrict adjacency, int* diameter, long *sum, double* ASPL)
+{
+  int based_nodes = _nodes/_symmetries;
+  bool reached = true;
+  *diameter = 0;
+  *sum      = 0;
+
+  for(int s=_rank;s<based_nodes;s+=procs){
+    int num_frontier = 1, level = 0;
+    for(int i=0;i<_nodes;i++)
+      _bitmap[i] = NOT_VISITED;
+
+    if(_enable_grid_s && _symmetries == 4){
+      int based_height = _height/2;
+      int ss = (s/based_height) * _height + (s%based_height);
+      _frontier[0]  = ss;
+      _distance[ss] = level;
+      _bitmap[ss]   = VISITED;
+    }
+    else{
+      _frontier[0]  = s;
+      _distance[s] = level;
+      _bitmap[s]   = VISITED;
+    }
+
+    while(1){
+      num_frontier = ODP_top_down_step(level++, num_frontier, adjacency, _nodes, _degree, _num_degrees,
+                                       _enable_grid_s, _width, _height, _symmetries, _frontier, _next, distance, bitmap);
+      if(num_frontier == 0) break;
+
+      int *tmp = _frontier;
+      _frontier = _next;
+      _next     = tmp;
+    }
+
+    *diameter = MAX(*diameter, level-1);
+
+    for(int i=0;i<_nodes;i++)
+      *sum += (_distance[i] + 1) * _symmetries;
+  }
+
+  MPI_BCAST(&reached, 1, MPI_C_BOOL, 0, MPI_COMM_WORLD);
+  if(!reached){
+    *diameter = INT_MAX;
+    return;
+  }
+  MPI_Allreduce(MPI_IN_PLACE, diameter, 1, MPI_INT,  MPI_MAX, MPI_COMM_WORLD);
+  MPI_Allreduce(MPI_IN_PLACE, sum,      1, MPI_LONG, MPI_SUM, MPI_COMM_WORLD);
+  *sum = (*sum - _nodes)/2;
+  *ASPL = *sum / (((double)_nodes-1)*_nodes) * 2;
 }
 
 void ODP_Init_aspl_mpi_general(const int nodes, const int degree,
@@ -185,6 +251,7 @@ void ODP_Init_aspl_mpi_grid(const int width, const int height, const int degree,
 			    const int* restrict num_degrees, const MPI_Comm comm)
 {
   int nodes = width * height;
+  _width  = width;
   _height = height;
   init_aspl_mpi_s(nodes, degree, num_degrees, comm, 1);
 }
@@ -193,7 +260,11 @@ void ODP_Init_aspl_mpi_grid_s(const int width, const int height, const int degre
 			      const MPI_Comm comm, const int symmetries)
 {
   int nodes = width * height;
+  _width  = width;
   _height = height;
+  if(symmetries == 2 || symmetries == 4)
+    _enable_grid_s = true;
+  
   if(num_degrees){
     int *tmp_num_degrees = malloc(sizeof(int) * nodes);
     int based_nodes = nodes/symmetries;
@@ -227,10 +298,18 @@ void ODP_Init_aspl_mpi_grid_s(const int width, const int height, const int degre
 
 void ODP_Finalize_aspl()
 {
-  ODP_Free(_A, _enable_avx2);
-  ODP_Free(_B, _enable_avx2);
-  if(_num_degrees) free(_num_degrees);
-  if(_itable)      free(_itable);
+  if(_kind == ASPL_MATRIX || _kind == ASPL_MATRIX_SAVING){
+    ODP_Free(_A, _enable_avx2);
+    ODP_Free(_B, _enable_avx2);
+    if(_num_degrees) free(_num_degrees);
+    if(_itable)      free(_itable);
+  }
+  else{ // _kind == ASPL_BFS
+    free(_bitmap);
+    free(_frontier);
+    free(_distance);
+    free(_next);
+  }
   
   if(_rank == 0 && _is_profile){
 #ifdef _OPENMP
@@ -249,9 +328,11 @@ void ODP_Set_aspl(const int* restrict adjacency, int *diameter, long *sum, doubl
   
   if(_kind == ASPL_MATRIX)
     aspl_mpi_mat       (adjacency, diameter, sum, ASPL);
-  else
+  else if(_kind == ASPL_MATRIX_SAVING)
     aspl_mpi_mat_saving(adjacency, diameter, sum, ASPL);
-
+  else // _kind == ASPL_MATRIX_BFS
+    aspl_mpi_bfs(adjacency, diameter, sum, ASPL);
+  
   _elapsed_time += ODP_Get_time() - t;
     
   if(*diameter > _nodes){
