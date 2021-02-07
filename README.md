@@ -71,13 +71,16 @@ ASPL Gap     = 0.1833333333 (1.9166666667 - 1.7333333333)
 * Please see sample graphs in `./samples/graphs/` or http://research.nii.ac.jp/graphgolf/submit.html
 
 ## Environment variable
-### ODP_ASPL=[NORMAL|SAVING]
+### ODP_ASPL=[MATRIX|MATRIX_SAVING|BFS]
 
-This library provides two types of algorithms to obtain ASPL.
-One is `NORMAL`, the other is `SAVING`. `SAVING` is a memory-saving version of `NORMAL`.
+This library provides three types of algorithms to obtain ASPL.
 By default, `NORMAL` is automatically selected if the amount of memory used is
 lower than the value of `MEM_THRESHOLD` in `src/parameter.h`.
-This environment variable can specify the algorithm to use.
+The `ODP_ASPL` can specify the algorithm to use.
+
+* MATRIX : Bit matrix is used for ASPL calculation. In most cases this is the fastest.
+* MATRIX_SAVING : This is a memory-saving version of `MATRIX`.
+* BFS : Breadth First Search is used for ASPL calculation. If the value of `(nodes/(procs*symmetries)` is small enough, it may be the fastest.
 
 ### ODP_PROFILE=1
 

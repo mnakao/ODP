@@ -1,6 +1,6 @@
 #include "common.h"
 static uint64_t *_A, *_B;
-static int _nodes, _degree, _symmetries, _kind, _height;
+static int _nodes, _degree, _symmetries, _kind, _width, _height;
 static int* _num_degrees = NULL, *_itable = NULL;
 static int* _frontier = NULL, *_distance = NULL, *_next = NULL;
 static char* _bitmap = NULL;
@@ -25,6 +25,8 @@ extern void ODP_Matmul_CHUNK(const uint64_t *restrict A, uint64_t *restrict B, c
 			     const int *restrict num_degrees, const int *restrict adjacency, const bool enable_avx2, const int symmetries, const int itable[nodes]);
 extern void ODP_Malloc(uint64_t **a, const size_t s, const bool enable_avx2);
 extern void ODP_Free(uint64_t *a, const bool enable_avx2);
+extern int ODP_GLOBAL_ADJ_GRID(const int width, const int height, const int degree, const int symmetries,
+                               const int *adjacency, const int v, const int d);
   
 static void aspl_mat(const int* restrict adjacency,
 		     int *diameter, long *sum, double *ASPL)
@@ -185,15 +187,32 @@ static int top_down_step(const int level, const int num_frontier, const int* res
 			 int* restrict frontier, int* restrict next)
 {
   int count = 0;
-  for(int i=0;i<num_frontier;i++){
-    int v = frontier[i];
-    int d = (!_num_degrees)? _degree : _num_degrees[i];
-    for(int j=0;j<d;j++){
-      int n = *(adjacency + v * _degree + j);
-      if(_bitmap[n] == NOT_VISITED){
-        _bitmap[n]   = VISITED;
-        _distance[n] = level;
-        next[count++] = n;
+  if(!_itable){
+    for(int i=0;i<num_frontier;i++){
+      int v = frontier[i];
+      int d = (!_num_degrees)? _degree : _num_degrees[i];
+      for(int j=0;j<d;j++){
+	int n = *(adjacency + v * _degree + j);
+	if(_bitmap[n] == NOT_VISITED){
+	  _bitmap[n]   = VISITED;
+	  _distance[n] = level;
+	  next[count++] = n;
+	}
+      }
+    }
+  }
+  else{
+    for(int i=0;i<num_frontier;i++){
+      int v = _itable[frontier[i]];
+      int d = (!_num_degrees)? _degree : _num_degrees[i];
+      for(int j=0;j<d;j++){
+	int n = ODP_GLOBAL_ADJ_GRID(_width, _height, _degree, _symmetries, adjacency, v, j);
+	int nn = _itable[n];
+        if(_bitmap[nn] == NOT_VISITED){
+          _bitmap[nn]   = VISITED;
+          _distance[nn] = level;
+          next[count++] = nn;
+      	}
       }
     }
   }
@@ -213,9 +232,9 @@ static void aspl_bfs(const int* restrict adjacency, int* diameter, long *sum, do
     for(int i=0;i<_nodes;i++)
       _bitmap[i] = NOT_VISITED;
 
-    _frontier[0] = s;
-    _distance[s] = level;
-    _bitmap[s]   = VISITED;
+    _frontier[0] = _itable[s];
+    _distance[_itable[s]] = level;
+    _bitmap[_itable[s]]   = VISITED;
 
     while(1){
       num_frontier = top_down_step(level++, num_frontier, adjacency, _frontier, _next);
@@ -271,6 +290,7 @@ void ODP_Init_aspl_general_s(const int nodes, const int degree, const int* num_d
 void ODP_Init_aspl_grid(const int width, const int height, const int degree, const int* num_degrees)
 {
   int nodes = width * height;
+  _width  = width;
   _height = height;
   init_aspl_s(nodes, degree, num_degrees, 1);
 }
@@ -279,6 +299,7 @@ void ODP_Init_aspl_grid_s(const int width, const int height, const int degree, c
 
 {
   int nodes = width * height;
+  _width  = width;
   _height = height;
   if(num_degrees){
     int *tmp_num_degrees = malloc(sizeof(int) * nodes);

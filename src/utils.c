@@ -1290,7 +1290,7 @@ int ODP_Get_kind(const int nodes, const int degree, const int* num_degrees, cons
 void ODP_Profile(const char* name, const int kind, const int symmetries, const double mem_usage,
                  const double elapsed_time, const unsigned int times, const int procs)
 {
-  char kind_name[7], hostname[MAX_HOSTNAME_LENGTH];
+  char kind_name[14], hostname[MAX_HOSTNAME_LENGTH];
   if(kind == ASPL_MATRIX)             strcpy(kind_name, "MATRIX");
   else if(kind == ASPL_MATRIX_SAVING) strcpy(kind_name, "MATRIX_SAVING");
   else /* kind == ASPL_BFS*/          strcpy(kind_name, "BFS");
