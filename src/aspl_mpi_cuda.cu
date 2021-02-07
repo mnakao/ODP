@@ -143,7 +143,7 @@ static void init_aspl_mpi_cuda_s(const int nodes, const int degree, const int* _
   _kind = ODP_Get_kind(nodes, degree, num_degrees, symmetries, _procs, false);
   _mem_usage = ODP_Get_mem_usage(_kind, nodes, degree, symmetries, num_degrees, _procs, false);
   size_t elements = (nodes/symmetries+(UINT64_BITS-1))/UINT64_BITS;
-  size_t s = (_kind == ASPL_NORMAL)? (elements+(_procs-1))/_procs : GPU_CHUNK;
+  size_t s = (_kind == ASPL_MATRIX)? (elements+(_procs-1))/_procs : GPU_CHUNK;
   s *= nodes * sizeof(uint64_t);
   
    _nodes = nodes;
@@ -259,7 +259,7 @@ extern "C" void ODP_Set_aspl(const int* __restrict__ adjacency, int *diameter, l
   
   cudaMemcpy(_adjacency_dev, adjacency, sizeof(int)*(_nodes/_symmetries)*_degree, cudaMemcpyHostToDevice);
   
-  if(_kind == ASPL_NORMAL)
+  if(_kind == ASPL_MATRIX)
     aspl_mpi_cuda_mat       (adjacency, diameter, sum, ASPL);
   else
     aspl_mpi_cuda_mat_saving(adjacency, diameter, sum, ASPL);

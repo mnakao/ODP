@@ -1240,7 +1240,13 @@ double ODP_Get_mem_usage(const int kind, const int nodes, const int degree, cons
 {
   int Mbyte = 1024*1024;
   int chunk = (is_cpu)? CPU_CHUNK : GPU_CHUNK;
-  double AB_mem = (kind == ASPL_NORMAL)? (nodes*((double)nodes/(4*symmetries*procs))) : (double)16*nodes*chunk;
+  double AB_mem;
+  if(kind == ASPL_MATRIX)
+    AB_mem = (nodes*((double)nodes/(4*symmetries*procs)));
+  else if(kind == ASPL_MATRIX_SAVING)
+    AB_mem = (double)16*nodes*chunk;
+  else // kind == ASPL_BFS
+    AB_mem = nodes * (sizeof(int)*3 + sizeof(char));
 
   if(is_cpu){
     return AB_mem/Mbyte;
@@ -1259,17 +1265,20 @@ int ODP_Get_kind(const int nodes, const int degree, const int* num_degrees, cons
   int kind;
   char *val = getenv("ODP_ASPL");
   if(!val){
-    double normal_mem_usage = ODP_Get_mem_usage(ASPL_NORMAL, nodes, degree, symmetries, num_degrees, procs, is_cpu);
+    double normal_mem_usage = ODP_Get_mem_usage(ASPL_MATRIX, nodes, degree, symmetries, num_degrees, procs, is_cpu);
     if(normal_mem_usage <= MEM_THRESHOLD)
-      kind = ASPL_NORMAL;
+      kind = ASPL_MATRIX;
     else
-      kind = ASPL_SAVING;
+      kind = ASPL_MATRIX_SAVING;
   }
-  else if(strcmp(val, "NORMAL") == 0){
-    kind = ASPL_NORMAL;
+  else if(strcmp(val, "MATRIX") == 0){
+    kind = ASPL_MATRIX;
   }
-  else if(strcmp(val, "SAVING") == 0){
-    kind = ASPL_SAVING;
+  else if(strcmp(val, "MATRIX_SAVING") == 0){
+    kind = ASPL_MATRIX_SAVING;
+  }
+  else if(strcmp(val, "BFS") == 0){
+    kind = ASPL_BFS;
   }
   else{
     ERROR("Unknown ASPL value (%s)\n", val);
@@ -1282,8 +1291,9 @@ void ODP_Profile(const char* name, const int kind, const int symmetries, const d
                  const double elapsed_time, const unsigned int times, const int procs)
 {
   char kind_name[7], hostname[MAX_HOSTNAME_LENGTH];
-  if(kind == ASPL_NORMAL) strcpy(kind_name, "NORMAL");
-  else                    strcpy(kind_name, "SAVING");
+  if(kind == ASPL_MATRIX)             strcpy(kind_name, "MATRIX");
+  else if(kind == ASPL_MATRIX_SAVING) strcpy(kind_name, "MATRIX_SAVING");
+  else /* kind == ASPL_BFS*/          strcpy(kind_name, "BFS");
   gethostname(hostname, sizeof(hostname));
   time_t t = time(NULL);
 

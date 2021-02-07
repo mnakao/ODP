@@ -2,6 +2,8 @@
 static uint64_t *_A, *_B;
 static int _nodes, _degree, _symmetries, _kind, _height;
 static int* _num_degrees = NULL, *_itable = NULL;
+static int* _frontier = NULL, *_distance = NULL, *_next = NULL;
+static char* _bitmap = NULL;
 static unsigned int _elements, _times;
 static double _mem_usage, _elapsed_time;
 static bool _enable_avx2 = false, _is_profile;
@@ -113,9 +115,9 @@ static void init_aspl_s(const int nodes, const int degree, const int* num_degree
   else if(CPU_CHUNK % 4 != 0)
     ERROR("CPU_CHUNK(%d) in parameter.h must be multiple of 4\n", CPU_CHUNK);
 
-  _kind = ODP_Get_kind(nodes, degree, num_degrees, symmetries, 1, true);
+  _kind      = ODP_Get_kind(nodes, degree, num_degrees, symmetries, 1, true);
   _mem_usage = ODP_Get_mem_usage(_kind, nodes, degree, symmetries, num_degrees, 1, true);
-  _elements = (nodes/symmetries+(UINT64_BITS-1))/UINT64_BITS;
+  _elements  = (nodes/symmetries+(UINT64_BITS-1))/UINT64_BITS;
 #ifdef __AVX2__
   if(_elements >= 4){ // For performance
     _enable_avx2 = true;
@@ -123,9 +125,17 @@ static void init_aspl_s(const int nodes, const int degree, const int* num_degree
   }
 #endif
 
-  size_t s = (_kind == ASPL_NORMAL)? _elements : CPU_CHUNK;
-  ODP_Malloc(&_A, nodes*s*sizeof(uint64_t), _enable_avx2); // uint64_t A[nodes][s];
-  ODP_Malloc(&_B, nodes*s*sizeof(uint64_t), _enable_avx2); // uint64_t B[nodes][s];
+  if(_kind == ASPL_MATRIX || _kind == ASPL_MATRIX_SAVING){
+    size_t s = (_kind == ASPL_MATRIX)? _elements : CPU_CHUNK;
+    ODP_Malloc(&_A, nodes*s*sizeof(uint64_t), _enable_avx2); // uint64_t A[nodes][s];
+    ODP_Malloc(&_B, nodes*s*sizeof(uint64_t), _enable_avx2); // uint64_t B[nodes][s];
+  }
+  else{ // _kind == ASPL_BFS
+    _bitmap   = malloc(sizeof(char) * nodes);
+    _frontier = malloc(sizeof(int)  * nodes);
+    _distance = malloc(sizeof(int)  * nodes);
+    _next     = malloc(sizeof(int)  * nodes);
+  }
 
   _nodes = nodes;
   _degree = degree;
@@ -138,6 +148,101 @@ static void init_aspl_s(const int nodes, const int degree, const int* num_degree
     _num_degrees = malloc(sizeof(int) * nodes);
     memcpy(_num_degrees, num_degrees, sizeof(int) * nodes);
   }
+}
+
+#ifdef _OPENMP
+static int top_down_step(const int level, const int num_frontier, const int* restrict adjacency,
+			 int* restrict frontier, int* restrict next)
+{
+  int count = 0;
+  int local_frontier[nodes];
+#pragma omp parallel private(local_frontier)
+  {
+    int local_count = 0;
+#pragma omp for nowait
+     for(int i=0;i<num_frontier;i++){
+       int v = frontier[i];
+       int d = (!_num_degrees)? _degree : _num_degrees[i];
+       for(int j=0;j<d;j++){
+         int n = *(adjacency + v * _degree + j);
+         if(_bitmap[n] == NOT_VISITED){
+           _bitmap[n]   = VISITED;
+           _distance[n] = level;
+           local_frontier[local_count++] = n;
+         }
+       }
+     }  // end for i
+#pragma omp critical
+     {
+       memcpy(&next[count], local_frontier, local_count*sizeof(int));
+       count += local_count;
+     }
+  }
+  return count;
+}
+#else
+static int top_down_step(const int level, const int num_frontier, const int* restrict adjacency,
+			 int* restrict frontier, int* restrict next)
+{
+  int count = 0;
+  for(int i=0;i<num_frontier;i++){
+    int v = frontier[i];
+    int d = (!_num_degrees)? _degree : _num_degrees[i];
+    for(int j=0;j<d;j++){
+      int n = *(adjacency + v * _degree + j);
+      if(_bitmap[n] == NOT_VISITED){
+        _bitmap[n]   = VISITED;
+        _distance[n] = level;
+        next[count++] = n;
+      }
+    }
+  }
+  return count;
+}
+#endif
+
+static void aspl_bfs(const int* restrict adjacency, int* diameter, long *sum, double* ASPL)
+{
+  int based_nodes = _nodes/_symmetries;
+  bool reached = true;
+  *diameter = 0;
+  *sum      = 0;
+
+  for(int s=0;s<based_nodes;s++){
+    int num_frontier = 1, level = 0;
+    for(int i=0;i<_nodes;i++)
+      _bitmap[i] = NOT_VISITED;
+
+    _frontier[0] = s;
+    _distance[s] = level;
+    _bitmap[s]   = VISITED;
+
+    while(1){
+      num_frontier = top_down_step(level++, num_frontier, adjacency, _frontier, _next);
+      if(num_frontier == 0) break;
+
+      int *tmp = _frontier;
+      _frontier = _next;
+      _next     = tmp;
+    }
+
+    *diameter = MAX(*diameter, level-1);
+
+    if(s == 0){
+      for(int i=1;i<_nodes;i++)
+        if(_bitmap[i] == NOT_VISITED)
+          reached = false;
+
+      if(!reached){
+        *diameter = INT_MAX;
+        return;
+      }
+    }
+
+    for(int i=s+1;i<_nodes;i++)
+      *sum += (_distance[i] + 1) * (_symmetries - i/based_nodes);
+  }
+  *ASPL = *sum / (((double)_nodes-1)*_nodes) * 2;
 }
 
 void ODP_Init_aspl_general(const int nodes, const int degree, const int* num_degrees)
@@ -208,10 +313,18 @@ void ODP_Init_aspl_grid_s(const int width, const int height, const int degree, c
 
 void ODP_Finalize_aspl()
 {
-  ODP_Free(_A, _enable_avx2);
-  ODP_Free(_B, _enable_avx2);
-  if(_num_degrees) free(_num_degrees);
-  if(_itable)      free(_itable);
+  if(_kind == ASPL_MATRIX || _kind == ASPL_MATRIX_SAVING){
+    ODP_Free(_A, _enable_avx2);
+    ODP_Free(_B, _enable_avx2);
+    if(_num_degrees) free(_num_degrees);
+    if(_itable)      free(_itable);
+  }
+  else{ // _kind == ASPL_BFS
+    free(_bitmap);
+    free(_frontier);
+    free(_distance);
+    free(_next);
+  }
   
   if(_is_profile){
 #ifdef _OPENMP
@@ -228,10 +341,12 @@ void ODP_Set_aspl(const int* restrict adjacency, int *diameter, long *sum, doubl
 {
   double t = ODP_Get_time();
 
-  if(_kind == ASPL_NORMAL)
+  if(_kind == ASPL_MATRIX)
     aspl_mat       (adjacency, diameter, sum, ASPL);
-  else
+  else if(_kind == ASPL_MATRIX_SAVING)
     aspl_mat_saving(adjacency, diameter, sum, ASPL);
+  else // _kind == ASPL_MATRIX_BFS
+    aspl_bfs(adjacency, diameter, sum, ASPL);
 
   _elapsed_time += ODP_Get_time() - t;
   

@@ -139,7 +139,7 @@ static void init_aspl_mpi_s(const int nodes, const int degree,
   }
 #endif
 
-  size_t s = (_kind == ASPL_NORMAL)? _elements : CPU_CHUNK;
+  size_t s = (_kind == ASPL_MATRIX)? _elements : CPU_CHUNK;
   ODP_Malloc(&_A, nodes*s*sizeof(uint64_t), _enable_avx2); // uint64_t A[nodes][s];
   ODP_Malloc(&_B, nodes*s*sizeof(uint64_t), _enable_avx2); // uint64_t B[nodes][s];
   
@@ -247,7 +247,7 @@ void ODP_Set_aspl(const int* restrict adjacency, int *diameter, long *sum, doubl
 {
   double t = ODP_Get_time();
   
-  if(_kind == ASPL_NORMAL)
+  if(_kind == ASPL_MATRIX)
     aspl_mpi_mat       (adjacency, diameter, sum, ASPL);
   else
     aspl_mpi_mat_saving(adjacency, diameter, sum, ASPL);

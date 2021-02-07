@@ -27,12 +27,13 @@
 #define WIDTH(v,h) ((v)/(h))
 #define HEIGHT(v,h) ((v)%(h))
 
-#define UINT64_BITS 64
-#define ASPL_NORMAL 1
-#define ASPL_SAVING 2
-#define NOT_VISITED 0
-#define VISITED     1
-#define NOT_DEFINED -1
+#define UINT64_BITS       64
+#define ASPL_MATRIX        1
+#define ASPL_MATRIX_SAVING 2
+#define ASPL_BFS           3
+#define NOT_VISITED        0
+#define VISITED            1
+#define NOT_DEFINED       -1
 
 #ifdef __NVCC__
 #define POPCNT(a) __popcll(a)
