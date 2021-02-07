@@ -1278,6 +1278,8 @@ int ODP_Get_kind(const int nodes, const int degree, const int* num_degrees, cons
     kind = ASPL_MATRIX_SAVING;
   }
   else if(strcmp(val, "BFS") == 0){
+    if(!is_cpu)
+      ERROR("Not implemented\n");
     kind = ASPL_BFS;
   }
   else{
