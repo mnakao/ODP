@@ -16,10 +16,7 @@ __device__ static int rotate(const int v, const int width, const int height, con
 
 __device__ static int local_index(const int x, const int width, const int height, const int symmetries)
 {
-  if(symmetries == 1){
-    return x;
-  }
-  else if(symmetries == 2){
+  if(symmetries == 2){
     return x;
   }
   else{ // symmetries == 4
@@ -105,7 +102,7 @@ __global__ void ODP_Popcnt(const uint64_t* __restrict__ B, const int nodes,
 
 __global__ void ODP_Matmul_cuda(const uint64_t* __restrict__ A, uint64_t* __restrict__ B, const int* __restrict__ adjacency,
 				const int* __restrict__ num_degrees, const int nodes, const int height, const int degree,
-				const unsigned int elements, const int symmetries, const int *itable)
+				const unsigned int elements, const int symmetries, const int* __restrict__ itable)
 {
   int tid = threadIdx.x + blockIdx.x * blockDim.x;
   if(symmetries == 1){
@@ -147,13 +144,14 @@ __global__ void ODP_Matmul_cuda(const uint64_t* __restrict__ A, uint64_t* __rest
       while (tid < nodes*elements) {
 	int i = tid / elements;
 	int k = tid % elements;
-	uint64_t tmp = B[itable[i]*elements+k];
+	int ii = itable[i]*elements+k;
+	uint64_t tmp = B[ii];
 	int d = (!num_degrees)? degree : num_degrees[i];
 	for(int j=0;j<d;j++){
 	  int n = global_adj(width, height, degree, symmetries, adjacency, i, j);
 	  tmp |= A[itable[n]*elements+k];
 	}
-	B[tid] = tmp;
+	B[ii] = tmp;
 	tid += blockDim.x * gridDim.x;
       }
     }
@@ -162,7 +160,7 @@ __global__ void ODP_Matmul_cuda(const uint64_t* __restrict__ A, uint64_t* __rest
 
 __global__ void ODP_Matmul_CHUNK_cuda(const uint64_t* __restrict__ A, uint64_t* __restrict__ B, const int* __restrict__ adjacency,
 				      const int* __restrict__ num_degrees, const int nodes, const int height, const int degree,
-				      const int symmetries, const int *itable)
+				      const int symmetries, const int* __restrict__ itable)
 {
   int tid = threadIdx.x + blockIdx.x * blockDim.x;
   if(symmetries == 1){
@@ -204,13 +202,14 @@ __global__ void ODP_Matmul_CHUNK_cuda(const uint64_t* __restrict__ A, uint64_t* 
       while (tid < nodes*GPU_CHUNK) {
 	int i = tid / GPU_CHUNK;
 	int k = tid % GPU_CHUNK;
-	uint64_t tmp = B[itable[i]*GPU_CHUNK+k];
+	int ii = itable[i]*GPU_CHUNK+k;
+	uint64_t tmp = B[ii];
 	int d = (!num_degrees)? degree : num_degrees[i];
 	for(int j=0;j<d;j++){
 	  int n = global_adj(width, height, degree, symmetries, adjacency, i, j);
 	  tmp |= A[itable[n]*GPU_CHUNK+k];
 	}
-	B[tid] = tmp;
+	B[ii] = tmp;
 	tid += blockDim.x * gridDim.x;
       }
     }
