@@ -191,7 +191,7 @@ static void aspl_mpi_bfs(const int* restrict adjacency, int* diameter, long *sum
       _bitmap[ss]   = VISITED;
     }
     else{
-      _frontier[0]  = s;
+      _frontier[0] = s;
       _distance[s] = level;
       _bitmap[s]   = VISITED;
     }
@@ -212,13 +212,13 @@ static void aspl_mpi_bfs(const int* restrict adjacency, int* diameter, long *sum
       *sum += (_distance[i] + 1) * _symmetries;
   }
 
-  MPI_Bcast(&reached, 1, MPI_C_BOOL, 0, MPI_COMM_WORLD);
+  MPI_Bcast(&reached, 1, MPI_C_BOOL, 0, _comm);
   if(!reached){
     *diameter = INT_MAX;
     return;
   }
-  MPI_Allreduce(MPI_IN_PLACE, diameter, 1, MPI_INT,  MPI_MAX, MPI_COMM_WORLD);
-  MPI_Allreduce(MPI_IN_PLACE, sum,      1, MPI_LONG, MPI_SUM, MPI_COMM_WORLD);
+  MPI_Allreduce(MPI_IN_PLACE, diameter, 1, MPI_INT,  MPI_MAX, _comm);
+  MPI_Allreduce(MPI_IN_PLACE, sum,      1, MPI_LONG, MPI_SUM, _comm);
   *sum = (*sum - _nodes)/2;
   *ASPL = *sum / (((double)_nodes-1)*_nodes) * 2;
 }
