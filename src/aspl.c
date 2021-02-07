@@ -6,7 +6,7 @@ static int* _frontier = NULL, *_distance = NULL, *_next = NULL;
 static char* _bitmap = NULL;
 static unsigned int _elements, _times;
 static double _mem_usage, _elapsed_time;
-static bool _enable_avx2 = false, _is_profile;
+static bool _enable_avx2 = false, _is_profile = false, _enable_grid_s = false;
 
 extern void ODP_Create_itable(const int width, const int height, const int symmetries, int *_itable);
 extern bool ODP_Check_profile();
@@ -166,7 +166,7 @@ static int top_down_step(const int level, const int num_frontier, const int* res
        int v = frontier[i];
        int d = (!_num_degrees)? _degree : _num_degrees[i];
        for(int j=0;j<d;j++){
-         int n = *(adjacency + v * _degree + j);
+	 int n = (!_enable_grid_s)? *(adjacency+v*_degree+j) : ODP_GLOBAL_ADJ_GRID(_width, _height, _degree, _symmetries, adjacency, v, j);
          if(_bitmap[n] == NOT_VISITED){
            _bitmap[n]   = VISITED;
            _distance[n] = level;
@@ -187,32 +187,15 @@ static int top_down_step(const int level, const int num_frontier, const int* res
 			 int* restrict frontier, int* restrict next)
 {
   int count = 0;
-  if(!_itable){
-    for(int i=0;i<num_frontier;i++){
-      int v = frontier[i];
-      int d = (!_num_degrees)? _degree : _num_degrees[i];
-      for(int j=0;j<d;j++){
-	int n = *(adjacency + v * _degree + j);
-	if(_bitmap[n] == NOT_VISITED){
-	  _bitmap[n]   = VISITED;
-	  _distance[n] = level;
-	  next[count++] = n;
-	}
-      }
-    }
-  }
-  else{
-    for(int i=0;i<num_frontier;i++){
-      int v = _itable[frontier[i]];
-      int d = (!_num_degrees)? _degree : _num_degrees[i];
-      for(int j=0;j<d;j++){
-	int n = ODP_GLOBAL_ADJ_GRID(_width, _height, _degree, _symmetries, adjacency, v, j);
-	int nn = _itable[n];
-        if(_bitmap[nn] == NOT_VISITED){
-          _bitmap[nn]   = VISITED;
-          _distance[nn] = level;
-          next[count++] = nn;
-      	}
+  for(int i=0;i<num_frontier;i++){
+    int v = frontier[i];
+    int d = (!_num_degrees)? _degree : _num_degrees[i];
+    for(int j=0;j<d;j++){
+      int n = (!_enable_grid_s)? *(adjacency + v*_degree+j) : ODP_GLOBAL_ADJ_GRID(_width, _height, _degree, _symmetries, adjacency, v, j);
+      if(_bitmap[n] == NOT_VISITED){
+	_bitmap[n]   = VISITED;
+	_distance[n] = level;
+	next[count++] = n;
       }
     }
   }
@@ -232,9 +215,18 @@ static void aspl_bfs(const int* restrict adjacency, int* diameter, long *sum, do
     for(int i=0;i<_nodes;i++)
       _bitmap[i] = NOT_VISITED;
 
-    _frontier[0] = _itable[s];
-    _distance[_itable[s]] = level;
-    _bitmap[_itable[s]]   = VISITED;
+    if(_enable_grid_s && _symmetries == 4){
+      int based_height = _height/2;
+      int ss = (s/based_height) * _height + (s%based_height);
+      _frontier[0]  = ss;
+      _distance[ss] = level;
+      _bitmap[ss]   = VISITED;
+    }
+    else{
+      _frontier[0]  = s;
+      _distance[s] = level;
+      _bitmap[s]   = VISITED;
+    }
 
     while(1){
       num_frontier = top_down_step(level++, num_frontier, adjacency, _frontier, _next);
@@ -251,16 +243,18 @@ static void aspl_bfs(const int* restrict adjacency, int* diameter, long *sum, do
       for(int i=1;i<_nodes;i++)
         if(_bitmap[i] == NOT_VISITED)
           reached = false;
-
+      
       if(!reached){
         *diameter = INT_MAX;
         return;
       }
     }
 
-    for(int i=s+1;i<_nodes;i++)
-      *sum += (_distance[i] + 1) * (_symmetries - i/based_nodes);
+    for(int i=0;i<_nodes;i++)
+      *sum += (_distance[i] + 1) * _symmetries;
   }
+  
+  *sum = (*sum - _nodes)/2;
   *ASPL = *sum / (((double)_nodes-1)*_nodes) * 2;
 }
 
@@ -301,6 +295,9 @@ void ODP_Init_aspl_grid_s(const int width, const int height, const int degree, c
   int nodes = width * height;
   _width  = width;
   _height = height;
+  if(symmetries == 2 || symmetries == 4)
+    _enable_grid_s = true;
+  
   if(num_degrees){
     int *tmp_num_degrees = malloc(sizeof(int) * nodes);
     int based_nodes = nodes/symmetries;
