@@ -109,7 +109,7 @@ __global__ void ODP_Matmul_cuda(const uint64_t* __restrict__ A, uint64_t* __rest
 {
   int based_nodes = nodes/symmetries;
   int tid = threadIdx.x + blockIdx.x * blockDim.x;
-  if(itable){
+  if(!itable){
     while (tid < nodes*elements) {
       int i = tid / elements;
       int k = tid % elements;
