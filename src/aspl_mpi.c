@@ -18,7 +18,7 @@ extern int ODP_ROTATE(const int v, const int width, const int height, const int 
 extern void ODP_Profile(const char* name, const int kind, const int symmetries, const double mem_usage,
 			const double elapsed_time, const unsigned int times, const int procs);
 extern int ODP_Get_kind(const int nodes, const int degree, const int* num_degrees, const int symmetries,
-			const int procs, const bool is_cpu);
+			const int procs, const bool is_cpu, const bool enable_grid_s);
 extern double ODP_Get_mem_usage(const int kind, const int nodes, const int degree, const int symmetries,
 				const int *num_degrees, const int procs, const bool is_cpu, const bool enable_grid_s);
 extern void ODP_Matmul(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int height, const int degree,
