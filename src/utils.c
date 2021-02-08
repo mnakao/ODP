@@ -1279,7 +1279,7 @@ int ODP_Get_kind(const int nodes, const int degree, const int* num_degrees, cons
   }
   else if(strcmp(val, "BFS") == 0){
     if(!is_cpu)
-      ERROR("Not implemented\n");
+      ERROR("BFS for CUDA is not implemented.\n");
     kind = ASPL_BFS;
   }
   else{
@@ -2009,12 +2009,13 @@ void ODP_Matmul_CHUNK(const uint64_t *restrict A, uint64_t *restrict B, const in
 #ifdef _OPENMP
 int ODP_top_down_step(const int level, const int num_frontier, const int* restrict adjacency,
                       const int nodes, const int degree, const int* restrict num_degrees, const bool enable_grid_s,
-                      const int width, const int height, const int symmetries,
+                      const int height, const int symmetries,
                       int* restrict frontier, int* restrict next, int* restrict distance, char* restrict bitmap)
 {
   int count = 0;
   int local_frontier[nodes];
   if(enable_grid_s){
+    int width = nodes/height;
 #pragma omp parallel private(local_frontier)
     {
       int local_count = 0;
@@ -2067,11 +2068,12 @@ int ODP_top_down_step(const int level, const int num_frontier, const int* restri
 #else
 int ODP_top_down_step(const int level, const int num_frontier, const int* restrict adjacency,
                       const int nodes, const int degree, const int* restrict num_degrees, const bool enable_grid_s,
-                      const int width, const int height, const int symmetries,
+                      const int height, const int symmetries,
                       int* restrict frontier, int* restrict next, int* restrict distance, char* restrict bitmap)
 {
   int count = 0;
   if(enable_grid_s){
+    int width = nodes/height;
     for(int i=0;i<num_frontier;i++){
       int v = frontier[i];
       int d = (!num_degrees)? degree : num_degrees[i];

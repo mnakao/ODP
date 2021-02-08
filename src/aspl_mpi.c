@@ -1,7 +1,7 @@
 #include "common.h"
 #include <mpi.h>
 static uint64_t *_A, *_B;
-static int _nodes, _degree, _symmetries, _kind, _rank, _procs, _width, _height;
+static int _nodes, _degree, _symmetries, _kind, _rank, _procs, _height;
 static int* _num_degrees = NULL;
 static int* _frontier = NULL, *_distance = NULL, *_next = NULL;
 static char* _bitmap = NULL;
@@ -30,7 +30,7 @@ extern void ODP_Malloc(uint64_t **a, const size_t s, const bool enable_avx2);
 extern void ODP_Free(uint64_t *a, const bool enable_avx2);
 extern int ODP_top_down_step(const int level, const int num_frontier, const int* restrict adjacency,
                              const int nodes, const int degree, const int* restrict num_degrees, const bool enable_grid_s,
-                             const int width, const int height, const int symmetries,
+                             const int height, const int symmetries,
                              int* restrict frontier, int* restrict next, int* restrict distance, char* restrict bitmap);
 
 static void aspl_mpi_mat(const int* restrict adjacency,
@@ -46,9 +46,19 @@ static void aspl_mpi_mat(const int* restrict adjacency,
     for(int i=0;i<_nodes*_elements;i++)
       _A[i] = _B[i] = 0;
 
-    for(l=0; l<UINT64_BITS*_elements && UINT64_BITS*t*_elements+l<_nodes/_symmetries; l++){
-      unsigned int offset = (UINT64_BITS*t*_elements+l)*_elements+l/UINT64_BITS;
-      _A[offset] = _B[offset] = (0x1ULL<<(l%UINT64_BITS));
+    if(_enable_grid_s && _symmetries == 4){
+      int based_height = _height/2;
+      for(l=0; l<UINT64_BITS*_elements && UINT64_BITS*t*_elements+l<_nodes/_symmetries; l++){
+	int ll = (l/based_height) * _height + (l%based_height);
+        unsigned int offset = (UINT64_BITS*t*_elements+ll)*_elements+ll/UINT64_BITS;
+      	_A[offset] = _B[offset] = (0x1ULL<<(ll%UINT64_BITS));
+      }
+    }
+    else{
+      for(l=0; l<UINT64_BITS*_elements && UINT64_BITS*t*_elements+l<_nodes/_symmetries; l++){
+	unsigned int offset = (UINT64_BITS*t*_elements+l)*_elements+l/UINT64_BITS;
+	_A[offset] = _B[offset] = (0x1ULL<<(l%UINT64_BITS));
+      }
     }
 
     for(kk=0;kk<_nodes;kk++){
@@ -91,10 +101,20 @@ static void aspl_mpi_mat_saving(const int* restrict adjacency,
 #pragma omp parallel for
     for(int i=0;i<_nodes*CPU_CHUNK;i++)
       _A[i] = _B[i] = 0;
-    
-    for(l=0; l<UINT64_BITS*CPU_CHUNK && UINT64_BITS*t*CPU_CHUNK+l<_nodes/_symmetries; l++){
-      unsigned int offset = (UINT64_BITS*t*CPU_CHUNK+l)*CPU_CHUNK+l/UINT64_BITS;
-      _A[offset] = _B[offset] = (0x1ULL<<(l%UINT64_BITS));
+
+    if(_enable_grid_s && _symmetries == 4){
+      int based_height = _height/2;
+      for(l=0; l<UINT64_BITS*CPU_CHUNK && UINT64_BITS*t*CPU_CHUNK+l<_nodes/_symmetries; l++){
+	int ll = (l/based_height) * _height + (l%based_height);
+	unsigned int offset = (UINT64_BITS*t*CPU_CHUNK+ll)*CPU_CHUNK+ll/UINT64_BITS;
+	_A[offset] = _B[offset] = (0x1ULL<<(ll%UINT64_BITS));
+      }
+    }
+    else{
+      for(l=0; l<UINT64_BITS*CPU_CHUNK && UINT64_BITS*t*CPU_CHUNK+l<_nodes/_symmetries; l++){
+	unsigned int offset = (UINT64_BITS*t*CPU_CHUNK+l)*CPU_CHUNK+l/UINT64_BITS;
+	_A[offset] = _B[offset] = (0x1ULL<<(l%UINT64_BITS));
+      }
     }
 
     for(kk=0;kk<_nodes;kk++){
@@ -200,7 +220,7 @@ static void aspl_mpi_bfs(const int* restrict adjacency, int* diameter, long *sum
 
     while(1){
       num_frontier = ODP_top_down_step(level++, num_frontier, adjacency, _nodes, _degree, _num_degrees,
-                                       _enable_grid_s, _width, _height, _symmetries, _frontier, _next, _distance, _bitmap);
+                                       _enable_grid_s, _height, _symmetries, _frontier, _next, _distance, _bitmap);
       if(num_frontier == 0) break;
 
       int *tmp = _frontier;
@@ -253,7 +273,6 @@ void ODP_Init_aspl_mpi_grid(const int width, const int height, const int degree,
 			    const int* restrict num_degrees, const MPI_Comm comm)
 {
   int nodes = width * height;
-  _width  = width;
   _height = height;
   init_aspl_mpi_s(nodes, degree, num_degrees, comm, 1);
 }
@@ -262,7 +281,6 @@ void ODP_Init_aspl_mpi_grid_s(const int width, const int height, const int degre
 			      const MPI_Comm comm, const int symmetries)
 {
   int nodes = width * height;
-  _width  = width;
   _height = height;
   if(symmetries == 2 || symmetries == 4)
     _enable_grid_s = true;

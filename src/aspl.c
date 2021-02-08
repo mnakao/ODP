@@ -1,6 +1,6 @@
 #include "common.h"
 static uint64_t *_A, *_B;
-static int _nodes, _degree, _symmetries, _kind, _width, _height;
+static int _nodes, _degree, _symmetries, _kind, _height;
 static int* _num_degrees = NULL;
 static int* _frontier = NULL, *_distance = NULL, *_next = NULL;
 static char* _bitmap = NULL;
@@ -28,7 +28,7 @@ extern void ODP_Malloc(uint64_t **a, const size_t s, const bool enable_avx2);
 extern void ODP_Free(uint64_t *a, const bool enable_avx2);
 extern int ODP_top_down_step(const int level, const int num_frontier, const int* restrict adjacency,
 			     const int nodes, const int degree, const int* restrict num_degrees, const bool enable_grid_s,
-			     const int width, const int height, const int symmetries,
+			     const int height, const int symmetries,
 			     int* restrict frontier, int* restrict next, int* restrict distance, char* restrict bitmap);
   
 static void aspl_mat(const int* restrict adjacency, int *diameter, long *sum, double *ASPL)
@@ -202,7 +202,7 @@ static void aspl_bfs(const int* restrict adjacency, int* diameter, long *sum, do
 
     while(1){
       num_frontier = ODP_top_down_step(level++, num_frontier, adjacency, _nodes, _degree, _num_degrees,
-				       _enable_grid_s, _width, _height, _symmetries, _frontier, _next, _distance, _bitmap);
+				       _enable_grid_s, _height, _symmetries, _frontier, _next, _distance, _bitmap);
       if(num_frontier == 0) break;
 
       int *tmp = _frontier;
@@ -257,7 +257,6 @@ void ODP_Init_aspl_general_s(const int nodes, const int degree, const int* num_d
 void ODP_Init_aspl_grid(const int width, const int height, const int degree, const int* num_degrees)
 {
   int nodes = width * height;
-  _width  = width;
   _height = height;
   init_aspl_s(nodes, degree, num_degrees, 1);
 }
@@ -266,7 +265,6 @@ void ODP_Init_aspl_grid_s(const int width, const int height, const int degree, c
 
 {
   int nodes = width * height;
-  _width  = width;
   _height = height;
   if(symmetries == 2 || symmetries == 4)
     _enable_grid_s = true;
