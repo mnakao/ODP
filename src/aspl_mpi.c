@@ -177,6 +177,12 @@ static void init_aspl_mpi_s(const int nodes, const int degree,
     _frontier = malloc(sizeof(int)  * nodes);
     _distance = malloc(sizeof(int)  * nodes);
     _next     = malloc(sizeof(int)  * nodes);
+#ifdef _OPENMP
+#pragma omp parallel
+    {
+      ODP_local_frontier = malloc(sizeof(int) * nodes);
+    }
+#endif
   }
   
   _nodes = nodes;
@@ -323,6 +329,9 @@ void ODP_Finalize_aspl()
     free(_frontier);
     free(_distance);
     free(_next);
+#ifdef _OPENMP
+    free(ODP_local_frontier);
+#endif
   }
   
   if(_rank == 0 && _is_profile){

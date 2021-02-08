@@ -41,6 +41,11 @@
 #define POPCNT(a) _mm_popcnt_u64(a)
 #endif
 
+#ifdef _OPENMP
+int *ODP_local_frontier;
+#pragma omp threadprivate(ODP_local_frontier)
+#endif
+
 extern void ODP_Set_lbounds_general(const int nodes, const int degree, int *low_diameter, double *low_ASPL);
 extern void ODP_Set_lbounds_grid(const int m, const int n, const int degree, const int length, int *low_diameter, double *low_ASPL);
 extern void ODP_Set_degrees(const int nodes, const int lines, int (*edge)[2], int* num_degrees);

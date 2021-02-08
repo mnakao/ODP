@@ -160,8 +160,14 @@ static void init_aspl_s(const int nodes, const int degree, const int* num_degree
     _frontier = malloc(sizeof(int)  * nodes);
     _distance = malloc(sizeof(int)  * nodes);
     _next     = malloc(sizeof(int)  * nodes);
+#ifdef _OPENMP
+#pragma omp parallel
+    {
+      ODP_local_frontier = malloc(sizeof(int) * nodes);
+    }
+#endif
   }
-
+  
   _nodes = nodes;
   _degree = degree;
   _symmetries = symmetries;
@@ -202,7 +208,8 @@ static void aspl_bfs(const int* restrict adjacency, int* diameter, long *sum, do
 
     while(1){
       num_frontier = ODP_top_down_step(level++, num_frontier, adjacency, _nodes, _degree, _num_degrees,
-				       _enable_grid_s, _height, _symmetries, _frontier, _next, _distance, _bitmap);
+				       _enable_grid_s, _height, _symmetries, 
+				       _frontier, _next, _distance, _bitmap);
       if(num_frontier == 0) break;
 
       int *tmp = _frontier;
@@ -307,6 +314,9 @@ void ODP_Finalize_aspl()
     free(_frontier);
     free(_distance);
     free(_next);
+#ifdef _OPENMP
+    free(ODP_local_frontier);
+#endif
   }
   
   if(_is_profile){

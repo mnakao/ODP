@@ -1,5 +1,5 @@
 #include "common.h"
-int _u[2], _v[2], _u_d[2], _v_d[2];
+static int _u[2], _v[2], _u_d[2], _v_d[2];
 
 void ODP_Print_adjacency(const int nodes, const int degree, const int num_degrees[nodes], const int adjacency[nodes][degree])
 {
@@ -2013,10 +2013,9 @@ int ODP_top_down_step(const int level, const int num_frontier, const int* restri
                       int* restrict frontier, int* restrict next, int* restrict distance, char* restrict bitmap)
 {
   int count = 0;
-  int local_frontier[nodes];
   if(enable_grid_s){
     int width = nodes/height;
-#pragma omp parallel private(local_frontier)
+#pragma omp parallel
     {
       int local_count = 0;
 #pragma omp for nowait
@@ -2028,19 +2027,19 @@ int ODP_top_down_step(const int level, const int num_frontier, const int* restri
          if(bitmap[n] == NOT_VISITED){
            bitmap[n]   = VISITED;
            distance[n] = level;
-           local_frontier[local_count++] = n;
+           ODP_local_frontier[local_count++] = n;
          }
 	}
       }  // end for i
 #pragma omp critical
       {
-	memcpy(&next[count], local_frontier, local_count*sizeof(int));
+	memcpy(&next[count], ODP_local_frontier, local_count*sizeof(int));
 	count += local_count;
       }
     }
   }
   else{
-#pragma omp parallel private(local_frontier)
+#pragma omp parallel
     {
       int local_count = 0;
 #pragma omp for nowait
@@ -2052,13 +2051,13 @@ int ODP_top_down_step(const int level, const int num_frontier, const int* restri
 	  if(bitmap[n] == NOT_VISITED){
 	    bitmap[n]   = VISITED;
 	    distance[n] = level;
-	    local_frontier[local_count++] = n;
+	    ODP_local_frontier[local_count++] = n;
 	  }
 	}
       }  // end for i
 #pragma omp critical
       {
-	memcpy(&next[count], local_frontier, local_count*sizeof(int));
+	memcpy(&next[count], ODP_local_frontier, local_count*sizeof(int));
 	count += local_count;
       }
     }
