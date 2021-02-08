@@ -44,8 +44,8 @@ static void set_args(const int argc, char **argv, int *width, int *height, int *
       break;
     case 'n':
       *ncalcs = atol(optarg);
-      if(*ncalcs <= 0)
-        ERROR("-n value >= 1\n");
+      if(*ncalcs < 0)
+        ERROR("-n value >= 0\n");
       break;
     case 'w':
       *max_temp = atof(optarg);
@@ -115,9 +115,10 @@ int main(int argc, char *argv[])
   else{
     double cooling_rate = (max_temp != min_temp)? pow(min_temp/max_temp, (double)1.0/ncalcs) : 1.0;
     double temp = max_temp;
+    int	interval = (ncalcs < 100)? 1 : ncalcs/100;
     printf("Ncalcs : Temp : Diameter Gap : ASPL Gap\n");
     for(long i=0;i<ncalcs;i++){
-      if(i%(ncalcs/100) == 0)
+      if(i%interval == 0)
 	printf("%ld\t%f\t%d\t%f\n", i, temp, best_diameter-low_diameter, best_ASPL-low_ASPL);
 
       ODP_Mutate_adjacency_grid(width, height, degree, NULL, length, adjacency);
