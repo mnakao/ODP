@@ -3,7 +3,7 @@ static uint64_t *_A_dev, *_B_dev;
 static uint64_t *_result, *_result_dev;
 static int *_adjacency_dev, *_num_degrees_dev = NULL;
 static bool _is_profile = false, _enable_grid_s = false;
-static int _nodes, _degree, _symmetries, _kind, _height;
+static int _nodes, _degree, _symmetries, _kind, _height = -1;
 static double _mem_usage, _elapsed_time;
 static unsigned int _times;
 

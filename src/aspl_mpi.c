@@ -1,7 +1,7 @@
 #include "common.h"
 #include <mpi.h>
 static uint64_t *_A, *_B;
-static int _nodes, _degree, _symmetries, _kind, _rank, _procs, _height;
+static int _nodes, _degree, _symmetries, _kind, _rank, _procs, _height = -1;
 static int* _num_degrees = NULL;
 static int* _frontier = NULL, *_distance = NULL, *_next = NULL;
 static char* _bitmap = NULL;

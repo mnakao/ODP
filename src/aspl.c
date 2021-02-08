@@ -1,6 +1,6 @@
 #include "common.h"
 static uint64_t *_A, *_B;
-static int _nodes, _degree, _symmetries, _kind, _height;
+static int _nodes, _degree, _symmetries, _kind, _height = -1;
 static int* _num_degrees = NULL;
 static int* _frontier = NULL, *_distance = NULL, *_next = NULL;
 static char* _bitmap = NULL;
@@ -233,7 +233,7 @@ static void aspl_bfs(const int* restrict adjacency, int* diameter, long *sum, do
     for(int i=0;i<_nodes;i++)
       *sum += (_distance[i] + 1) * _symmetries;
   }
-  
+
   *sum = (*sum - _nodes)/2;
   *ASPL = *sum / (((double)_nodes-1)*_nodes) * 2;
 }

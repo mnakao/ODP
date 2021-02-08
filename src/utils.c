@@ -258,18 +258,33 @@ static int LOCAL_INDEX_GENERAL(const int v, const int position, const int nodes,
   return NORM(v - (position/based_nodes)*based_nodes, nodes);
 }
 
-static int top_down_step(const int nodes, const int num_frontier, const int degree,
-                         const int* restrict adjacency, int* restrict frontier,
-                         int* restrict next, char* restrict bitmap)
+static int simple_top_down_step(const int nodes, const int height, const int num_frontier, const int degree,
+				const int symmetries, const bool enable_grid_s, const int* restrict adjacency,
+				int* restrict frontier, int* restrict next, char* restrict bitmap)
 {
   int count = 0;
-  for(int i=0;i<num_frontier;i++){
-    int v = frontier[i];
-    for(int j=0;j<degree;j++){
-      int n = *(adjacency + v * degree + j);  // int n = adjacency[v][j];
-      if(bitmap[n] == NOT_VISITED){
-        bitmap[n] = VISITED;
-        next[count++] = n;
+  if(enable_grid_s){
+    int width = nodes/height;
+    for(int i=0;i<num_frontier;i++){
+      int v = frontier[i];
+      for(int j=0;j<degree;j++){
+	int n = GLOBAL_ADJ_GRID(width, height, degree, symmetries, (int (*)[degree])adjacency, v, j);
+        if(bitmap[n] == NOT_VISITED){
+          bitmap[n] = VISITED;
+          next[count++] = n;
+        }
+      }
+    }
+  }
+  else{
+    for(int i=0;i<num_frontier;i++){
+      int v = frontier[i];
+      for(int j=0;j<degree;j++){
+	int n = GLOBAL_ADJ_GENERAL(nodes, degree, symmetries, (int (*)[degree])adjacency, v, j);
+	if(bitmap[n] == NOT_VISITED){
+	  bitmap[n] = VISITED;
+	  next[count++] = n;
+	}
       }
     }
   }
@@ -277,7 +292,8 @@ static int top_down_step(const int nodes, const int num_frontier, const int degr
   return count;
 }
 
-static bool simple_bfs(const int nodes, const int degree, int *adjacency)
+static bool simple_bfs(const int nodes, const int height, const int degree, const int symmetries,
+		       const bool enable_grid_s, int *adjacency)
 {
   char *bitmap  = malloc(sizeof(char) * nodes);
   int *frontier = malloc(sizeof(int)  * nodes);
@@ -291,8 +307,8 @@ static bool simple_bfs(const int nodes, const int degree, int *adjacency)
   bitmap[root] = VISITED;
 
   while(1){
-    num_frontier = top_down_step(nodes, num_frontier, degree,
-                                 adjacency, frontier, next, bitmap);
+    num_frontier = simple_top_down_step(nodes, height, num_frontier, degree, symmetries,
+					enable_grid_s,adjacency, frontier, next, bitmap);
     if(num_frontier == 0) break;
 
     int *tmp = frontier;
@@ -1090,7 +1106,7 @@ void ODP_Generate_random_general(const int nodes, const int degree, int (*edge)[
     ODP_Mutate_adjacency_general(nodes, degree, NULL, (int (*)[degree])adjacency);
 
   // Repeat until there are no unreachable vertices
-  while(simple_bfs(nodes, degree, adjacency))
+  while(simple_bfs(nodes, -1, degree, 1, false, adjacency))
     ODP_Mutate_adjacency_general(nodes, degree, NULL, (int (*)[degree])adjacency);
 
   ODP_Conv_adjacency2edge_general(nodes, degree, NULL, adjacency, edge);
@@ -1148,7 +1164,8 @@ void ODP_Generate_random_general_s(const int nodes, const int degree, const int 
     ODP_Mutate_adjacency_general_s(nodes, degree, NULL, symmetries, (int (*)[degree])adjacency);
 
   // Repeat until there are no unreachable vertices
-  // (omit)
+  while(simple_bfs(nodes, -1, degree, symmetries, false, adjacency))
+    ODP_Mutate_adjacency_general_s(nodes, degree, NULL, symmetries, (int (*)[degree])adjacency);
 
   ODP_Conv_adjacency2edge_general_s(nodes, degree, NULL, adjacency, symmetries, edge);
   free(adjacency);
@@ -1569,6 +1586,7 @@ void ODP_Conv_adjacency2edge_grid(const int width, const int height, const int d
 {
   ODP_Conv_adjacency2edge_general(width*height, degree, num_degrees, adjacency, edge);
 }
+
 void ODP_Conv_edge2adjacency_general(const int nodes, const int lines, const int degree, const int edge[lines][2],
 				     int *adjacency) // int adjacency[nodes][degree]
 {
@@ -1648,7 +1666,7 @@ void ODP_Generate_random_grid(const int width, const int height, const int degre
     ODP_Mutate_adjacency_grid(width, height, degree, NULL, length, (int (*)[degree])adjacency);
 
   // Repeat until there are no unreachable vertices
-  while(simple_bfs(nodes, degree, adjacency))
+  while(simple_bfs(nodes, -1, degree, 1, false, adjacency))
     ODP_Mutate_adjacency_grid(width, height, degree, NULL, length, (int (*)[degree])adjacency);
 
   ODP_Conv_adjacency2edge_grid(width, height, degree, NULL, adjacency, edge);
@@ -1771,7 +1789,8 @@ void ODP_Generate_random_grid_s(const int width, const int height, const int deg
     ODP_Mutate_adjacency_grid_s(width, height, degree, NULL, length, symmetries, adjacency);
 
   // Repeat until there are no unreachable vertices
-  // (omit)
+  while(simple_bfs(nodes, height, degree, symmetries, (symmetries != 1), (int *)adjacency))
+    ODP_Mutate_adjacency_grid_s(width, height, degree, NULL, length, symmetries, adjacency);
 
   ODP_Conv_adjacency2edge_grid_s(width, height, degree, NULL, adjacency, symmetries, edge);
 
@@ -1793,9 +1812,9 @@ static void matmul(const uint64_t *restrict A, uint64_t *restrict B, const int n
       }
     }
   }
-  else{
-    int width = nodes/height;
+  else{  
     if(enable_grid_s){
+      int width = nodes/height;
 #pragma omp parallel for
       for(int i=0;i<nodes;i++){
 	int d = (!num_degrees)? degree : num_degrees[i];
