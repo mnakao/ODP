@@ -1262,8 +1262,12 @@ double ODP_Get_mem_usage(const int kind, const int nodes, const int degree, cons
     AB_mem = (nodes*((double)nodes/(4*symmetries*procs)));
   else if(kind == ASPL_MATRIX_SAVING)
     AB_mem = (double)16*nodes*chunk;
-  else // kind == ASPL_BFS
+  else{ // kind == ASPL_BFS
     AB_mem = nodes * (sizeof(int)*3 + sizeof(char));
+#ifdef _OPENMP
+    AB_mem += sizeof(int) * nodes * omp_get_max_threads();
+#endif
+  }
 
   if(is_cpu){
     return AB_mem/Mbyte;
