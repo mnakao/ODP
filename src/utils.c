@@ -1253,15 +1253,19 @@ void ODP_Free(uint64_t *a, const bool enable_avx2)
 }
 
 double ODP_Get_mem_usage(const int kind, const int nodes, const int degree, const int symmetries,
-                         const int *num_degrees, const int procs, const bool is_cpu)
+                         const int *num_degrees, const int procs, const bool is_cpu, const bool enable_grid_s)
 {
   int Mbyte = 1024*1024;
   int chunk = (is_cpu)? CPU_CHUNK : GPU_CHUNK;
   double AB_mem;
-  if(kind == ASPL_MATRIX)
-    AB_mem = (nodes*((double)nodes/(4*symmetries*procs)));
-  else if(kind == ASPL_MATRIX_SAVING)
+  if(kind == ASPL_MATRIX){
+    AB_mem = nodes*((double)nodes/(4*symmetries*procs));
+    if(enable_grid_s) AB_mem += sizeof(int) * nodes;
+  }
+  else if(kind == ASPL_MATRIX_SAVING){
     AB_mem = (double)16*nodes*chunk;
+    if(enable_grid_s) AB_mem += sizeof(int) * nodes;
+  }
   else{ // kind == ASPL_BFS
     AB_mem = nodes * (sizeof(int)*3 + sizeof(char));
 #ifdef _OPENMP
@@ -1281,12 +1285,12 @@ double ODP_Get_mem_usage(const int kind, const int nodes, const int degree, cons
 }
 
 int ODP_Get_kind(const int nodes, const int degree, const int* num_degrees, const int symmetries,
-                 const int procs, const int is_cpu)
+                 const int procs, const bool is_cpu, const bool enable_grid_s)
 {
   int kind;
   char *val = getenv("ODP_ASPL");
   if(!val){
-    double normal_mem_usage = ODP_Get_mem_usage(ASPL_MATRIX, nodes, degree, symmetries, num_degrees, procs, is_cpu);
+    double normal_mem_usage = ODP_Get_mem_usage(ASPL_MATRIX, nodes, degree, symmetries, num_degrees, procs, is_cpu, enable_grid_s);
     if(normal_mem_usage <= MEM_THRESHOLD)
       kind = ASPL_MATRIX;
     else

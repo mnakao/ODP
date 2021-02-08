@@ -16,9 +16,9 @@ extern int ODP_ROTATE(const int v, const int width, const int height, const int 
 extern void ODP_Profile(const char* name, const int kind, const int symmetries, const double mem_usage,
 			const double elapsed_time, const unsigned int times, const int procs);
 extern int ODP_Get_kind(const int nodes, const int degree, const int* num_degrees, const int symmetries,
-			const int procs, const bool is_cpu);
+			const int procs, const bool is_cpu, const bool enable_grid_s);
 extern double ODP_Get_mem_usage(const int kind, const int nodes, const int degree, const int symmetries,
-				const int *num_degrees, const int procs, const bool is_cpu);
+				const int *num_degrees, const int procs, const bool is_cpu, const bool enable_grid_s);
 extern void ODP_Matmul(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int height, const int degree,
 		       const int *restrict num_degrees, const int *restrict adjacency, const int *itable, const int elements,
 		       const int symmetries, const bool enable_grid_s, const bool enable_avx2);
@@ -121,8 +121,8 @@ static void init_aspl_s(const int nodes, const int degree, const int* num_degree
   else if(CPU_CHUNK % 4 != 0)
     ERROR("CPU_CHUNK(%d) in parameter.h must be multiple of 4\n", CPU_CHUNK);
 
-  _kind      = ODP_Get_kind(nodes, degree, num_degrees, symmetries, 1, true);
-  _mem_usage = ODP_Get_mem_usage(_kind, nodes, degree, symmetries, num_degrees, 1, true);
+  _kind      = ODP_Get_kind(nodes, degree, num_degrees, symmetries, 1, true, _enable_grid_s);
+  _mem_usage = ODP_Get_mem_usage(_kind, nodes, degree, symmetries, num_degrees, 1, true, _enable_grid_s);
   _elements  = (nodes/symmetries+(UINT64_BITS-1))/UINT64_BITS;
 #ifdef __AVX2__
   if(_elements >= 4){ // For performance

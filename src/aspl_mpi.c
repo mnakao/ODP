@@ -20,7 +20,7 @@ extern void ODP_Profile(const char* name, const int kind, const int symmetries, 
 extern int ODP_Get_kind(const int nodes, const int degree, const int* num_degrees, const int symmetries,
 			const int procs, const bool is_cpu);
 extern double ODP_Get_mem_usage(const int kind, const int nodes, const int degree, const int symmetries,
-				const int *num_degrees, const int procs, const bool is_cpu);
+				const int *num_degrees, const int procs, const bool is_cpu, const bool enable_grid_s);
 extern void ODP_Matmul(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int height, const int degree,
 		       const int *restrict num_degrees, const int *restrict adjacency, const int *itable, const int elements,
 		       const int symmetries, const bool enable_grid_s, const bool enable_avx2);
@@ -137,8 +137,8 @@ static void init_aspl_mpi_s(const int nodes, const int degree,
   MPI_Comm_rank(comm, &_rank);
   MPI_Comm_size(comm, &_procs);
 
-  _kind = ODP_Get_kind(nodes, degree, num_degrees, symmetries, _procs, true);
-  _mem_usage = ODP_Get_mem_usage(_kind, nodes, degree, symmetries, num_degrees, _procs, true);
+  _kind = ODP_Get_kind(nodes, degree, num_degrees, symmetries, _procs, true, _enable_grid_s);
+  _mem_usage = ODP_Get_mem_usage(_kind, nodes, degree, symmetries, num_degrees, _procs, true, _enable_grid_s);
   _total_elements = (nodes/symmetries+(UINT64_BITS-1))/UINT64_BITS;
   _elements = (_total_elements+(_procs-1))/_procs;
 #ifdef __AVX2__
