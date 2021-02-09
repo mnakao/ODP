@@ -435,10 +435,10 @@ These values match the 36th row of the adjacency matrix.
 ![](./misc/img/grid_s4.png)
 
 The above image is an example of a graph with (width, height, degree, length, symmetries) = (6, 6, 3, 2, 4).
-Note that the only element used in the adjacency matrix is the lower left corner of the grid graph.
+Only the vertices in the lower left part of the image are used to calculate the other vertices.
 Specifically, the nine points are (0,0), (0,1), (0,2), (1,0), (1,1), (1,2), (2,0), (2,1), and (2,2).
-Their vertex numbers are 0, 1, 2, 6, 7, 8, 12, 13, 14, respectively.
-The vertex number 0 corresponds to the vertex number 5, 35, and 30.
+Their vertex numbers are 0, 1, 2, 6, 7, 8, 12, 13, and 14.
+The vertex number 0 corresponds to the vertex numbers 5, 35, and 30.
 Their coordinates are (0,5), (5,5), and (5,0).
 For example, the vertex number 0 is connected to 2, 6, and 12.
 Their coordinates are (0,2), (1,0), and (2,0).
@@ -446,7 +446,7 @@ Rotate (0,2), (1,0), (2,0) by 90 degrees to get (2,5), (0,4), (0,3).
 Their vertex numbers are 17, 4, and 3.
 These values match the 6th row of the adjacency matrix.
 
-Note that the functions for symmetry in this section excludes rows in red to reduce the size of the adjacency matrix.
+The functions for symmetry excludes rows in red to reduce the size of the adjacency matrix.
 In this example, the values from adjacency[4][0] to adjacency[4][2] are 0, 1, 18.
 
 ### Initialize
