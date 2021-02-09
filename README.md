@@ -80,7 +80,9 @@ $ make [serial|threads|mpi|mpi_threads|cuda|mpi_cuda|all]
 * Please see sample graphs in `./samples/graphs/` or http://research.nii.ac.jp/graphgolf/submit.html
 
 ### Example for a general graph
-A file and an edge list are the same. An edge list and an adjacency matrix are used in the library.
+A file and an edge list are the same.
+The adjacency matrix represents the connection relationship between vertices.
+For example, the first line means that vertex number 0 is connected to 10, 2, 13, and 6.
 
 ![](./misc/img/general.png)
 
