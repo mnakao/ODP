@@ -262,7 +262,7 @@ static int simple_top_down_step(const int nodes, const int height, const int num
 				const int symmetries, const bool enable_grid_s, const int* restrict adjacency,
 				int* restrict frontier, int* restrict next, char* restrict bitmap)
 {
-  int count = 0;
+  int count = 0, based_nodes = nodes/symmetries;;
   if(enable_grid_s){
     int width = nodes/height;
     for(int i=0;i<num_frontier;i++){
@@ -279,8 +279,11 @@ static int simple_top_down_step(const int nodes, const int height, const int num
   else{
     for(int i=0;i<num_frontier;i++){
       int v = frontier[i];
+      int p = v/based_nodes;
+      int m = v - p * based_nodes;
       for(int j=0;j<degree;j++){
-	int n = GLOBAL_ADJ_GENERAL(nodes, degree, symmetries, (int (*)[degree])adjacency, v, j);
+	int n = *(adjacency + m * degree + j) + p * based_nodes;
+	if(n >= nodes) n -= nodes;
 	if(bitmap[n] == NOT_VISITED){
 	  bitmap[n] = VISITED;
 	  next[count++] = n;
@@ -1808,7 +1811,7 @@ void ODP_Generate_random_grid_s(const int width, const int height, const int deg
 #ifdef __AVX2__
 static void matmul_avx2(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int height,
 			const int degree, const int *restrict num_degrees, const int *restrict adjacency,
-			const int *restrict itable, const int elements, const int symmetries, const bool enable_grid_s)
+			const int *restrict itable, const int elements, const int symmetries)
 {
   int quarter_elements = elements/4;
   if(symmetries == 1){
@@ -1828,48 +1831,34 @@ static void matmul_avx2(const uint64_t *restrict A, uint64_t *restrict B, const 
     }
   }
   else{
-    if(enable_grid_s){
+    if(itable){ // for grid
       int width = nodes/height;
-      if(itable){
 #pragma omp parallel for
-        for(int i=0;i<nodes;i++){
-          __m256i *b = (__m256i *)(B + itable[i]*elements);
-          int d = (!num_degrees)? degree : num_degrees[i];
-          for(int j=0;j<d;j++){
-            int n = GLOBAL_ADJ_GRID(width, height, degree, symmetries, (int (*)[degree])adjacency, i, j);
-            __m256i *a = (__m256i *)(A + itable[n]*elements);
-            for(int k=0;k<quarter_elements;k++){
-              __m256i aa = _mm256_load_si256(a+k);
-              __m256i bb = _mm256_load_si256(b+k);
-              _mm256_store_si256(b+k, _mm256_or_si256(aa, bb));
-	    }
-	  }
-	}
-      }
-      else{
-#pragma omp parallel for
-	for(int i=0;i<nodes;i++){
-	  __m256i *b = (__m256i *)(B + i*elements);
-	  int d = (!num_degrees)? degree : num_degrees[i];
-	  for(int j=0;j<d;j++){
-	    int n = GLOBAL_ADJ_GRID(width, height, degree, symmetries, (int (*)[degree])adjacency, i, j);
-	    __m256i *a = (__m256i *)(A + n*elements);
-	    for(int k=0;k<quarter_elements;k++){
-	      __m256i aa = _mm256_load_si256(a+k);
-	      __m256i bb = _mm256_load_si256(b+k);
-	      _mm256_store_si256(b+k, _mm256_or_si256(aa, bb));
-	    }
+      for(int i=0;i<nodes;i++){
+	__m256i *b = (__m256i *)(B + itable[i]*elements);
+	int d = (!num_degrees)? degree : num_degrees[i];
+	for(int j=0;j<d;j++){
+	  int n = GLOBAL_ADJ_GRID(width, height, degree, symmetries, (int (*)[degree])adjacency, i, j);
+	  __m256i *a = (__m256i *)(A + itable[n]*elements);
+	  for(int k=0;k<quarter_elements;k++){
+	    __m256i aa = _mm256_load_si256(a+k);
+	    __m256i bb = _mm256_load_si256(b+k);
+	    _mm256_store_si256(b+k, _mm256_or_si256(aa, bb));
 	  }
 	}
       }
     }
-    else{
+    else{ // for general
+      int based_nodes = nodes/symmetries;
 #pragma omp parallel for
       for(int i=0;i<nodes;i++){
 	__m256i *b = (__m256i *)(B + i*elements);
+	int p = i/based_nodes;
+	int m = i - p * based_nodes;
 	int d = (!num_degrees)? degree : num_degrees[i];
 	for(int j=0;j<d;j++){
-	  int n = GLOBAL_ADJ_GENERAL(nodes, degree, symmetries, (int (*)[degree])adjacency, i, j);
+	  int n = *(adjacency + m * degree + j) + p * based_nodes;
+	  if(n >= nodes) n -= nodes;
 	  __m256i *a = (__m256i *)(A + n*elements);
 	  for(int k=0;k<quarter_elements;k++){
 	    __m256i aa = _mm256_load_si256(a+k);
@@ -1885,7 +1874,7 @@ static void matmul_avx2(const uint64_t *restrict A, uint64_t *restrict B, const 
 
 static void matmul(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int height,
                    const int degree, const int *restrict num_degrees, const int *restrict adjacency,
-                   const int *restrict itable, const int elements, const int symmetries, const bool enable_grid_s)
+                   const int *restrict itable, const int elements, const int symmetries)
 {
   if(symmetries == 1){
 #pragma omp parallel for
@@ -1899,42 +1888,33 @@ static void matmul(const uint64_t *restrict A, uint64_t *restrict B, const int n
     }
   }
   else{
-    if(enable_grid_s){
+    if(itable){ // for grid
       int width = nodes/height;
-      if(itable){
-#pragma omp parallel for
-        for(int i=0;i<nodes;i++){
-          int ii = itable[i];
-          int d = (!num_degrees)? degree : num_degrees[i];
-          for(int j=0;j<d;j++){
-            int n = GLOBAL_ADJ_GRID(width, height, degree, symmetries, (int (*)[degree])adjacency, i, j);
-            int nn = itable[n];
-            for(int k=0;k<elements;k++)
-              B[ii*elements+k] |= A[nn*elements+k];
-          }
-        }
-      }
-      else{
-#pragma omp parallel for
-        for(int i=0;i<nodes;i++){
-          int d = (!num_degrees)? degree : num_degrees[i];
-          for(int j=0;j<d;j++){
-            int n = GLOBAL_ADJ_GRID(width, height, degree, symmetries, (int (*)[degree])adjacency, i, j);
-            for(int k=0;k<elements;k++)
-              B[i*elements+k] |= A[n*elements+k];
-          }
-        }
-      }
-    }
-    else{
 #pragma omp parallel for
       for(int i=0;i<nodes;i++){
-        int d = (!num_degrees)? degree : num_degrees[i];
-        for(int j=0;j<d;j++){
-          int n = GLOBAL_ADJ_GENERAL(nodes, degree, symmetries, (int (*)[degree])adjacency, i, j);
-          for(int k=0;k<elements;k++)
-            B[i*elements+k] |= A[n*elements+k];
-        }
+	int ii = itable[i];
+	int d = (!num_degrees)? degree : num_degrees[i];
+	for(int j=0;j<d;j++){
+	  int n = GLOBAL_ADJ_GRID(width, height, degree, symmetries, (int (*)[degree])adjacency, i, j);
+	  int nn = itable[n];
+	  for(int k=0;k<elements;k++)
+	    B[ii*elements+k] |= A[nn*elements+k];
+	}
+      }
+    }
+    else{ // for general
+      int based_nodes = nodes/symmetries;
+#pragma omp parallel for
+      for(int i=0;i<nodes;i++){
+	int p = i/based_nodes;
+	int m = i - p * based_nodes;
+	int d = (!num_degrees)? degree : num_degrees[i];
+	for(int j=0;j<d;j++){
+	  int n = *(adjacency + m * degree + j) + p * based_nodes;
+	  if(n >= nodes) n -= nodes;
+	  for(int k=0;k<elements;k++)
+	    B[i*elements+k] |= A[n*elements+k];
+	}
       }
     }
   }
@@ -1942,20 +1922,20 @@ static void matmul(const uint64_t *restrict A, uint64_t *restrict B, const int n
 
 void ODP_Matmul(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int height, const int degree,
                 const int *restrict num_degrees, const int *restrict adjacency, const int *restrict itable,
-		const int elements, const int symmetries, const bool enable_grid_s, const bool enable_avx2)
+		const int elements, const int symmetries, const bool enable_avx2)
 {
 #ifdef __AVX2__
-  if(enable_avx2) matmul_avx2(A, B, nodes, height, degree, num_degrees, adjacency, itable, elements, symmetries, enable_grid_s);
-  else            matmul     (A, B, nodes, height, degree, num_degrees, adjacency, itable, elements, symmetries, enable_grid_s);
+  if(enable_avx2) matmul_avx2(A, B, nodes, height, degree, num_degrees, adjacency, itable, elements, symmetries);
+  else            matmul     (A, B, nodes, height, degree, num_degrees, adjacency, itable, elements, symmetries);
 #else
-  matmul(A, B, nodes, height, degree, num_degrees, adjacency, itable, elements, symmetries, enable_grid_s);
+  matmul(A, B, nodes, height, degree, num_degrees, adjacency, itable, elements, symmetries);
 #endif
 }
 
 #ifdef __AVX2__
 static void matmul_avx2_CHUNK(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int height,
 			      const int degree, const int *restrict num_degrees, const int *restrict adjacency,
-			      const int *restrict itable, const int symmetries, const bool enable_grid_s)
+			      const int *restrict itable, const int symmetries)
 {
   if(symmetries == 1){
 #pragma omp parallel for
@@ -1974,48 +1954,34 @@ static void matmul_avx2_CHUNK(const uint64_t *restrict A, uint64_t *restrict B, 
     }
   }
   else{
-    if(enable_grid_s){
+    if(itable){ // for grid
       int width = nodes/height;
-      if(itable){
 #pragma omp parallel for
-        for(int i=0;i<nodes;i++){
-          __m256i *b = (__m256i *)(B + itable[i]*CPU_CHUNK);
-          int d = (!num_degrees)? degree : num_degrees[i];
-          for(int j=0;j<d;j++){
-            int n = GLOBAL_ADJ_GRID(width, height, degree, symmetries, (int (*)[degree])adjacency, i, j);
-            __m256i *a = (__m256i *)(A + itable[n]*CPU_CHUNK);
-            for(int k=0;k<CPU_CHUNK/4;k++){
-              __m256i aa = _mm256_load_si256(a+k);
-              __m256i bb = _mm256_load_si256(b+k);
-              _mm256_store_si256(b+k, _mm256_or_si256(aa, bb));
-	    }
-	  }
-	}
-      }
-      else{
-#pragma omp parallel for
-	for(int i=0;i<nodes;i++){
-	  __m256i *b = (__m256i *)(B + i*CPU_CHUNK);
-	  int d = (!num_degrees)? degree : num_degrees[i];
-	  for(int j=0;j<d;j++){
-	    int n = GLOBAL_ADJ_GRID(width, height, degree, symmetries, (int (*)[degree])adjacency, i, j);
-	    __m256i *a = (__m256i *)(A + n*CPU_CHUNK);
-	    for(int k=0;k<CPU_CHUNK/4;k++){
-	      __m256i aa = _mm256_load_si256(a+k);
-	      __m256i bb = _mm256_load_si256(b+k);
-	      _mm256_store_si256(b+k, _mm256_or_si256(aa, bb));
-	    }
+      for(int i=0;i<nodes;i++){
+	__m256i *b = (__m256i *)(B + itable[i]*CPU_CHUNK);
+	int d = (!num_degrees)? degree : num_degrees[i];
+	for(int j=0;j<d;j++){
+	  int n = GLOBAL_ADJ_GRID(width, height, degree, symmetries, (int (*)[degree])adjacency, i, j);
+	  __m256i *a = (__m256i *)(A + itable[n]*CPU_CHUNK);
+	  for(int k=0;k<CPU_CHUNK/4;k++){
+	    __m256i aa = _mm256_load_si256(a+k);
+	    __m256i bb = _mm256_load_si256(b+k);
+	    _mm256_store_si256(b+k, _mm256_or_si256(aa, bb));
 	  }
 	}
       }
     }
-    else{
+    else{ // for general
+      int based_nodes = nodes/symmetries;
 #pragma omp parallel for
       for(int i=0;i<nodes;i++){
 	__m256i *b = (__m256i *)(B + i*CPU_CHUNK);
+	int p = i/based_nodes;
+	int m = i - p * based_nodes;
 	int d = (!num_degrees)? degree : num_degrees[i];
 	for(int j=0;j<d;j++){
-	  int n = GLOBAL_ADJ_GENERAL(nodes, degree, symmetries, (int (*)[degree])adjacency, i, j);
+	  int n = *(adjacency + m * degree + j) + p * based_nodes;
+	  if(n >= nodes) n -= nodes;
 	  __m256i *a = (__m256i *)(A + n*CPU_CHUNK);
 	  for(int k=0;k<CPU_CHUNK/4;k++){
 	    __m256i aa = _mm256_load_si256(a+k);
@@ -2031,7 +1997,7 @@ static void matmul_avx2_CHUNK(const uint64_t *restrict A, uint64_t *restrict B, 
 
 static void matmul_CHUNK(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int height,
                          const int degree, const int *restrict num_degrees, const int *restrict adjacency,
-                         const int *restrict itable, const int symmetries, const bool enable_grid_s)
+                         const int *restrict itable, const int symmetries)
 {
   if(symmetries == 1){
 #pragma omp parallel for
@@ -2045,41 +2011,32 @@ static void matmul_CHUNK(const uint64_t *restrict A, uint64_t *restrict B, const
     }
   }
   else{
-    if(enable_grid_s){
+    if(itable){ // for grid
       int width = nodes/height;
-      if(itable){
-#pragma omp parallel for
-        for(int i=0;i<nodes;i++){
-          int ii = itable[i];
-          int d = (!num_degrees)? degree : num_degrees[i];
-          for(int j=0;j<d;j++){
-            int n = GLOBAL_ADJ_GRID(width, height, degree, symmetries, (int (*)[degree])adjacency, i, j);
-            int nn = itable[n];
-            for(int k=0;k<CPU_CHUNK;k++)
-              B[ii*CPU_CHUNK+k] |= A[nn*CPU_CHUNK+k];
-          }
-        }
-      }
-      else{
-#pragma omp parallel for
-        for(int i=0;i<nodes;i++){
-          int d = (!num_degrees)? degree : num_degrees[i];
-          for(int j=0;j<d;j++){
-            int n = GLOBAL_ADJ_GRID(width, height, degree, symmetries, (int (*)[degree])adjacency, i, j);
-            for(int k=0;k<CPU_CHUNK;k++)
-              B[i*CPU_CHUNK+k] |= A[n*CPU_CHUNK+k];
-          }
-        }
-      }
-    }
-    else{
 #pragma omp parallel for
       for(int i=0;i<nodes;i++){
-        int d = (!num_degrees)? degree : num_degrees[i];
-        for(int j=0;j<d;j++){
-          int n = GLOBAL_ADJ_GENERAL(nodes, degree, symmetries, (int (*)[degree])adjacency, i, j);
-          for(int k=0;k<CPU_CHUNK;k++)
-            B[i*CPU_CHUNK+k] |= A[n*CPU_CHUNK+k];
+	int ii = itable[i];
+	int d = (!num_degrees)? degree : num_degrees[i];
+	for(int j=0;j<d;j++){
+	  int n = GLOBAL_ADJ_GRID(width, height, degree, symmetries, (int (*)[degree])adjacency, i, j);
+	  int nn = itable[n];
+	  for(int k=0;k<CPU_CHUNK;k++)
+	    B[ii*CPU_CHUNK+k] |= A[nn*CPU_CHUNK+k];
+	}
+      }
+    }
+    else{ // for general
+      int based_nodes = nodes/symmetries;
+#pragma omp parallel for
+      for(int i=0;i<nodes;i++){
+	int p = i/based_nodes;
+	int m = i - p * based_nodes;
+	int d = (!num_degrees)? degree : num_degrees[i];
+	for(int j=0;j<d;j++){
+	  int n = *(adjacency + m * degree + j) + p * based_nodes;
+	  if(n >= nodes) n -= nodes;
+	  for(int k=0;k<CPU_CHUNK;k++)
+	    B[i*CPU_CHUNK+k] |= A[n*CPU_CHUNK+k];
         }
       }
     }
@@ -2088,13 +2045,13 @@ static void matmul_CHUNK(const uint64_t *restrict A, uint64_t *restrict B, const
 
 void ODP_Matmul_CHUNK(const uint64_t *restrict A, uint64_t *restrict B, const int nodes, const int height, const int degree,
                       const int *num_degrees, const int *restrict adjacency, const int *restrict itable,
-                      const int symmetries, const bool enable_grid_s, const bool enable_avx2)
+                      const int symmetries, const bool enable_avx2)
 {
 #ifdef __AVX2__
-  if(enable_avx2) matmul_avx2_CHUNK(A, B, nodes, height, degree, num_degrees, adjacency, itable, symmetries, enable_grid_s);
-  else            matmul_CHUNK     (A, B, nodes, height, degree, num_degrees, adjacency, itable, symmetries, enable_grid_s);
+  if(enable_avx2) matmul_avx2_CHUNK(A, B, nodes, height, degree, num_degrees, adjacency, itable, symmetries);
+  else            matmul_CHUNK     (A, B, nodes, height, degree, num_degrees, adjacency, itable, symmetries);
 #else
-  matmul_CHUNK(A, B, nodes, height, degree, num_degrees, adjacency, itable, symmetries, enable_grid_s);
+  matmul_CHUNK(A, B, nodes, height, degree, num_degrees, adjacency, itable, symmetries);
 #endif
 }
 
@@ -2104,7 +2061,7 @@ int ODP_top_down_step(const int level, const int num_frontier, const int* restri
                       const int height, const int symmetries,
                       int* restrict frontier, int* restrict next, int* restrict distance, char* restrict bitmap)
 {
-  int count = 0;
+  int count = 0, based_nodes = nodes/symmetries;;
   if(enable_grid_s){
     int width = nodes/height;
 #pragma omp parallel
@@ -2137,9 +2094,12 @@ int ODP_top_down_step(const int level, const int num_frontier, const int* restri
 #pragma omp for nowait
       for(int i=0;i<num_frontier;i++){
 	int v = frontier[i];
+	int p = v/based_nodes;
+	int m = v - p * based_nodes;
 	int d = (!num_degrees)? degree : num_degrees[i];
 	for(int j=0;j<d;j++){
-	  int n = GLOBAL_ADJ_GENERAL(nodes, degree, symmetries, (int (*)[degree])adjacency, v, j);
+	  int n = *(adjacency + m * degree + j) + p * based_nodes;
+	  if(n >= nodes) n -= nodes;
 	  if(bitmap[n] == NOT_VISITED){
 	    bitmap[n]   = VISITED;
 	    distance[n] = level;
@@ -2179,11 +2139,15 @@ int ODP_top_down_step(const int level, const int num_frontier, const int* restri
     }
   }
   else{
+    int based_nodes = nodes/symmetries;
     for(int i=0;i<num_frontier;i++){
       int v = frontier[i];
+      int p = v/based_nodes;
+      int m = v - p * based_nodes;
       int d = (!num_degrees)? degree : num_degrees[i];
       for(int j=0;j<d;j++){
-	int n = GLOBAL_ADJ_GENERAL(nodes, degree, symmetries, (int (*)[degree])adjacency, v, j);
+	int n = *(adjacency + m * degree + j) + p * based_nodes;
+	if(n >= nodes) n -= nodes;
 	if(bitmap[n] == NOT_VISITED){
 	  bitmap[n]   = VISITED;
 	  distance[n] = level;
