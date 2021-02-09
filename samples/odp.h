@@ -50,7 +50,7 @@ extern void ODP_Set_degrees(int nodes, int lines, int (*edge)[2], int* num_degre
 extern int  ODP_Get_lines(char *fname);
 extern int  ODP_Get_nodes(int lines, int (*edge)[2]);
 extern int  ODP_Get_degree(int nodes, int lines, int (*edge)[2]);
-extern int  ODP_Get_length(int lines, int (*edge)[2], int height);
+extern int  ODP_Get_length(int lines, int height, int (*edge)[2]);
 extern bool ODP_Check_general(char *fname);
 extern bool ODP_Check_multiple_edges(int lines, int (*edge)[2]);
 extern bool ODP_Check_loop(int lines, int (*edge)[2]);

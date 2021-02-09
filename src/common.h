@@ -58,5 +58,5 @@ extern void ODP_Conv_adjacency2edge_grid(const int width, const int height, cons
 extern int ODP_Get_lines(const char* fname);
 extern int ODP_Get_nodes(const int lines, const int (*edge)[2]);
 extern int ODP_Get_degree(const int nodes, const int lines, const int (*edge)[2]);
-extern int ODP_Get_length(const int lines, const int (*edge)[2], const int height);
+extern int ODP_Get_length(const int lines, const int height, const int (*edge)[2]);
 #endif

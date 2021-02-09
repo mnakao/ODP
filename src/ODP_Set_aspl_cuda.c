@@ -41,7 +41,7 @@ void ODP_Set_aspl_cuda_grid(const char *fname, int *width, int *height, int *deg
 
   int (*adjacency)[*degree] = malloc(sizeof(int) * nodes * (*degree)); // int adjacency[nodes][degree];
   ODP_Conv_edge2adjacency_grid(*width, *height, lines, *degree, edge, (int *)adjacency);
-  *length = ODP_Get_length(lines, edge, *height);
+  *length = ODP_Get_length(lines, *height, edge);
   ODP_Set_lbounds_grid(*width, *height, *degree, *length, low_diameter, low_ASPL);
 
   int *num_degrees = malloc(sizeof(int) * nodes);

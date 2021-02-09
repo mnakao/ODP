@@ -338,12 +338,12 @@ int ODP_Get_degree(int nodes, int lines, int edge[lines][2])
 
 ### Get a maximum length for a grid graph
 ```
-int ODP_Get_length(int lines, int edge[lines][2], int height)
+int ODP_Get_length(int lines, int height, int edge[lines][2])
 ```
 * [RETURN] : Maximum length in an edge list.
 * [IN] lines : Number of lines in an edge list.
-* [IN] edge : Edge list of a graph.
 * [IN] height : Height of a grid graph.
+* [IN] edge : Edge list of a graph.
 
 ### Check if an input file is a general graph
 ```
@@ -397,9 +397,8 @@ void ODP_Set_aspl_mpi_cuda_grid   (char *fname, MPI_Comm comm, int *width, int *
 
 ## Functions for a graph with symmetry
 ### General graph
-Symmetry in this library means that when the vertices are arranged on a circle,
-the graph when rotated by `360/symmetries` degrees and the graph before rotation match.
-Therefore, `symmetries` must be a divisor of `nodes`.
+Symmetry in this library means that　the original graph matches when the graph is rotated `360/symmetries` degrees.
+Therefore, a value of `symmetries` must be a divisor of `nodes`.
 
 ![](./misc/img/general_s.png)
 

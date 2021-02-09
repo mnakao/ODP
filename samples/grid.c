@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
   ODP_Set_aspl(adjacency, &diameter, &sum, &ASPL);
   ODP_Finalize_aspl();
 
-  int length = ODP_Get_length(lines, edge, height);
+  int length = ODP_Get_length(lines, height, edge);
   ODP_Set_lbounds_grid(width, height, degree, length, &low_diameter, &low_ASPL);
   printf("Width = %d, Height = %d, Length = %d, Degrees = %d\n", width, height, length, degree);
   printf("Diameter     = %d\n", diameter);

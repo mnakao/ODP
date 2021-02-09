@@ -1368,7 +1368,7 @@ bool ODP_Check_multiple_edges(const int lines, int edge[lines][2])
   return false;
 }
 
-int ODP_Get_length(const int lines, const int edge[lines][2], const int height)
+int ODP_Get_length(const int lines, const int height, const int edge[lines][2])
 {
   int length = 0;
   for(int i=0;i<lines;i++)
