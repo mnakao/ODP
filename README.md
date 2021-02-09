@@ -98,7 +98,6 @@ The format of the edge list and adjacency matrix is the same for general and gri
 This library provides three types of algorithms for ASPL.
 By default, `MATRIX` is automatically selected if the amount of memory used is
 lower than the value of `MEM_THRESHOLD` in `src/parameter.h`.
-You can specify one of three.
 
 * MATRIX : Bit matrix is used for ASPL calculation. In most cases this is the fastest.
 * MATRIX_SAVING : This is a memory-saving version of `MATRIX`.
@@ -148,14 +147,14 @@ Thread parallelization is performed automatically depending on the library to be
 ### Initialize
 Perform the initialization process before executing ODP_Set_aspl().
 ```
-void ODP_Init_aspl_general         (int nodes, int degree, int num_degrees[nodes])
-void ODP_Init_aspl_grid            (int width, int height, int degree, int num_degrees[nodes])
-void ODP_Init_aspl_mpi_general     (int nodes, int degree, int num_degrees[nodes], MPI_Comm comm)
-void ODP_Init_aspl_mpi_grid        (int width, int height, int degree, int num_degrees[nodes], MPI_Comm comm)
-void ODP_Init_aspl_cuda_general    (int nodes, int degree, int num_degrees[nodes])
-void ODP_Init_aspl_cuda_grid       (int width, int height, int degree, int num_degrees[nodes])
+void ODP_Init_aspl_general(int nodes, int degree, int num_degrees[nodes])
+void ODP_Init_aspl_grid(int width, int height, int degree, int num_degrees[nodes])
+void ODP_Init_aspl_mpi_general(int nodes, int degree, int num_degrees[nodes], MPI_Comm comm)
+void ODP_Init_aspl_mpi_grid(int width, int height, int degree, int num_degrees[nodes], MPI_Comm comm)
+void ODP_Init_aspl_cuda_general(int nodes, int degree, int num_degrees[nodes])
+void ODP_Init_aspl_cuda_grid(int width, int height, int degree, int num_degrees[nodes])
 void ODP_Init_aspl_mpi_cuda_general(int nodes, int degree, int num_degrees[nodes], MPI_Comm comm)
-void ODP_Init_aspl_mpi_cuda_grid   (int width, int height, int degree, int num_degrees[nodes], MPI_Comm comm)
+void ODP_Init_aspl_mpi_cuda_grid(int width, int height, int degree, int num_degrees[nodes], MPI_Comm comm)
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] degree: Degree in a graph.
