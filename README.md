@@ -397,13 +397,12 @@ void ODP_Set_aspl_mpi_cuda_grid   (char *fname, MPI_Comm comm, int *width, int *
 
 ## Functions for a graph with symmetry
 ### General graph
-Symmetry in this library means that　the original graph matches when the graph is rotated `360/symmetries` degrees.
+Symmetry in this library means that the original graph matches when the graph is rotated `360/symmetries` degrees.
 Therefore, a value of `symmetries` must be a divisor of `nodes`.
 
 ![](./misc/img/general_s.png)
 
-The above image is an example of a graph with (nodes, degree, symmetries) = (24, 4, 4).
-This image is created from `samples/graphs/general/n24d4g4.png` and `samples/graphs/general/n24d4g4.edges`.
+The above image is an example of a graph with (nodes, degree, symmetries) = (24, 3, 4).
 It also shows the adjacency matrix created from the edge list.
 The adjacency matrix can be divided into four groups (`= symmetries`).
 The values on the 1st row are 19, 9, and 2.
