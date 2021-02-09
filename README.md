@@ -96,7 +96,7 @@ The format of the edge list and adjacency matrix is the same for general and gri
 ### ODP_ASPL=[MATRIX|MATRIX_SAVING|BFS]
 
 This library provides three types of algorithms for ASPL.
-By default, `NORMAL` is automatically selected if the amount of memory used is
+By default, `MATRIX` is automatically selected if the amount of memory used is
 lower than the value of `MEM_THRESHOLD` in `src/parameter.h`.
 You can specify one of three.
 
