@@ -447,18 +447,21 @@ Rotate (0,2), (1,0), (2,0) by 90 degrees to get (2,5), (0,4), (0,3).
 The one-dimensional notations for (2,5), (0,4), and (0,3) are 17, 4, and 3.
 These values match the 5th row of the adjacency matrix.
 
+Note that the functions for symmetry in this section excludes rows in red to reduce the size of the adjacency matrix.
+In this example, the values from adjacency[4][0] to adjacency[4][2] are 0, 1, 18.
+
 ### Initialize
 These functions can be used instead of the ODP_Init_aspl\*().
 
 ```
-void ODP_Init_aspl_general_s         (int nodes, int degree, int num_degrees[nodes/symmetries], int symmetries)
-void ODP_Init_aspl_grid_s            (int width, int height, int degree, int num_degrees[nodes/symmetries], int symmetries)
-void ODP_Init_aspl_mpi_general_s     (int nodes, int degree, int num_degrees[nodes/symmetries], MPI_Comm comm, int symmetries)
-void ODP_Init_aspl_mpi_grid_s        (int width, int height, int degree, int num_degrees[nodes/symmetries], MPI_Comm comm, int symmetries)
-void ODP_Init_aspl_cuda_general_s    (int nodes, int degree, int num_degrees[nodes/symmetries], int symmetries)
-void ODP_Init_aspl_cuda_grid_s       (int width, int height, int degree, int num_degrees[nodes/symmetries], int symmetries)
+void ODP_Init_aspl_general_s(int nodes, int degree, int num_degrees[nodes/symmetries], int symmetries)
+void ODP_Init_aspl_grid_s(int width, int height, int degree, int num_degrees[nodes/symmetries], int symmetries)
+void ODP_Init_aspl_mpi_general_s(int nodes, int degree, int num_degrees[nodes/symmetries], MPI_Comm comm, int symmetries)
+void ODP_Init_aspl_mpi_grid_s(int width, int height, int degree, int num_degrees[nodes/symmetries], MPI_Comm comm, int symmetries)
+void ODP_Init_aspl_cuda_general_s(int nodes, int degree, int num_degrees[nodes/symmetries], int symmetries)
+void ODP_Init_aspl_cuda_grid_s(int width, int height, int degree, int num_degrees[nodes/symmetries], int symmetries)
 void ODP_Init_aspl_mpi_cuda_general_s(int nodes, int degree, int num_degrees[nodes/symmetries], MPI_Comm comm, int symmetries)
-void ODP_Init_aspl_mpi_cuda_grid_s   (int width, int height, int degree, int num_degrees[nodes/symmetries], MPI_Comm comm, int symmetries)
+void ODP_Init_aspl_mpi_cuda_grid_s(int width, int height, int degree, int num_degrees[nodes/symmetries], MPI_Comm comm, int symmetries)
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] degree: Degree in a graph.
