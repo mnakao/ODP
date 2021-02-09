@@ -395,15 +395,14 @@ void ODP_Set_aspl_mpi_cuda_grid   (char *fname, MPI_Comm comm, int *width, int *
 * [OUT] height : Height of a grid graph.
 * [OUT] length : Maximum length of a grid graph.
 
-## Functions for a graph with symmetry
+## A graph with symmetry
 ### General graph
 Symmetry in this library means that the original graph matches when the graph is rotated `360/symmetries` degrees.
 Therefore, a value of `symmetries` must be a divisor of `nodes`.
 
 ![](./misc/img/general_s.png)
 
-The above image is an example of a graph with (nodes, degree, symmetries) = (24, 3, 4).
-It also shows the adjacency matrix created from the edge list.
+The image is an example of a graph with (nodes, degree, symmetries) = (24, 3, 4).
 The adjacency matrix can be divided into four groups (`= symmetries`).
 The values on the 1st row are 19, 9, and 2.
 It means that the vertex number 0 has three edges, 0-19, 0-9, and 0-2.
@@ -418,7 +417,8 @@ However, since the edge list is used for input and output, the size is `int edge
 
 ### Grid graph
 Grid graphs are almost the same as general graphs, but only values of 2 or 4 are valid for `symmetries`.
-Furthermore, when `symmetries=4`, `width=height` must be used.
+Furthermore, when `symmetries=4`, `width` is a multiple of 2.
+When `symmetries=4`, and `width` and `height` are a multiple of 2, and `width=height`.
 
 ![](./misc/img/grid_s2.png)
 

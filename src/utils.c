@@ -106,7 +106,7 @@ static void CHECK_SYMMETRIES_WH(const int symmetries, const int width, const int
   if(symmetries == 2 && width%2 != 0)
     ERROR("width(%d) must be divisible by 2\n", width);
   else if(symmetries == 4 && (width%2 != 0 || height%2 != 0))
-    ERROR("height(%d) must be divisible by 2\n", height);
+    ERROR("width(%d) and height(%d) must be divisible by 2\n", width, height);
   else if(symmetries == 4 && width != height)
     ERROR("Must be the same as width(%d) and height(%d)\n", width, height);
 }
