@@ -447,7 +447,7 @@ Their vertex numbers are 17, 4, and 3.
 These values match the 6th row of the adjacency matrix.
 
 The functions for symmetry excludes rows in red to reduce the size of the adjacency matrix.
-In this example, the values from adjacency[4][0] to adjacency[4][2] are 0, 1, 18.
+In this example, the values from adjacency[4][0] to adjacency[4][2] are 0, 1, and 18.
 
 ### Initialize
 These functions can be used instead of the ODP_Init_aspl\*().
@@ -481,7 +481,7 @@ void ODP_Conv_edge2adjacency_grid_s   (int width, int height, int lines, int deg
 * [IN] lines : Number of lines in an edge list.
 * [IN] degree: Degree in a graph.
 * [IN] edge : Edge list of a graph.
-* [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes. If it is 1, it works the same as ODP_Conv_edge2adjacency_general() or ODP_Conv_edge2adjacency_grid().
+* [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes. If it is 1, it works the same as ODP_Conv_edge2adjacency\*().
 * [OUT] adjacency : Adjacency matrix of a graph.
 
 ### Convert an adjacency matrix to an edge list
@@ -493,7 +493,7 @@ void ODP_Conv_adjacency2edge_grid_s   (int width, int height, int degree, int nu
 * [IN] degree: Degree in a graph.
 * [IN] num_degrees : Specify NULL for a regular graph. If not, specify the degrees for each vertex.
 * [IN] adjacency : Adjacency matrix of a graph.
-* [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes. If it is 1, it works the same as ODP_Conv_adjacency2edge_general() or ODP_Conv_adjacency2edge_grid().
+* [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes. If it is 1, it works the same as ODP_Conv_adjacency2edge\*().
 * [IN] width : Width of a grid graph.
 * [IN] height : Height of a grid graph.
 * [OUT] edge : Edge list of a graph.
@@ -506,7 +506,7 @@ void ODP_Generate_random_grid_s   (int width, int height, int degree, int length
 * [IN] nodes : Number of nodes in a graph.
 * [IN] degree: Degree in a graph.
 * [IN] seed : Seed for random.
-* [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes. If it is 1, it works the same as ODP_Generate_random_general() or ODP_Generate_random_grid().
+* [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes. If it is 1, it works the same as ODP_Generate_random\*().
 * [IN] width : Width of a grid graph.
 * [IN] height : Height of a grid graph.
 * [IN] length : Maximum length of a grid graph.
