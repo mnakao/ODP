@@ -213,7 +213,7 @@ void ODP_Print_adjacency(int nodes, int degree, int num_degrees[nodes], int adja
 ### Print an edge list
 ```
 void ODP_Print_edge_general(int lines, int edge[lines][2])
-void ODP_Print_edge_grid(int lines, int height, int edge[lines][2])
+void ODP_Print_edge_grid   (int lines, int height, int edge[lines][2])
 ```
 * [IN] lines : Number of lines in an edge list.
 * [IN] edge : Edge list of a graph.
@@ -222,7 +222,7 @@ void ODP_Print_edge_grid(int lines, int height, int edge[lines][2])
 ### Convert an edge list to an adjacency matrix
 ```
 void ODP_Conv_edge2adjacency_general(int nodes, int lines, int degree, int edge[lines][2], int adjacency[nodes][degree])
-void ODP_Conv_edge2adjacency_grid(int width, int height, int lines, int degree, int edge[lines][2], int adjacency[nodes][degree])
+void ODP_Conv_edge2adjacency_grid   (int width, int height, int lines, int degree, int edge[lines][2], int adjacency[nodes][degree])
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] lines : Number of lines in an edge list.
@@ -235,7 +235,7 @@ void ODP_Conv_edge2adjacency_grid(int width, int height, int lines, int degree, 
 ### Convert an adjacency matrix to an edge list
 ```
 void ODP_Conv_adjacency2edge_general(int nodes, int degree, int num_degrees[nodes], int adjacency[nodes][degree], int edge[lines][2])
-void ODP_Conv_adjacency2edge_grid(int width, int height, int degree, int num_degrees[nodes], int adjacency[nodes][degree], int edge[lines][2])
+void ODP_Conv_adjacency2edge_grid   (int width, int height, int degree, int num_degrees[nodes], int adjacency[nodes][degree], int edge[lines][2])
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] degree : Degree in a graph.
@@ -248,7 +248,7 @@ void ODP_Conv_adjacency2edge_grid(int width, int height, int degree, int num_deg
 ### Set theoretical lower bounds
 ```
 void ODP_Set_lbounds_general(int nodes, int degree, int *low_diameter, double *low_ASPL)
-void ODP_Set_lbounds_grid(int width, int height, int degree, int length, int *low_diameter, double *low_ASPL)
+void ODP_Set_lbounds_grid   (int width, int height, int degree, int length, int *low_diameter, double *low_ASPL)
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] degree : Degree in a graph.
@@ -278,7 +278,7 @@ void ODP_Srand(unsigned int seed)
 Generate a regular graph with randomly connected vertices. Note that the graph may contain multiple edges and loops.
 ```
 void ODP_Generate_random_general(int nodes, int degree, int edge[lines][2])
-void ODP_Generate_random_grid(int width, int height, int degree, int length, int edge[lines][2])
+void ODP_Generate_random_grid   (int width, int height, int degree, int length, int edge[lines][2])
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] degree : Degree in a graph.
@@ -291,7 +291,7 @@ void ODP_Generate_random_grid(int width, int height, int degree, int length, int
 Mutate an adjacency matrix slightly. Specifically, the operation equivalent to the 2-opt method is performed. 
 ```
 void ODP_Mutate_adjacency_general(int nodes, int degree, int num_degrees[nodes], int adjacency[nodes][degree])
-void ODP_Mutate_adjacency_grid(int width, int height, int degree, int num_degrees[nodes], int length, int adjacency[nodes][degree])
+void ODP_Mutate_adjacency_grid   (int width, int height, int degree, int num_degrees[nodes], int length, int adjacency[nodes][degree])
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] degree : Degree in a graph.
@@ -305,7 +305,7 @@ void ODP_Mutate_adjacency_grid(int width, int height, int degree, int num_degree
 Undo before being modified by ODP_Mutate_adjacency_\*().
 ```
 void ODP_Restore_adjacency_general(int nodes, int degree, int adjacency[nodes][degree])
-void ODP_Restore_adjacency_grid(int width, int height, int degree, int adjacency[nodes][degree])
+void ODP_Restore_adjacency_grid   (int width, int height, int degree, int adjacency[nodes][degree])
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] degree : Degree in a graph.
@@ -477,7 +477,7 @@ Note that the ODP_Set_aspl() and ODP_Finalize_aspl() can be used in common.
 ### Convert an edge list to an adjacency matrix
 ```
 void ODP_Conv_edge2adjacency_general_s(int nodes, int lines, int degree, int edge[lines][2], int symmetries, int adjacency[nodes/symmetries][degree])
-void ODP_Conv_edge2adjacency_grid_s(int width, int height, int lines, int degree, int edge[lines][2], int symmetries, int adjacency[nodes/symmetries][degree])
+void ODP_Conv_edge2adjacency_grid_s   (int width, int height, int lines, int degree, int edge[lines][2], int symmetries, int adjacency[nodes/symmetries][degree])
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] lines : Number of lines in an edge list.
@@ -489,7 +489,7 @@ void ODP_Conv_edge2adjacency_grid_s(int width, int height, int lines, int degree
 ### Convert an adjacency matrix to an edge list
 ```
 void ODP_Conv_adjacency2edge_general_s(int nodes, int degree, int num_degrees[nodes/symmetries], int adjacency[nodes/symmetries][degree], int symmetries, int edge[lines][2])
-void ODP_Conv_adjacency2edge_grid_s(int width, int height, int degree, int num_degrees[nodes/symmetries], int adjacency[nodes/symmetries][degree], int symmetries, int edge[lines][2])
+void ODP_Conv_adjacency2edge_grid_s   (int width, int height, int degree, int num_degrees[nodes/symmetries], int adjacency[nodes/symmetries][degree], int symmetries, int edge[lines][2])
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] degree: Degree in a graph.
@@ -503,7 +503,7 @@ void ODP_Conv_adjacency2edge_grid_s(int width, int height, int degree, int num_d
 ### Generate a random graph
 ```
 void ODP_Generate_random_general_s(int nodes, int degree, unsigned int seed, int symmetries, int edge[lines][2])
-void ODP_Generate_random_grid_s(int width, int height, int degree, int length, unsigned int seed, int symmetries, int edge[lines][2])
+void ODP_Generate_random_grid_s   (int width, int height, int degree, int length, unsigned int seed, int symmetries, int edge[lines][2])
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] degree: Degree in a graph.
