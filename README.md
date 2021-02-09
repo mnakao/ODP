@@ -8,7 +8,7 @@ You can use following.
 * libodp_cuda.a: CUDA (Compute Unified Device Architecture) version
 * libodp_mpi_cuda.a: MPI + CUDA version
 
-## Algotherm to obtain ASPL (Average Shortest Path Length)
+## Algotherm for ASPL (Average Shortest Path Length)
 Please see the paper (Open Access).
 * https://dl.acm.org/doi/10.1145/3368474.3368478
 
@@ -93,7 +93,7 @@ The format of the edge list and adjacency matrix is the same for general and gri
 ## Environment variable
 ### ODP_ASPL=[MATRIX|MATRIX_SAVING|BFS]
 
-This library provides three types of algorithms to obtain ASPL.
+This library provides three types of algorithms for ASPL.
 By default, `NORMAL` is automatically selected if the amount of memory used is
 lower than the value of `MEM_THRESHOLD` in `src/parameter.h`.
 You can specify one of three.
