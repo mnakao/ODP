@@ -417,8 +417,8 @@ However, since the edge list is used for input and output, the size is `int edge
 
 ### Grid graph
 Grid graphs are almost the same as general graphs, but only values of 2 or 4 are valid for `symmetries`.
-Furthermore, when `symmetries=4`, `width` is a multiple of 2.
-When `symmetries=4`, and `width` and `height` are a multiple of 2, and `width=height`.
+When `symmetries=2`, `width` is a multiple of 2.
+When `symmetries=4`, `width` and `height` are a multiple of 2, and `width=height`.
 
 ![](./misc/img/grid_s2.png)
 
