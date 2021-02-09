@@ -1,6 +1,6 @@
 ## Overview
-This software is for Order/Degree Problem with a noweight undirected graph.
-You can use following libraries.
+This library is for Order/Degree Problem with a noweight undirected graph.
+You can use following.
 * libodp.a : Serial version
 * libodp_threads.a : Threads version
 * libodp_mpi.a : MPI (Message passing Interface) version
@@ -29,7 +29,7 @@ Please see the paper (Open Access).
   series = {HPCAsia2020}
 }
 
-_When you write a paper using this software, please refer to the paper._
+_When you write a paper using this library, please refer to the paper._
 
 ## Quick start
 ```
@@ -514,9 +514,9 @@ void ODP_Generate_random_grid_s(int width, int height, int degree, int length, u
 * [OUT] edge : Edge list of a graph.
 
 ## Note
-The software also supports non-regular graphs, but usage of memory may be not efficient.
+The library also supports non-regular graphs, but usage of memory may be not efficient.
 Because the format of the adjacency matrix is `int adjacency[nodes][degree]`, which is commanly used in regular and non-regular graphs.
 This wastes memory when the number of edges that each vertex has varies greatly.
 
 ## Acknowledgment
-This software is inherited from https://github.com/ryuhei-mori/graph_ASPL.git.
+This library is inherited from https://github.com/ryuhei-mori/graph_ASPL.git.
