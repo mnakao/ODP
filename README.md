@@ -3,7 +3,7 @@ This library is for Order/Degree Problem with a noweight undirected graph.
 You can use following.
 * libodp.a : Serial version
 * libodp_threads.a : Threads version
-* libodp_mpi.a : MPI (Message passing Interface) version
+* libodp_mpi.a : MPI (Message Passing Interface) version
 * libodp_mpi_threads.a: MPI + Threads version
 * libodp_cuda.a: CUDA (Compute Unified Device Architecture) version
 * libodp_mpi_cuda.a: MPI + CUDA version
@@ -74,7 +74,6 @@ $ make [serial|threads|mpi|mpi_threads|cuda|mpi_cuda|all]
 ```
 
 ## File format for graph
-* A File must be in an edge list format compatible with the NetworkX's read_edgelist function. Edge attributes will be ignored if exist.
 * For a general graph, each vertex name must be an integer starting from zero.
 * For a grid graph, each vertex name must be a comma-separated string like "x,y" (no quotes, no spaces). x and y are integers starting from zero, which represent the coordinate of the vertex.
 * Please see sample graphs in `./samples/graphs/` or http://research.nii.ac.jp/graphgolf/submit.html
@@ -87,7 +86,7 @@ For example, the first line means that vertex number 0 is connected to 10, 2, 13
 ![](./misc/img/general.png)
 
 ### Example for a grid graph
-Note that a file and an edge list are different.
+A file and an edge list are different.
 The format of the edge list and adjacency matrix is the same for general and grid graphs.
 
 ![](./misc/img/grid.png)
@@ -95,9 +94,10 @@ The format of the edge list and adjacency matrix is the same for general and gri
 ## Environment variable
 ### ODP_ASPL=[MATRIX|MATRIX_SAVING|BFS]
 
-This library provides three types of algorithms for ASPL.
-By default, `MATRIX` is automatically selected if the amount of memory used is
-lower than the value of `MEM_THRESHOLD` in `src/parameter.h`.
+This library provides three algorithms for ASPL.
+`MATRIX` is selected if the amount of memory used is lower than the value of `MEM_THRESHOLD` in `src/parameter.h`.
+If it is higher, `MATRIX_SAVING` is selected.
+`BFS` only works if specified in an environment variable. 
 
 * MATRIX : Bit matrix is used for ASPL calculation. In most cases this is the fastest.
 * MATRIX_SAVING : This is a memory-saving version of `MATRIX`.
