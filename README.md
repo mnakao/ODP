@@ -426,10 +426,10 @@ The above image is an example of a graph with (width, height, degree, length, sy
 As with the general graph, the bottom half can be calculated from the top half.
 However, the calculation method is different from the general graph.
 For example, the vertex number 0 is connected to 7, 2, and 12.
-The two-dimensional notations for 7, 2, and 12 are (1,1), (0,2), and (2,0).
-The vertex number 0 corresponds to the vertex number 35, its two-dimensional notation is (5,5).
+The coordinates of for 7, 2, and 12 are (1,1), (0,2), and (2,0).
+The vertex number 0 corresponds to the vertex number 35, its coordinaten is (5,5).
 Rotate (1,1), (0,2), (2,0) by 180 degrees to get (4,4), (5,3), (3,5).
-The one-dimensional notations for (4,4), (5,3), and (3,5) are 28, 33, and 23.
+The vertex numbers for (4,4), (5,3), and (3,5) are 28, 33, and 23.
 These values match the 36th row of the adjacency matrix.
 
 ![](./misc/img/grid_s4.png)
@@ -437,13 +437,13 @@ These values match the 36th row of the adjacency matrix.
 The above image is an example of a graph with (width, height, degree, length, symmetries) = (6, 6, 3, 2, 4).
 Note that the only element used in the adjacency matrix is the lower left corner of the grid graph.
 Specifically, the nine points are (0,0), (0,1), (0,2), (1,0), (1,1), (1,2), (2,0), (2,1), and (2,2).
-Their one-dimensional notation for them are 0, 1, 2, 6, 7, 8, 12, 13, 14, respectively.
+Their vertex numbers are 0, 1, 2, 6, 7, 8, 12, 13, 14, respectively.
 The vertex number 0 corresponds to the vertex number 5, 35, and 30.
-Their two-dimensional notations is (0,5), (5,5), and (5,0).
+Their coordinates are (0,5), (5,5), and (5,0).
 For example, the vertex number 0 is connected to 2, 6, and 12.
-The two-dimensional notations for 2, 6, and 12 are (0,2), (1,0), and (2,0).
+Their coordinates are (0,2), (1,0), and (2,0).
 Rotate (0,2), (1,0), (2,0) by 90 degrees to get (2,5), (0,4), (0,3).
-The one-dimensional notations for (2,5), (0,4), and (0,3) are 17, 4, and 3.
+Their vertex numbers are 17, 4, and 3.
 These values match the 6th row of the adjacency matrix.
 
 Note that the functions for symmetry in this section excludes rows in red to reduce the size of the adjacency matrix.
