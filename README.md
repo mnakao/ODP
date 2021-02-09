@@ -1,6 +1,6 @@
 ## Overview
-This software is to solve Order/Degree Problem for a noweight undirected graph.
-You can create following libraries.
+This software is for Order/Degree Problem with a noweight undirected graph.
+You can use following libraries.
 * libodp.a : Serial version
 * libodp_threads.a : Threads version
 * libodp_mpi.a : MPI (Message passing Interface) version
@@ -46,17 +46,14 @@ ASPL         = 1.9166666667 (230/120)
 ASPL Gap     = 0.1833333333 (1.9166666667 - 1.7333333333)
 ```
 
-## How to create libraries
+## Quick start for threads version
 ```
+$ git clone https://github.com/mnakao/ODP.git
 $ cd ODP/src
-$ make [serial|threads|mpi|mpi_threads|cuda|mpi_cuda|all]
-```
- 
-## How to run sample programs
-```
-$ cd ODP/sample
-$ make [serial|threads|mpi|mpi_threads|cuda|mpi_cuda|all]
-$ ./general.x ./graphs/general/n16d4.edges
+$ make threads
+$ cd ../samples
+$ make threads
+$ ./threads_general.x ./graphs/general/n16d4.edges
 Nodes = 16, Degrees = 4
 Diameter     = 3
 Diameter Gap = 1 (3 - 2)
@@ -64,11 +61,34 @@ ASPL         = 1.9166666667 (230/120)
 ASPL Gap     = 0.1833333333 (1.9166666667 - 1.7333333333)
 ```
 
-## Graph file format
-* A graph file must be in an edge list format compatible with the NetworkX's read_edgelist function. Edge attributes will be ignored if exist.
+## How to create libraries
+```
+$ cd ODP/src
+$ make [serial|threads|mpi|mpi_threads|cuda|mpi_cuda|all]
+```
+ 
+## How to compile sample programs
+```
+$ cd ODP/sample
+$ make [serial|threads|mpi|mpi_threads|cuda|mpi_cuda|all]
+```
+
+## File format for graph
+* A File must be in an edge list format compatible with the NetworkX's read_edgelist function. Edge attributes will be ignored if exist.
 * For a general graph, each vertex name must be an integer starting from zero.
 * For a grid graph, each vertex name must be a comma-separated string like "x,y" (no quotes, no spaces). x and y are integers starting from zero, which represent the coordinate of the vertex.
 * Please see sample graphs in `./samples/graphs/` or http://research.nii.ac.jp/graphgolf/submit.html
+
+### Example for a general graph
+A file and an edge list are the same. An edge list and an adjacency matrix are used in the library.
+
+![](./misc/img/general.png)
+
+### Example for a grid graph
+Note that a file and an edge list are different.
+The format of the edge list and adjacency matrix is the same for general and grid graphs.
+
+![](./misc/img/grid.png)
 
 ## Environment variable
 ### ODP_ASPL=[MATRIX|MATRIX_SAVING|BFS]
@@ -76,11 +96,11 @@ ASPL Gap     = 0.1833333333 (1.9166666667 - 1.7333333333)
 This library provides three types of algorithms to obtain ASPL.
 By default, `NORMAL` is automatically selected if the amount of memory used is
 lower than the value of `MEM_THRESHOLD` in `src/parameter.h`.
-The `ODP_ASPL` can specify the algorithm to use.
+You can specify one of three.
 
 * MATRIX : Bit matrix is used for ASPL calculation. In most cases this is the fastest.
 * MATRIX_SAVING : This is a memory-saving version of `MATRIX`.
-* BFS : Breadth First Search is used for ASPL calculation. If the value of `(nodes/(procs*symmetries)` is small enough, it may be the fastest.
+* BFS : Breadth First Search is used for ASPL calculation. If the value of `(nodes/(procs*symmetries)` is small enough, it may be the fastest. Note that BFS with CUDA is not implemented.
 
 ### ODP_PROFILE=1
 
@@ -109,13 +129,13 @@ ASPL Gap     = 0.1833333333 (1.9166666667 - 1.7333333333)
 
 The meaning of each item in the profile is as follows.
 * Date : The time when the profile was output.
-* Hostname : Name of the machine on which the program was run.
+* Hostname : Name of the machine on which the program ran.
 * Number of Times : Number of times ODP_Set_aspl() was executed.
-* Total Time : Total execution time of ODP_Set_aspl()
-* Average Time : Average execution time of ODP_Set_aspl()
-* Algorithm : NORMAL or SAVING. The parentheses are the types of libraries used. That is, SERIAL, THREADS, MPI, MPI+THREADS, CUDA, or MPI+CUDA.
+* Total Time : Total execution time of ODP_Set_aspl().
+* Average Time : Average execution time of ODP_Set_aspl().
+* Algorithm : MATRIX, MATRIX_SAVING or BFS. The parentheses are the types of libraries used. That is, SERIAL, THREADS, MPI, MPI+THREADS, CUDA, or MPI+CUDA.
 * Symmetries : When using ODP_Init_aspl\*_s(), the value is `symmetries`. Otherwise, the value is 1.
-* Memory Usage : Amount of memory used in the library.
+* Memory Usage : Estimated ammount of memory used in the library.
 * Num of Procs : Number of processes used in the library.
 * Num of Threads : Number of threads used in the library.
 
@@ -227,15 +247,15 @@ void ODP_Conv_adjacency2edge_grid(int width, int height, int degree, int num_deg
 ### Set theoretical lower bounds
 ```
 void ODP_Set_lbounds_general(int nodes, int degree, int *low_diameter, double *low_ASPL)
-void ODP_Set_lbounds_grid   (int width, int height, int degree, int length, int *low_diameter, double *low_ASPL)
+void ODP_Set_lbounds_grid(int width, int height, int degree, int length, int *low_diameter, double *low_ASPL)
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] degree : Degree in a graph.
-* [OUT] low_diameter : Theoretical lower bound of diameter in a graph.
-* [OUT] low_ASPL : Theoretical lower bound of ASPL in a graph.
 * [IN] width : Width of a grid graph.
 * [IN] height : Height of a grid graph.
 * [IN] length : Maximum length of a grid graph.
+* [OUT] low_diameter : Theoretical lower bound of diameter in a graph.
+* [OUT] low_ASPL : Theoretical lower bound of ASPL in a graph.
 
 ### Set degrees for a non-regular graph
 ```
@@ -257,7 +277,7 @@ void ODP_Srand(unsigned int seed)
 Generate a regular graph with randomly connected vertices. Note that the graph may contain multiple edges and loops.
 ```
 void ODP_Generate_random_general(int nodes, int degree, int edge[lines][2])
-void ODP_Generate_random_grid   (int width, int height, int degree, int length, int edge[lines][2])
+void ODP_Generate_random_grid(int width, int height, int degree, int length, int edge[lines][2])
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] degree : Degree in a graph.
@@ -282,7 +302,6 @@ void ODP_Mutate_adjacency_grid(int width, int height, int degree, int num_degree
 
 ### Restore an adjacency matrix
 Undo before being modified by ODP_Mutate_adjacency_\*().
-Only if there is no change in the adjacency matrix between ODP_Mutate_adjacency_\*() and ODP_Restore_adjacency_\*(). 
 ```
 void ODP_Restore_adjacency_general(int nodes, int degree, int adjacency[nodes][degree])
 void ODP_Restore_adjacency_grid(int width, int height, int degree, int adjacency[nodes][degree])
@@ -375,11 +394,13 @@ void ODP_Set_aspl_mpi_cuda_grid   (char *fname, MPI_Comm comm, int *width, int *
 * [OUT] height : Height of a grid graph.
 * [OUT] length : Maximum length of a grid graph.
 
-## Function for a general graph with symmetry
-Symmetry in this software means that when the vertices are arranged on a circle,
+## Functions for a graph with symmetry
+### General graph
+Symmetry in this library means that when the vertices are arranged on a circle,
 the graph when rotated by `360/symmetries` degrees and the graph before rotation match.
+Therefore, `symmetries` must be a divisor of `nodes`.
 
-![](./misc/img/symmetry.png)
+![](./misc/img/general_s.png)
 
 The above image is an example of a graph with (nodes, degree, symmetries) = (24, 4, 4).
 This image is created from `samples/graphs/general/n24d4g4.png` and `samples/graphs/general/n24d4g4.edges`.
@@ -395,6 +416,36 @@ This rule holds for all groups.
 The remaining elements can be calculated from the first (nodes/symmetries) lines of the adjacency matrix.
 Thus, the size of the adjacency matrix is `int adjacency[nodes/symmetries][degree]`.
 However, since the edge list is used for input and output, the size is `int edge[lines][2]`, which is the same as a normal graph.
+
+### Grid graph
+Grid graphs are almost the same as general graphs, but only values of 2 or 4 are valid for `symmetries`.
+Furthermore, when `symmetries=4`, `width=height` must be used.
+
+![](./misc/img/grid_s2.png)
+
+The above image is an example of a graph with (width, height, degree, length, symmetries) = (6, 5, 3, 2, 2).
+As with the general graph, the bottom half can be calculated from the top half.
+However, the calculation method is different from the general graph.
+For example, the vertex number 0 is connected to 7, 2, and 12.
+The two-dimensional notations for 7, 2, and 12 are (1,1), (0,2), and (2,0).
+The vertex number 0 corresponds to the vertex number 35, its two-dimensional notation is (5,5).
+Rotate (1,1), (0,2), (2,0) by 180 degrees to get (4,4), (5,3), (3,5).
+The one-dimensional notations for (4,4), (5,3), and (3,5) are 28, 33, and 23.
+These values match the last row of the adjacency matrix.
+
+![](./misc/img/grid_s4.png)
+
+The above image is an example of a graph with (width, height, degree, length, symmetries) = (6, 5, 3, 2, 4).
+Note that the only element used in the adjacency matrix is the lower left corner of the grid graph.
+Specifically, the nine points are (0,0), (0,1), (0,2), (1,0), (1,1), (1,2), (2,0), (2,1), and (2,2).
+Their one-dimensional notation for them are 0, 1, 2, 6, 7, 8, 12, 13, 14, respectively.
+The vertex number 0 corresponds to the vertex number 5, 35, and 30.
+Their two-dimensional notations is (0,5), (5,5), and (5,0).
+For example, the vertex number 0 is connected to 2, 6, and 12.
+The two-dimensional notations for 2, 6, and 12 are (0,2), (1,0), and (2,0).
+Rotate (0,2), (1,0), (2,0) by 90 degrees to get (2,5), (0,4), (0,3).
+The one-dimensional notations for (2,5), (0,4), and (0,3) are 17, 4, and 3.
+These values match the 5th row of the adjacency matrix.
 
 ### Initialize
 These functions can be used instead of the ODP_Init_aspl\*().
@@ -428,7 +479,7 @@ void ODP_Conv_edge2adjacency_grid_s(int width, int height, int lines, int degree
 * [IN] lines : Number of lines in an edge list.
 * [IN] degree: Degree in a graph.
 * [IN] edge : Edge list of a graph.
-* [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes. If it is 1, it works the same as ODP_Conv_edge2adjacency().
+* [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes. If it is 1, it works the same as ODP_Conv_edge2adjacency_general() or ODP_Conv_edge2adjacency_grid().
 * [OUT] adjacency : Adjacency matrix of a graph.
 
 ### Convert an adjacency matrix to an edge list
@@ -440,7 +491,7 @@ void ODP_Conv_adjacency2edge_grid_s(int width, int height, int degree, int num_d
 * [IN] degree: Degree in a graph.
 * [IN] num_degrees : Specify NULL for a regular graph. If not, specify the degrees for each vertex.
 * [IN] adjacency : Adjacency matrix of a graph.
-* [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes. If it is 1, it works the same as ODP_Conv_adjacency2edge().
+* [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes. If it is 1, it works the same as ODP_Conv_adjacency2edge_general() or ODP_Conv_adjacency2edge_grid().
 * [IN] width : Width of a grid graph.
 * [IN] height : Height of a grid graph.
 * [OUT] edge : Edge list of a graph.
@@ -453,7 +504,7 @@ void ODP_Generate_random_grid_s(int width, int height, int degree, int length, u
 * [IN] nodes : Number of nodes in a graph.
 * [IN] degree: Degree in a graph.
 * [IN] seed : Seed for random.
-* [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes. If it is 1, it works the same as ODP_Generate_random_general().
+* [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes. If it is 1, it works the same as ODP_Generate_random_general() or ODP_Generate_random_grid().
 * [IN] width : Width of a grid graph.
 * [IN] height : Height of a grid graph.
 * [IN] length : Maximum length of a grid graph.
