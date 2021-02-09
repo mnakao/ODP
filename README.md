@@ -164,7 +164,7 @@ void ODP_Init_aspl_mpi_cuda_grid(int width, int height, int degree, int num_degr
 * [IN] comm : MPI communicator.
 
 ### Set diameter, sum, and ASPL
-Set diameter, sum, and ASPL. Note that these functions must be executed between ODP_Init_aspl\*() and ODP_Finalize_aspl().
+Set diameter, sum, and ASPL. Note that ODP_Set_aspl() must be executed between ODP_Init_aspl\*() and ODP_Finalize_aspl().
 In the case of an unconnected graph, INT_MAX, LONG_MAX, and DBL_MAX are assigned to the values of diameter, sum, and ASPL, respectively.
 ```
 void ODP_Set_aspl(int adjacency[nodes][degree], int *diameter, long *sum, double *ASPL)
