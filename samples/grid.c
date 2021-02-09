@@ -18,18 +18,10 @@ int main(int argc, char *argv[])
   ODP_Read_edge_grid(argv[1], &width, &height, edge);
   int nodes  = ODP_Get_nodes(lines, edge);
   int degree = ODP_Get_degree(nodes, lines, edge);
-    for(int i=0;i<lines;i++)
-      printf("%d %d\n", edge[i][0], edge[i][1]);
+
   int (*adjacency)[degree] = malloc(sizeof(int) * nodes * degree); // int adjacency[nodes][degree];
   ODP_Conv_edge2adjacency_grid(width, height, lines, degree, edge, adjacency);
 
-  for(int i=0;i<nodes;i++){
-    for(int j=0;j<degree;j++){
-      printf("%3d", adjacency[i][j]);
-    }
-    printf("\n");
-  }
-  
   ODP_Init_aspl_grid(width, height, degree, NULL);
   ODP_Set_aspl(adjacency, &diameter, &sum, &ASPL);
   ODP_Finalize_aspl();
