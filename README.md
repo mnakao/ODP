@@ -506,6 +506,25 @@ void ODP_Generate_random_grid_s   (int width, int height, int degree, int length
 * [IN] length : Maximum length of a grid graph.
 * [OUT] edge : Edge list of a graph.
 
+## Performance
+* On Cygnus system in University of Tsukuba, Japan
+* Xeon Gold 6126 2.6GHz (12cores) x 2
+* Tesla V100 PCIe
+* InfiniBand HDR100 x 4channel (400Gbpsx4)
+* gcc/8.3.1, cuda/10.2, openmpi/3.1.6
+* Graph with (nodes, degree) = (1000000, 32)
+* http://research.nii.ac.jp/graphgolf/solutions/n1000000d32k5l433.20191014-pnxc8n.edges.gz
+
+### Symmetries = 1
+* libapsp.a : 3364.2 sec.
+* libapsp_mpi_threads.a with 12 threads: 320.2 sec. (1 CPU), 166.5 sec. (2 CPUs), 84.4 sec. (4 CPUs), 41.9 sec. (8 CPUs)
+* libapsp_mpi_cuda.a : 28.6 sec. (1 GPU), 14.4 sec. (2 GPUs). 7.3 sec. (4 GPUs), 3.7 sec. (8 GPUs), 1.9 sec. (16 GPUs)
+
+### Symmetries = 25000
+* libapsp.a : 0.5961 sec.
+* libapsp_threads.a with 12 threads : 0.0626 sec. (1 CPU)
+* libcuda.a : 0.0055 sec. (1 GPU)
+
 ## Note
 The library also supports non-regular graphs, but usage of memory may be not efficient.
 Because the format of the adjacency matrix is `int adjacency[nodes][degree]`, which is commanly used in regular and non-regular graphs.
