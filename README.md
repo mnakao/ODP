@@ -141,20 +141,13 @@ The meaning of each item in the profile is as follows.
 * Num of Threads : Number of threads used in the library.
 
 ## Basic Function
-Note that there are no special functions for the threaded versions.
-Thread parallelization is performed automatically depending on the library to be linked.
-
 ### Initialize
 Perform the initialization process before executing ODP_Set_aspl().
 ```
-void ODP_Init_aspl_general         (int nodes, int degree, int num_degrees[nodes])
-void ODP_Init_aspl_mpi_general     (int nodes, int degree, int num_degrees[nodes], MPI_Comm comm)
-void ODP_Init_aspl_cuda_general    (int nodes, int degree, int num_degrees[nodes])
-void ODP_Init_aspl_mpi_cuda_general(int nodes, int degree, int num_degrees[nodes], MPI_Comm comm)
-void ODP_Init_aspl_grid            (int width, int height, int degree, int num_degrees[nodes])
-void ODP_Init_aspl_mpi_grid        (int width, int height, int degree, int num_degrees[nodes], MPI_Comm comm)
-void ODP_Init_aspl_cuda_grid       (int width, int height, int degree, int num_degrees[nodes])
-void ODP_Init_aspl_mpi_cuda_grid   (int width, int height, int degree, int num_degrees[nodes], MPI_Comm comm)
+void ODP_Init_aspl_general    (int nodes, int degree, int num_degrees[nodes])
+void ODP_Init_aspl_grid       (int width, int height, int degree, int num_degrees[nodes])
+void ODP_Init_aspl_mpi_general(int nodes, int degree, int num_degrees[nodes], MPI_Comm comm)
+void ODP_Init_aspl_mpi_grid   (int width, int height, int degree, int num_degrees[nodes], MPI_Comm comm)
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] degree: Degree in a graph.
@@ -162,6 +155,9 @@ void ODP_Init_aspl_mpi_cuda_grid   (int width, int height, int degree, int num_d
 * [IN] width : Width of a grid graph.
 * [IN] height : Height of a grid graph.
 * [IN] comm : MPI communicator.
+
+When using ODP_Init_aspl_general() or ODP_Init_aspl_grid(), please link `libodp.a`, `libodp_threads.a`, or `libodp_cuda.a`.
+When using ODP_Init_aspl_mpi_general() or ODP_Init_aspl_mpi_grid(), please link `libodp_mpi.a`, `libodp_mpi_threads.a`, or `libodp_mpi_cuda.a`.
 
 ### Set diameter, sum, and ASPL
 Set diameter, sum, and ASPL. Note that ODP_Set_aspl() must be executed between ODP_Init_aspl\*() and ODP_Finalize_aspl().
@@ -373,14 +369,10 @@ Return other values just by specifying fname and comm.
 Please see `samples/simple_general.c`.
 
 ```
-void ODP_Set_aspl_general         (char *fname, int *nodes, int *degree, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
-void ODP_Set_aspl_grid            (char *fname, int *width, int *height, int *degree, int *length, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
-void ODP_Set_aspl_mpi_general     (char *fname, MPI_Comm comm, int *nodes, int *degree, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
-void ODP_Set_aspl_mpi_grid        (char *fname, MPI_Comm comm, int *width, int *height, int *degree, int *length, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
-void ODP_Set_aspl_cuda_general    (char *fname, int *nodes, int *degree, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
-void ODP_Set_aspl_cuda_grid       (char *fname, int *width, int *height, int *degree, int *length, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
-void ODP_Set_aspl_mpi_cuda_general(char *fname, MPI_Comm comm, int *nodes, int *degree, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
-void ODP_Set_aspl_mpi_cuda_grid   (char *fname, MPI_Comm comm, int *width, int *height, int *degree, int *length, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
+void ODP_Set_aspl_general    (char *fname, int *nodes, int *degree, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
+void ODP_Set_aspl_grid       (char *fname, int *width, int *height, int *degree, int *length, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
+void ODP_Set_aspl_mpi_general(char *fname, MPI_Comm comm, int *nodes, int *degree, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
+void ODP_Set_aspl_mpi_grid   (char *fname, MPI_Comm comm, int *width, int *height, int *degree, int *length, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
 ```
 * [IN] fname : File name of a graph.
 * [IN] comm : MPI communicator.
@@ -394,6 +386,9 @@ void ODP_Set_aspl_mpi_cuda_grid   (char *fname, MPI_Comm comm, int *width, int *
 * [OUT] width : Width of a grid graph.
 * [OUT] height : Height of a grid graph.
 * [OUT] length : Maximum length of a grid graph.
+
+When using ODP_Set_aspl_general() or ODP_Set_aspl_grid(), please link `libodp.a`, `libodp_threads.a`, or `libodp_cuda.a`.
+When using ODP_Set_aspl_mpi_general() or ODP_Set_aspl_mpi_grid(), please link `libodp_mpi.a`, `libodp_mpi_threads.a`, or `libodp_mpi_cuda.a`.
 
 ## A graph with symmetry
 ### General graph
@@ -453,14 +448,10 @@ In this example, the values from adjacency[4][0] to adjacency[4][2] are 0, 1, an
 These functions can be used instead of the ODP_Init_aspl\*().
 
 ```
-void ODP_Init_aspl_general_s         (int nodes, int degree, int num_degrees[nodes/symmetries], int symmetries)
-void ODP_Init_aspl_mpi_general_s     (int nodes, int degree, int num_degrees[nodes/symmetries], MPI_Comm comm, int symmetries)
-void ODP_Init_aspl_cuda_general_s    (int nodes, int degree, int num_degrees[nodes/symmetries], int symmetries)
-void ODP_Init_aspl_mpi_cuda_general_s(int nodes, int degree, int num_degrees[nodes/symmetries], MPI_Comm comm, int symmetries)
-void ODP_Init_aspl_grid_s            (int width, int height, int degree, int num_degrees[nodes/symmetries], int symmetries)
-void ODP_Init_aspl_mpi_grid_s        (int width, int height, int degree, int num_degrees[nodes/symmetries], MPI_Comm comm, int symmetries)
-void ODP_Init_aspl_cuda_grid_s       (int width, int height, int degree, int num_degrees[nodes/symmetries], int symmetries)
-void ODP_Init_aspl_mpi_cuda_grid_s   (int width, int height, int degree, int num_degrees[nodes/symmetries], MPI_Comm comm, int symmetries)
+void ODP_Init_aspl_general_s    (int nodes, int degree, int num_degrees[nodes/symmetries], int symmetries)
+void ODP_Init_aspl_grid_s       (int width, int height, int degree, int num_degrees[nodes/symmetries], int symmetries)
+void ODP_Init_aspl_mpi_general_s(int nodes, int degree, int num_degrees[nodes/symmetries], MPI_Comm comm, int symmetries)
+void ODP_Init_aspl_mpi_grid_s   (int width, int height, int degree, int num_degrees[nodes/symmetries], MPI_Comm comm, int symmetries)
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] degree: Degree in a graph.
@@ -469,6 +460,9 @@ void ODP_Init_aspl_mpi_cuda_grid_s   (int width, int height, int degree, int num
 * [IN] height : Height of a grid graph.
 * [IN] comm : MPI communicator.
 * [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes. If it is 1, it works the same as ODP_Init_aspl\*().
+
+When using ODP_Init_aspl_general_s() or ODP_Init_aspl_grid_s(), please link `libodp.a`, `libodp_threads.a`, or `libodp_cuda.a`.
+When using ODP_Init_aspl_mpi_general_s() or ODP_Init_aspl_mpi_grid_s(), please link `libodp_mpi.a`, `libodp_mpi_threads.a`, or `libodp_mpi_cuda.a`.
 
 Note that the ODP_Set_aspl() and ODP_Finalize_aspl() can be used in common.
 

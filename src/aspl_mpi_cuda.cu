@@ -167,14 +167,14 @@ static void init_aspl_mpi_cuda_s(const int nodes, const int degree, const int* _
   _times = 0;
 }
 
-extern "C" void ODP_Init_aspl_mpi_cuda_general(const int nodes, const int degree,
-					       const int* __restrict__ num_degrees, const MPI_Comm comm)
+extern "C" void ODP_Init_aspl_mpi_general(const int nodes, const int degree,
+					  const int* __restrict__ num_degrees, const MPI_Comm comm)
 {
   init_aspl_mpi_cuda_s(nodes, degree, num_degrees, comm, 1);
 }
 
-extern "C" void ODP_Init_aspl_mpi_cuda_general_s(const int nodes, const int degree, const int* __restrict__ num_degrees,
-						 const MPI_Comm comm, const int symmetries)
+extern "C" void ODP_Init_aspl_mpi_general_s(const int nodes, const int degree, const int* __restrict__ num_degrees,
+					    const MPI_Comm comm, const int symmetries)
 {
   if(num_degrees){
     int *tmp_num_degrees = (int *)malloc(sizeof(int) * nodes);
@@ -191,16 +191,16 @@ extern "C" void ODP_Init_aspl_mpi_cuda_general_s(const int nodes, const int degr
   }
 }
 
-extern "C" void ODP_Init_aspl_mpi_cuda_grid(const int width, const int height, const int degree,
-					    const int* __restrict__ num_degrees, const MPI_Comm comm)
+extern "C" void ODP_Init_aspl_mpi_grid(const int width, const int height, const int degree,
+				       const int* __restrict__ num_degrees, const MPI_Comm comm)
 {
   int nodes = width * height;
   _height = height;
   init_aspl_mpi_cuda_s(nodes, degree, num_degrees, comm, 1);
 }
 
-extern "C" void ODP_Init_aspl_mpi_cuda_grid_s(const int width, const int height, const int degree,
-					      const int* __restrict__ num_degrees, const MPI_Comm comm, const int symmetries)
+extern "C" void ODP_Init_aspl_mpi_grid_s(const int width, const int height, const int degree,
+					 const int* __restrict__ num_degrees, const MPI_Comm comm, const int symmetries)
 {
   int nodes = width * height;
   _height = height;

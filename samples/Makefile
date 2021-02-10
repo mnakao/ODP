@@ -77,22 +77,22 @@ mpi_threads_simple_general.x: mpi_simple_general.c odp.h
 mpi_threads_simple_grid.x: mpi_simple_grid.c odp.h
 	$(MPICC) $(CFLAGS) $(OMP_FLAGS) -o $@ $< $(MPI_THREADS_LIBS)
 ##############
-cuda_general.x: cuda_general.c odp.h
+cuda_general.x: general.c odp.h
 	$(NVCC) $(CUDA_FLAGS) -o $@ $< $(CUDA_LIBS) $(CUDA_BIN)
-cuda_grid.x: cuda_grid.c odp.h
+cuda_grid.x: grid.c odp.h
 	$(NVCC) $(CUDA_FLAGS) -o $@ $< $(CUDA_LIBS) $(CUDA_BIN)
-cuda_simple_general.x: cuda_simple_general.c odp.h
+cuda_simple_general.x: simple_general.c odp.h
 	$(NVCC) $(CUDA_FLAGS) -o $@ $< $(CUDA_LIBS) $(CUDA_BIN)
-cuda_simple_grid.x: cuda_simple_grid.c odp.h
+cuda_simple_grid.x: simple_grid.c odp.h
 	$(NVCC) $(CUDA_FLAGS) -o $@ $< $(CUDA_LIBS) $(CUDA_BIN)
 ##############
-mpi_cuda_general.x: mpi_cuda_general.c odp.h
+mpi_cuda_general.x: mpi_general.c odp.h
 	$(NVCC) $(CUDA_FLAGS) -o $@ $< $(MPI_CUDA_LIBS) $(CUDA_MPIBIN)
-mpi_cuda_grid.x: mpi_cuda_grid.c odp.h
+mpi_cuda_grid.x: mpi_grid.c odp.h
 	$(NVCC) $(CUDA_FLAGS) -o $@ $< $(MPI_CUDA_LIBS) $(CUDA_MPIBIN)
-mpi_cuda_simple_general.x: mpi_cuda_simple_general.c odp.h
+mpi_cuda_simple_general.x: mpi_simple_general.c odp.h
 	$(NVCC) $(CUDA_FLAGS) -o $@ $< $(MPI_CUDA_LIBS) $(CUDA_MPIBIN)
-mpi_cuda_simple_grid.x: mpi_cuda_simple_grid.c odp.h
+mpi_cuda_simple_grid.x: mpi_simple_grid.c odp.h
 	$(NVCC) $(CUDA_FLAGS) -o $@ $< $(MPI_CUDA_LIBS) $(CUDA_MPIBIN)
 ##############
 test: serial_test

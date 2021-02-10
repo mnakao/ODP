@@ -156,12 +156,12 @@ static void init_aspl_cuda_s(const int nodes, const int degree,
   }
 }
 
-extern "C" void ODP_Init_aspl_cuda_general(const int nodes, const int degree, const int* num_degrees)
+extern "C" void ODP_Init_aspl_general(const int nodes, const int degree, const int* num_degrees)
 {
   init_aspl_cuda_s(nodes, degree, num_degrees, 1);
 }
 
-extern "C" void ODP_Init_aspl_cuda_general_s(const int nodes, const int degree, const int* num_degrees, const int symmetries)
+extern "C" void ODP_Init_aspl_general_s(const int nodes, const int degree, const int* num_degrees, const int symmetries)
 {
   if(num_degrees){
     int *tmp_num_degrees = (int *)malloc(sizeof(int) * nodes);
@@ -178,14 +178,14 @@ extern "C" void ODP_Init_aspl_cuda_general_s(const int nodes, const int degree, 
   }
 }
 
-extern "C" void ODP_Init_aspl_cuda_grid(const int width, const int height, const int degree, const int* num_degrees)
+extern "C" void ODP_Init_aspl_grid(const int width, const int height, const int degree, const int* num_degrees)
 {
   int nodes = width * height;
   _height = height;
   init_aspl_cuda_s(nodes, degree, num_degrees, 1);
 }
 
-extern "C" void ODP_Init_aspl_cuda_grid_s(const int width, const int height, const int degree, const int* num_degrees, const int symmetries)
+extern "C" void ODP_Init_aspl_grid_s(const int width, const int height, const int degree, const int* num_degrees, const int symmetries)
 {
   int nodes = width * height;
   _height = height;
