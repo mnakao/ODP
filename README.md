@@ -416,7 +416,7 @@ Rotate (0,2), (1,0), (2,0) by 90 degrees to get (2,5), (0,4), (0,3).
 Their vertex numbers are 17, 4, and 3.
 These values match the 6th row of the adjacency matrix.
 
-Note that the new `adjacency matrix'` is not created from contiguous region.
+Note that the new `adjacency matrix'` is not created from contiguous region of the `adjacency matrix`.
 
 ### Initialize
 These functions can be used instead of the ODP_Init_aspl\*().
