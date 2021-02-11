@@ -21,17 +21,17 @@ cuda: libodp_cuda.a
 mpi_cuda: libodp_mpi_cuda.a
 all: serial threads mpi mpi_threads cuda mpi_cuda
 
-libodp.a: ODP_Set_aspl.o aspl.o utils.o
+libodp.a: aspl.o utils.o
 	$(AR) r $@ $^
-libodp_threads.a: ODP_Set_aspl.o aspl_threads.o utils_threads.o
+libodp_threads.a: aspl_threads.o utils_threads.o
 	$(AR) r $@ $^
-libodp_mpi.a: ODP_Set_aspl_mpi.o aspl_mpi.o utils.o
+libodp_mpi.a: aspl_mpi.o utils.o
 	$(AR) r $@ $^
-libodp_mpi_threads.a: ODP_Set_aspl_mpi.o aspl_mpi_threads.o utils_threads.o
+libodp_mpi_threads.a: aspl_mpi_threads.o utils_threads.o
 	$(AR) r $@ $^
-libodp_cuda.a: ODP_Set_aspl_cuda.o aspl_cuda.o utils_cuda.o utils.o
+libodp_cuda.a: aspl_cuda.o utils_cuda.o utils.o
 	$(AR) r $@ $^
-libodp_mpi_cuda.a: ODP_Set_aspl_mpi_cuda.o aspl_mpi_cuda.o utils_cuda.o utils.o
+libodp_mpi_cuda.a: aspl_mpi_cuda.o utils_cuda.o utils.o
 	$(AR) r $@ $^
 
 aspl.o: aspl.c common.h parameter.h
@@ -52,14 +52,6 @@ utils_threads.o: utils.c common.h parameter.h
 	$(CC) $(CFLAGS) $(OMP_FLAGS) -o $@ -c $<
 utils_cuda.o: utils_cuda.cu common.h parameter.h
 	$(NVCC) $(CUDA_FLAGS) -o $@ -c $<
-ODP_Set_aspl.o: ODP_Set_aspl.c common.h parameter.h
-	$(CC) $(CFLAGS) -o $@ -c $<
-ODP_Set_aspl_mpi.o: ODP_Set_aspl_mpi.c common.h parameter.h
-	$(MPICC) $(CFLAGS) -o $@ -c $<
-ODP_Set_aspl_cuda.o: ODP_Set_aspl_cuda.c common.h parameter.h
-	$(NVCC) $(CUDA_FLAGS) -o $@ -c $<
-ODP_Set_aspl_mpi_cuda.o: ODP_Set_aspl_mpi_cuda.c common.h parameter.h
-	$(NVCC) $(CUDA_FLAGS) -o $@ -c $< -ccbin mpicc
 
 clean:
 	rm -f *.o *.a

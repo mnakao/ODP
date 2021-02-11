@@ -135,7 +135,7 @@ The meaning of each item in the profile is as follows.
 * Total Time : Total execution time of ODP_Set_aspl().
 * Average Time : Average execution time of ODP_Set_aspl().
 * Algorithm : MATRIX, MATRIX_SAVING or BFS. The parentheses are the types of libraries used. That is, SERIAL, THREADS, MPI, MPI+THREADS, CUDA, or MPI+CUDA.
-* Symmetries : When using ODP_Init_aspl\*_s(), the value is `symmetries`. Otherwise, the value is 1.
+* Symmetries : Numer of symmetries in a graph.
 * Memory Usage : Estimated ammount of memory used in the library.
 * Num of Procs : Number of processes used in the library.
 * Num of Threads : Number of threads used in the library.
@@ -298,15 +298,11 @@ void ODP_Mutate_adjacency_grid   (int width, int height, int degree, int num_deg
 * [OUT] adjacency : Adjacency matrix of a graph.
 
 ### Restore an adjacency matrix
-Undo before being modified by ODP_Mutate_adjacency_\*().
+Undo before being modified by ODP_Mutate_adjacency_general() or ODP_Mutate_adjacency_grid().
 ```
-void ODP_Restore_adjacency_general(int nodes, int degree, int adjacency[nodes][degree])
-void ODP_Restore_adjacency_grid   (int width, int height, int degree, int adjacency[nodes][degree])
+void ODP_Restore_adjacency_general(int adjacency[nodes][degree])
+void ODP_Restore_adjacency_grid   (int adjacency[nodes][degree])
 ```
-* [IN] nodes : Number of nodes in a graph.
-* [IN] degree : Degree in a graph.
-* [IN] width : Width of a grid graph.
-* [IN] height : Height of a grid graph.
 * [OUT] adjacency : Adjacency matrix of a graph.
 
 ### Get the number of lines in a file
@@ -363,29 +359,6 @@ bool ODP_Check_loop(int lines, int edge[lines][2])
 * [RETURN] : If a graph has a self-loop, it returns true.
 * [IN] lines : Number of lines in an edge list.
 * [IN] edge : Edge list of a graph.
-
-### Shortcut functions
-Return other values just by specifying fname and comm.
-Please see `samples/simple_general.c`.
-
-```
-void ODP_Set_aspl_general    (char *fname, int *nodes, int *degree, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
-void ODP_Set_aspl_grid       (char *fname, int *width, int *height, int *degree, int *length, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
-void ODP_Set_aspl_mpi_general(char *fname, MPI_Comm comm, int *nodes, int *degree, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
-void ODP_Set_aspl_mpi_grid   (char *fname, MPI_Comm comm, int *width, int *height, int *degree, int *length, int *low_diameter, double *low_ASPL, int *diameter, long *sum, double *ASPL)
-```
-* [IN] fname : File name of a graph.
-* [IN] comm : MPI communicator.
-* [OUT] nodes : Number of nodes in a graph.
-* [OUT] degree : Degree in a graph.
-* [OUT] low_diameter : Theoretical lower bound of diameter in a graph.
-* [OUT] low_ASPL : Theoretical lower bound of ASPL in a graph.
-* [OUT] diameter : Diameter of a graph.
-* [OUT] sum : Total value of the distances between each vertex in a graph.
-* [OUT] ASPL : Average shortest path length of a graph (sum = ASPL*(nodes*(nodes-1)/2)).
-* [OUT] width : Width of a grid graph.
-* [OUT] height : Height of a grid graph.
-* [OUT] length : Maximum length of a grid graph.
 
 When using ODP_Set_aspl_general() or ODP_Set_aspl_grid(), please link `libodp.a`, `libodp_threads.a`, or `libodp_cuda.a`.
 When using ODP_Set_aspl_mpi_general() or ODP_Set_aspl_mpi_grid(), please link `libodp_mpi.a`, `libodp_mpi_threads.a`, or `libodp_mpi_cuda.a`.
@@ -459,7 +432,7 @@ void ODP_Init_aspl_mpi_grid_s   (int width, int height, int degree, int num_degr
 * [IN] width : Width of a grid graph.
 * [IN] height : Height of a grid graph.
 * [IN] comm : MPI communicator.
-* [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes. If it is 1, it works the same as ODP_Init_aspl\*().
+* [IN] symmetries : Numer of symmetries in a graph.
 
 When using ODP_Init_aspl_general_s() or ODP_Init_aspl_grid_s(), please link `libodp.a`, `libodp_threads.a`, or `libodp_cuda.a`.
 When using ODP_Init_aspl_mpi_general_s() or ODP_Init_aspl_mpi_grid_s(), please link `libodp_mpi.a`, `libodp_mpi_threads.a`, or `libodp_mpi_cuda.a`.
@@ -475,7 +448,7 @@ void ODP_Conv_edge2adjacency_grid_s   (int width, int height, int lines, int deg
 * [IN] lines : Number of lines in an edge list.
 * [IN] degree: Degree in a graph.
 * [IN] edge : Edge list of a graph.
-* [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes. If it is 1, it works the same as ODP_Conv_edge2adjacency\*().
+* [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes.
 * [OUT] adjacency : Adjacency matrix of a graph.
 
 ### Convert an adjacency matrix to an edge list
@@ -487,7 +460,7 @@ void ODP_Conv_adjacency2edge_grid_s   (int width, int height, int degree, int nu
 * [IN] degree: Degree in a graph.
 * [IN] num_degrees : Specify NULL for a regular graph. If not, specify the degrees for each vertex.
 * [IN] adjacency : Adjacency matrix of a graph.
-* [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes. If it is 1, it works the same as ODP_Conv_adjacency2edge\*().
+* [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes.
 * [IN] width : Width of a grid graph.
 * [IN] height : Height of a grid graph.
 * [OUT] edge : Edge list of a graph.
@@ -500,11 +473,28 @@ void ODP_Generate_random_grid_s   (int width, int height, int degree, int length
 * [IN] nodes : Number of nodes in a graph.
 * [IN] degree: Degree in a graph.
 * [IN] seed : Seed for random.
-* [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes. If it is 1, it works the same as ODP_Generate_random\*().
+* [IN] symmetries : Numer of symmetries in a graph. This value must be a divisor of nodes.
 * [IN] width : Width of a grid graph.
 * [IN] height : Height of a grid graph.
 * [IN] length : Maximum length of a grid graph.
 * [OUT] edge : Edge list of a graph.
+
+### Mutate an adjacency matrix
+Mutate an adjacency matrix slightly. Specifically, the operation equivalent to the 2-opt method is performed.
+```
+void ODP_Mutate_adjacency_general_s(int nodes, int degree, int num_degrees[nodes], int symmetries, int adjacency[nodes][degree])
+void ODP_Mutate_adjacency_grid_s   (int width, int height, int degree, int num_degrees[nodes], int length, int symmetries, int adjacency[nodes][degree])
+```
+* [IN] nodes : Number of nodes in a graph.
+* [IN] degree : Degree in a graph.
+* [IN] num_degrees : Degree in each vertex.
+* [IN] width : Width of a grid graph.
+* [IN] height : Height of a grid graph.
+* [IN] length : Maximum length of a grid graph.
+* [IN] symmetries: Numer of symmetries in a graph. This value must be a divisor of nodes.
+* [OUT] adjacency : Adjacency matrix of a graph.
+
+Note that the ODP_Restore_adjacency_general() and ODP_Restore_adjacency_grid() can be used in common.
 
 ## Performance
 * On Cygnus system in University of Tsukuba, Japan
