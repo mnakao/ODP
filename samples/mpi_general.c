@@ -26,6 +26,7 @@ int main(int argc, char *argv[])
   ODP_Conv_edge2adjacency_general(nodes, lines, degree, edge, adjacency);
 
   ODP_Init_aspl_mpi_general(nodes, degree, NULL, MPI_COMM_WORLD);
+  MPI_Barrier(MPI_COMM_WORLD); // To measure time with ODP_PROFILE=1.
   ODP_Set_aspl(adjacency, &diameter, &sum, &ASPL);
   ODP_Finalize_aspl();
 

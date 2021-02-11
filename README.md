@@ -369,6 +369,7 @@ When using ODP_Set_aspl_mpi_general() or ODP_Set_aspl_mpi_grid(), please link `l
 ### General graph
 Symmetry in this library means that the original graph matches when the graph is rotated `360/symmetries` degrees.
 Therefore, a value of `symmetries` must be a divisor of `nodes`.
+When `symmetries=1`, target the graph without symmetry explained above.
 
 ![](./misc/img/general_s.png)
 
@@ -386,7 +387,7 @@ Thus, the new `adjacency matrix'`, in which the red part of `adjacency matrix` i
 The size of the `adjacency matrix'` is `int adjacency[nodes/symmetries][degree]`.
 
 ### Grid graph
-Grid graphs are almost the same as general graphs, but only values of 2 or 4 are valid for `symmetries`.
+Grid graphs are almost the same as general graphs, but only values of 1, 2 or 4 are valid for `symmetries`.
 When `symmetries=2`, `width` is a multiple of 2.
 When `symmetries=4`, `width` and `height` are a multiple of 2, and `width=height`.
 
