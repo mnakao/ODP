@@ -139,7 +139,7 @@ int main(int argc, char *argv[])
 	current_ASPL     = ASPL;
       }
       else{
-	ODP_Restore_adjacency_grid(width, height, degree, adjacency);
+	ODP_Restore_adjacency_grid(adjacency);
       }
       temp *= cooling_rate;
     }

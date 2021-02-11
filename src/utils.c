@@ -1,5 +1,6 @@
 #include "common.h"
 static int _u[2], _v[2], _u_d[2], _v_d[2];
+static int _nodes, _degree, _width, _height, _symmetries;
 
 void ODP_Print_adjacency(const int nodes, const int degree, const int num_degrees[nodes], const int adjacency[nodes][degree])
 {
@@ -469,19 +470,12 @@ static void set_adjacency(const int v, const int v_d, const int u, const int wid
   }
 }
 
-void ODP_Restore_adjacency_grid_s(const int width, const int height, const int degree,
-				  const int symmetries, int (*adjacency)[degree])
+void ODP_Restore_adjacency_grid(int (*adjacency)[_degree])
 {
   for(int i=0;i<2;i++){
-    set_adjacency(_u[i], _u_d[i], _v[i], width, height, degree, symmetries, adjacency);
-    set_adjacency(_v[i], _v_d[i], _u[i], width, height, degree, symmetries, adjacency);
+    set_adjacency(_u[i], _u_d[i], _v[i], _width, _height, _degree, _symmetries, adjacency);
+    set_adjacency(_v[i], _v_d[i], _u[i], _width, _height, _degree, _symmetries, adjacency);
   }
-}
-
-void ODP_Restore_adjacency_grid(const int width, const int height, const int degree,
-				int (*adjacency)[degree])
-{
-  ODP_Restore_adjacency_grid_s(width, height, degree, 1, adjacency);
 }
 
 static bool check_multiple_edges_general_s(const int u, const int u_d, const int v, const int nodes, const int degree,
@@ -514,20 +508,19 @@ static bool check_isolated_vertices_grid(const int u[2], const int v[2], const i
      check_isolated_vertex_grid(v[0], width, height, symmetries, degree, num_degrees, adjacency) ||
      check_isolated_vertex_grid(u[1], width, height, symmetries, degree, num_degrees, adjacency) ||
      check_isolated_vertex_grid(v[1], width, height, symmetries, degree, num_degrees, adjacency)){
-    ODP_Restore_adjacency_grid_s(width, height, degree, symmetries, adjacency);
+    ODP_Restore_adjacency_grid(adjacency);
     return false;
   }
   else
     return true;
 }
 
-void ODP_Restore_adjacency_general_s(const int nodes, const int degree, const int symmetries, 
-				     int (*adjacency)[degree])
+void ODP_Restore_adjacency_general(int (*adjacency)[_degree])
 {
-  int based_nodes = nodes/symmetries;
+  int based_nodes = _nodes/_symmetries;
   for(int i=0;i<2;i++){
-    adjacency[_u[i]%based_nodes][_u_d[i]] = LOCAL_INDEX_GENERAL(_v[i], _u[i], nodes, symmetries);
-    adjacency[_v[i]%based_nodes][_v_d[i]] = LOCAL_INDEX_GENERAL(_u[i], _v[i], nodes, symmetries);
+    adjacency[_u[i]%based_nodes][_u_d[i]] = LOCAL_INDEX_GENERAL(_v[i], _u[i], _nodes, _symmetries);
+    adjacency[_v[i]%based_nodes][_v_d[i]] = LOCAL_INDEX_GENERAL(_u[i], _v[i], _nodes, _symmetries);
   }
 }
 
@@ -539,17 +532,12 @@ static bool check_isolated_vertices_general(const int u[2], const int v[2], cons
      check_isolated_vertex_general(v[0], based_nodes, degree, num_degrees, adjacency) ||
      check_isolated_vertex_general(u[1], based_nodes, degree, num_degrees, adjacency) ||
      check_isolated_vertex_general(v[1], based_nodes, degree, num_degrees, adjacency)){
-    ODP_Restore_adjacency_general_s(nodes, degree, symmetries, adjacency);
+    ODP_Restore_adjacency_general(adjacency);
     return false;
   }
   else{
     return true;
   }
-}
-
-void ODP_Restore_adjacency_general(const int nodes, const int degree, int (*adjacency)[degree])
-{
-  ODP_Restore_adjacency_general_s(nodes, degree, 1, adjacency);
 }
 
 static int get_degree_index_general(const int u, const int v, const int u_d, const int nodes,
@@ -797,6 +785,9 @@ void ODP_Mutate_adjacency_general_s(const int nodes, const int degree, const int
 				    const int symmetries, int adjacency[nodes/symmetries][degree])
 {
   CHECK_SYMMETRIES(nodes, symmetries);
+  _nodes = nodes;
+  _degree = degree;
+  _symmetries = symmetries;
   
   while(1){
     if(mutate_adjacency_2opt_general_s(nodes, degree, num_degrees, symmetries, adjacency))
@@ -1018,6 +1009,10 @@ void ODP_Mutate_adjacency_grid_s(const int width, const int height, const int de
   CHECK_PARAMETERS(width*height, degree);
   CHECK_SYMMETRIES_GRID(symmetries);  
   CHECK_SYMMETRIES_WH(symmetries, width, height);
+  _width = width;
+  _height = height;
+  _degree = degree;
+  _symmetries = symmetries;
   
   while(1){
     if(mutate_adjacency_2opt_grid_s(width, height, degree, num_degrees, length, symmetries, adjacency))

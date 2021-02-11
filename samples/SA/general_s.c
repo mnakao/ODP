@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
 	current_ASPL     = ASPL;
       }
       else{
-	ODP_Restore_adjacency_general_s(nodes, degree, symmetries, adjacency);
+	ODP_Restore_adjacency_general(adjacency);
       }
       temp *= cooling_rate;
     }

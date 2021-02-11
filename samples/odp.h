@@ -52,8 +52,6 @@ extern void ODP_Mutate_adjacency_general(int nodes, int degree, int *num_degrees
 extern void ODP_Mutate_adjacency_general_s(int nodes, int degree, int *num_degrees, int symmetries, int (*adjacency)[degree]);
 extern void ODP_Mutate_adjacency_grid(int width, int height, int degree, int *num_degrees, int length, int (*adjacency)[degree]);
 extern void ODP_Mutate_adjacency_grid_s(int width, int height, int degree, int *num_degrees, int length, int symmetries, int (*adjacency)[degree]);
-extern void ODP_Restore_adjacency_general(int nodes, int degree, int (*adjacency)[degree]);
-extern void ODP_Restore_adjacency_general_s(int nodes, int degree, int symmetries, int (*adjacency)[degree]);
-extern void ODP_Restore_adjacency_grid(int width, int height, int degree, int (*adjacency)[degree]);
-extern void ODP_Restore_adjacency_grid_s(int width, int height, int degree, int symmetries, int (*adjacency)[degree]);
+extern void ODP_Restore_adjacency_general(void *adjacency);
+extern void ODP_Restore_adjacency_grid(void *adjacency);
 #endif
