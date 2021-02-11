@@ -419,8 +419,6 @@ These values match the 6th row of the adjacency matrix.
 Note that the new `adjacency matrix'` is not created from contiguous region of the `adjacency matrix`.
 
 ### Initialize
-These functions can be used instead of the ODP_Init_aspl\*().
-
 ```
 void ODP_Init_aspl_general_s    (int nodes, int degree, int num_degrees[nodes/symmetries], int symmetries)
 void ODP_Init_aspl_grid_s       (int width, int height, int degree, int num_degrees[nodes/symmetries], int symmetries)
@@ -512,9 +510,9 @@ Note that the ODP_Restore_adjacency_general() and ODP_Restore_adjacency_grid() c
 * libapsp_mpi_cuda.a : 28.6 sec. (1 GPU), 14.4 sec. (2 GPUs). 7.3 sec. (4 GPUs), 3.7 sec. (8 GPUs), 1.9 sec. (16 GPUs)
 
 ### Symmetries = 25000
-* libapsp.a : 0.5961 sec.
-* libapsp_threads.a with 12 threads : 0.0626 sec. (1 CPU)
-* libcuda.a : 0.0055 sec. (1 GPU)
+* libapsp.a : 0.596 sec.
+* libapsp_threads.a with 12 threads : 0.063 sec. (1 CPU)
+* libcuda.a : 0.006 sec. (1 GPU)
 
 ## Note
 The library also supports non-regular graphs, but usage of memory may be not efficient.
