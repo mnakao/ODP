@@ -362,9 +362,6 @@ bool ODP_Check_loop(int lines, int edge[lines][2])
 * [IN] lines : Number of lines in an edge list.
 * [IN] edge : Edge list of a graph.
 
-When using ODP_Set_aspl_general() or ODP_Set_aspl_grid(), please link `libodp.a`, `libodp_threads.a`, or `libodp_cuda.a`.
-When using ODP_Set_aspl_mpi_general() or ODP_Set_aspl_mpi_grid(), please link `libodp_mpi.a`, `libodp_mpi_threads.a`, or `libodp_mpi_cuda.a`.
-
 ## A graph with symmetry
 ### General graph
 Symmetry in this library means that the original graph matches when the graph is rotated `360/symmetries` degrees.
