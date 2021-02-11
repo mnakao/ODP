@@ -366,7 +366,7 @@ bool ODP_Check_loop(int lines, int edge[lines][2])
 ### General graph
 Symmetry in this library means that the original graph matches when the graph is rotated `360/symmetries` degrees.
 Therefore, a value of `symmetries` must be a divisor of `nodes`.
-When `symmetries=1`, target the graph without symmetry explained above.
+When `symmetries=1`, target the graph without symmetry.
 
 ![](./misc/img/general_s.png)
 
