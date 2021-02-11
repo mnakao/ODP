@@ -215,6 +215,8 @@ void ODP_Print_edge_grid   (int lines, int height, int edge[lines][2])
 * [IN] edge : Edge list of a graph.
 * [IN] height : Height of a grid graph.
 
+ODP_Print_edge_grid() outputs a value with coordinates.
+
 ### Convert an edge list to an adjacency matrix
 ```
 void ODP_Conv_edge2adjacency_general(int nodes, int lines, int degree, int edge[lines][2], int adjacency[nodes][degree])
@@ -381,7 +383,7 @@ This rule holds for all groups.
 
 The remaining elements can be calculated from the first (nodes/symmetries) lines of the adjacency matrix.
 Thus, the size of the adjacency matrix is `int adjacency[nodes/symmetries][degree]`.
-The part in red is removed and the new array `adjacency'`is used. 
+The part in red is removed and the new `adjacency matrix.'`is used. 
 However, since the edge list is used for input and output, the size is `int edge[lines][2]`, which is the same as a normal graph.
 
 ### Grid graph
@@ -415,7 +417,7 @@ Rotate (0,2), (1,0), (2,0) by 90 degrees to get (2,5), (0,4), (0,3).
 Their vertex numbers are 17, 4, and 3.
 These values match the 6th row of the adjacency matrix.
 
-Note that the new array `adjacency'` is not created from contiguous region.
+Note that the new `adjacency matrix'` is not created from contiguous region.
 
 ### Initialize
 These functions can be used instead of the ODP_Init_aspl\*().
