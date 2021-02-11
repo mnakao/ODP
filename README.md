@@ -382,8 +382,8 @@ Here, 19 + 6 = 25, but the number of nodes is 24, so it goes around and becomes 
 This rule holds for all groups.
 
 The elements in lins 7-24 of the adjacency matrix can be calculated from those in lines 1-6.
-Thus, the size of the adjacency matrix is `int adjacency[nodes/symmetries][degree]`.
-The new `adjacency matrix'` is used with the deficit in the adjacency matrix removed.
+Thus, the new `adjacency matrix'` is used with the deficit in the adjacency matrix removed.
+The size of the `adjacency matrix'` is `int adjacency[nodes/symmetries][degree]`.
 
 ### Grid graph
 Grid graphs are almost the same as general graphs, but only values of 2 or 4 are valid for `symmetries`.
