@@ -390,7 +390,7 @@ When `symmetries=4`, `width` and `height` are a multiple of 2, and `width=height
 
 ![](./misc/img/grid_s2.png)
 
-The above image is an example of a graph with (width, height, degree, length, symmetries) = (6, 6, 3, 2, 2).
+The image is an example of a graph with (width, height, degree, length, symmetries) = (6, 6, 3, 2, 2).
 As with the general graph, the bottom half can be calculated from the top half.
 However, the calculation method is different from the general graph.
 For example, the vertex number 0 is connected to 7, 2, and 12.
@@ -402,7 +402,7 @@ These values match the 36th row of the adjacency matrix.
 
 ![](./misc/img/grid_s4.png)
 
-The above image is an example of a graph with (width, height, degree, length, symmetries) = (6, 6, 3, 2, 4).
+The image is an example of a graph with (width, height, degree, length, symmetries) = (6, 6, 3, 2, 4).
 Only the vertices in the lower left part of the image are used to calculate the other vertices.
 Specifically, the nine points are (0,0), (0,1), (0,2), (1,0), (1,1), (1,2), (2,0), (2,1), and (2,2).
 Their vertex numbers are 0, 1, 2, 6, 7, 8, 12, 13, and 14.
