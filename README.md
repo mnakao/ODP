@@ -381,6 +381,7 @@ This rule holds for all groups.
 
 The remaining elements can be calculated from the first (nodes/symmetries) lines of the adjacency matrix.
 Thus, the size of the adjacency matrix is `int adjacency[nodes/symmetries][degree]`.
+The part in red is removed and the new array `adjacency'`is used. 
 However, since the edge list is used for input and output, the size is `int edge[lines][2]`, which is the same as a normal graph.
 
 ### Grid graph
@@ -414,8 +415,7 @@ Rotate (0,2), (1,0), (2,0) by 90 degrees to get (2,5), (0,4), (0,3).
 Their vertex numbers are 17, 4, and 3.
 These values match the 6th row of the adjacency matrix.
 
-The functions for symmetry excludes rows in red to reduce the size of the adjacency matrix.
-In this example, the values from adjacency[4][0] to adjacency[4][2] are 0, 1, and 18.
+Note that the new array `adjacency'` is not created from contiguous region.
 
 ### Initialize
 These functions can be used instead of the ODP_Init_aspl\*().
