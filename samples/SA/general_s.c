@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
   int nodes = NOT_DEFINED, degree = NOT_DEFINED, symmetries = NOT_DEFINED;
   int seed = 0, diameter, current_diameter, best_diameter, low_diameter;
   long sum, best_sum, ncalcs = 10000;
-  double max_temp = 238.91, min_temp = 0.22, ASPL, current_ASPL, best_ASPL, low_ASPL;
+  double max_temp = 100, min_temp = 0.22, ASPL, current_ASPL, best_ASPL, low_ASPL;
 
   set_args(argc, argv, &nodes, &degree, &symmetries, outfname, &enable_output,
 	   &seed, &ncalcs, &max_temp, &min_temp, &enable_ASPL_priority);
@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
     printf("Find optimum solution\n");
   }
   else{
-    double cooling_rate = (max_temp != min_temp)? pow(min_temp/max_temp, (double)1.0/ncalcs) : 1.0;
+    double cooling_rate = pow(min_temp/max_temp, (double)1.0/ncalcs);
     double temp = max_temp;
     int	interval = (ncalcs < 100)? 1 : ncalcs/100;
     printf("Ncalcs : Temp : Diameter Gap : ASPL Gap\n");

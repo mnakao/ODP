@@ -510,7 +510,7 @@ Note that the ODP_Restore_adjacency_general() and ODP_Restore_adjacency_grid() c
 ### Symmetries = 25000
 * libapsp.a : 0.596 sec.
 * libapsp_threads.a with 12 threads : 0.063 sec. (1 CPU)
-* libcuda.a : 0.006 sec. (1 GPU)
+* libcuda.a : 0.005 sec. (1 GPU)
 
 ## Note
 The library also supports non-regular graphs, but usage of memory may be not efficient.

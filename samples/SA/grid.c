@@ -113,7 +113,7 @@ int main(int argc, char *argv[])
     printf("Find optimum solution\n");
   }
   else{
-    double cooling_rate = (max_temp != min_temp)? pow(min_temp/max_temp, (double)1.0/ncalcs) : 1.0;
+    double cooling_rate = pow(min_temp/max_temp, (double)1.0/ncalcs);
     double temp = max_temp;
     int	interval = (ncalcs < 100)? 1 : ncalcs/100;
     printf("Ncalcs : Temp : Diameter Gap : ASPL Gap\n");
