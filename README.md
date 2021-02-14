@@ -101,7 +101,7 @@ If it is higher, `MATRIX_SAVING` is selected.
 
 * MATRIX : Bit matrix is used for ASPL calculation. In most cases this is the fastest.
 * MATRIX_SAVING : This is a memory-saving version of `MATRIX`.
-* BFS : Breadth First Search is used for ASPL calculation. If the value of `(nodes/(procs*symmetries)` is small enough, it may be the fastest. Note that BFS with CUDA is not implemented.
+* BFS : Breadth First Search is used for ASPL calculation. If the value of `(nodes/(procs*symmetries)` is small enough or a diameter of a graph is large, it may be the fastest. Note that BFS with CUDA is not implemented.
 
 ### ODP_PROFILE=1
 
