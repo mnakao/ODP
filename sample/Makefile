@@ -11,7 +11,7 @@ else
 endif
 MPICC=mpicc
 NVCC=nvcc
-CUDA_FLAGS=-O3
+CUDA_FLAGS=-O3 -I../include
 CUDA_MPIBIN=-ccbin mpicc
 
 ##############
