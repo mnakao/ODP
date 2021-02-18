@@ -36,9 +36,9 @@ _When you write a paper using this library, please refer to the paper._
 $ git clone https://github.com/mnakao/ODP.git
 $ cd ODP
 $ make
-$ cd ./samples
+$ cd ./sample
 $ make
-$ ./general.x ./graphs/general/n16d4.edges
+$ ./general.x ./graph/general/n16d4.edges
 Nodes = 16, Degrees = 4
 Diameter     = 3
 Diameter Gap = 1 (3 - 2)
@@ -51,9 +51,9 @@ ASPL Gap     = 0.1833333333 (1.9166666667 - 1.7333333333)
 $ git clone https://github.com/mnakao/ODP.git
 $ cd ODP
 $ make threads
-$ cd ./samples
+$ cd ./sample
 $ make threads
-$ ./threads_general.x ./graphs/general/n16d4.edges
+$ ./threads_general.x ./graph/general/n16d4.edges
 Nodes = 16, Degrees = 4
 Diameter     = 3
 Diameter Gap = 1 (3 - 2)
@@ -79,7 +79,7 @@ $ make [serial|threads|mpi|mpi_threads|cuda|mpi_cuda|all]
 ## File format for graph
 * For a general graph, each vertex name must be an integer starting from zero.
 * For a grid graph, each vertex name must be a comma-separated string like "x,y" (no quotes, no spaces). x and y are integers starting from zero, which represent the coordinate of the vertex.
-* Please see sample graphs in `./samples/graphs/` or http://research.nii.ac.jp/graphgolf/submit.html
+* Please see sample graphs in `./sample/graph/` or http://research.nii.ac.jp/graphgolf/submit.html
 
 ### Example for a general graph
 A file and an edge list are the same.
@@ -111,7 +111,7 @@ If it is higher, `MATRIX_SAVING` is selected.
 Output the performance profile for ODP_Set_aspl(). 
 This profile is output when ODP_Finalize_aspl() is executed.
 ```
-$ ODP_ASPL=SAVING ODP_PROFILE=1 ./general.x ./graphs/general/n16d4.edges
+$ ODP_ASPL=SAVING ODP_PROFILE=1 ./general.x ./graph/general/n16d4.edges
 ------ Profile for SET_ASPL ------
 Date            = Mon Jan  4 23:14:03 2021
 Hostname        = kiwi
