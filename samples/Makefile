@@ -1,11 +1,11 @@
 ifeq ($(ENV), intel)
   CC=icc
-  CFLAGS=-O3 -std=gnu99 -mavx2
+  CFLAGS=-O3 -std=gnu99 -mavx2 -I../include
   OMP_FLAGS=-qopenmp
   CUDA_BIN=-ccbin icc
 else
   CC=gcc
-  CFLAGS=-O3
+  CFLAGS=-O3 -I../include
   OMP_FLAGS=-fopenmp
   CUDA_BIN=-ccbin gcc
 endif

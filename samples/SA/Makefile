@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-O3 -I..
+CFLAGS=-O3 -I../../include
 CLIBS=../../src/libodp.a -lm
 
 all: general.x grid.x general_s.x grid_s.x general_vt.x

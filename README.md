@@ -34,9 +34,9 @@ _When you write a paper using this library, please refer to the paper._
 ## Quick start
 ```
 $ git clone https://github.com/mnakao/ODP.git
-$ cd ODP/src
+$ cd ODP
 $ make
-$ cd ../samples
+$ cd ./samples
 $ make
 $ ./general.x ./graphs/general/n16d4.edges
 Nodes = 16, Degrees = 4
@@ -49,9 +49,9 @@ ASPL Gap     = 0.1833333333 (1.9166666667 - 1.7333333333)
 ## Quick start for threads version
 ```
 $ git clone https://github.com/mnakao/ODP.git
-$ cd ODP/src
+$ cd ODP
 $ make threads
-$ cd ../samples
+$ cd ./samples
 $ make threads
 $ ./threads_general.x ./graphs/general/n16d4.edges
 Nodes = 16, Degrees = 4
@@ -63,10 +63,13 @@ ASPL Gap     = 0.1833333333 (1.9166666667 - 1.7333333333)
 
 ## How to create libraries
 ```
-$ cd ODP/src
+$ cd ODP
 $ make [serial|threads|mpi|mpi_threads|cuda|mpi_cuda|all]
 ```
- 
+
+## How to use libraries
+In order to create the executable, you need to include the header file `./include/odp.h` and link it with one of the libraries.
+
 ## How to compile sample programs
 ```
 $ cd ODP/sample
@@ -95,7 +98,7 @@ The format of the edge list and adjacency matrix is the same for general and gri
 ### ODP_ASPL=[MATRIX|MATRIX_SAVING|BFS]
 
 This library provides three algorithms for ASPL.
-`MATRIX` is selected if the amount of memory used is lower than the value of `MEM_THRESHOLD` in `src/parameter.h`.
+`MATRIX` is selected if the amount of memory used is lower than the value of `MEM_THRESHOLD` in `parameter.h`.
 If it is higher, `MATRIX_SAVING` is selected.
 `BFS` only works if specified in an environment variable. 
 
