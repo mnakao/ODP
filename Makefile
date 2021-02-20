@@ -1,6 +1,6 @@
 ifeq ($(ENV), intel)
   CC=icc
-  MPICC=mpicc
+  MPICC=mpiicc
   CFLAGS=-O3 -std=gnu99 -Wno-unknown-pragmas -mavx2
   LDFLAGS=-lm
   OMP_FLAGS=-qopenmp
