@@ -14,7 +14,7 @@
 #include <float.h>
 #include "parameter.h"
 #ifndef _FUJITSU
-#include <immintrin.h>
+  #include <immintrin.h>
 #endif
 #ifdef _OPENMP
   #include <omp.h>
@@ -45,11 +45,6 @@
 #define POPCNT(a) _mm_popcnt_u64(a)
 #endif
 
-#ifdef _OPENMP
-int *ODP_local_frontier;
-#pragma omp threadprivate(ODP_local_frontier)
-#endif
-
 extern void ODP_Set_lbounds_general(const int nodes, const int degree, int *low_diameter, double *low_ASPL);
 extern void ODP_Set_lbounds_grid(const int m, const int n, const int degree, const int length, int *low_diameter, double *low_ASPL);
 extern void ODP_Set_degrees(const int nodes, const int lines, int (*edge)[2], int* num_degrees);
@@ -63,4 +58,8 @@ extern int ODP_Get_lines(const char* fname);
 extern int ODP_Get_nodes(const int lines, const int (*edge)[2]);
 extern int ODP_Get_degree(const int nodes, const int lines, const int (*edge)[2]);
 extern int ODP_Get_length(const int lines, const int height, const int (*edge)[2]);
+#ifdef _OPENMP
+extern void ODP_declare_local_frontier(const int nodes);
+extern void ODP_free_local_frontier();
+#endif
 #endif

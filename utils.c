@@ -2,6 +2,27 @@
 static int _u[2], _v[2], _u_d[2], _v_d[2];
 static int _nodes, _degree, _width, _height, _symmetries;
 
+#ifdef _OPENMP
+static int *ODP_local_frontier;
+#pragma omp threadprivate(ODP_local_frontier)
+
+void ODP_declare_local_frontier(const int nodes)
+{
+#pragma omp parallel
+  {
+    ODP_local_frontier = malloc(sizeof(int) * nodes);
+  }
+}
+
+void ODP_free_local_frontier()
+{
+#pragma omp parallel
+  {
+    free(ODP_local_frontier);
+  }
+}
+#endif
+
 void ODP_Print_adjacency(const int nodes, const int degree, const int num_degrees[nodes], const int adjacency[nodes][degree])
 {
   for(int i=0;i<nodes;i++){
