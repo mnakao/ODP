@@ -1,18 +1,27 @@
 ifeq ($(ENV), intel)
   CC=icc
+  MPICC=mpiicc
   CFLAGS=-O3 -std=gnu99 -mavx2 -I../include
   OMP_FLAGS=-qopenmp
-  CUDA_BIN=-ccbin icc
+  NVCC=nvcc
+  NVCC_CFLAGS=-O3 -I../include
+  NVCC_BIN=-ccbin icc
+  NVCC_MPIBIN=-ccbin mpiicc
+else ifeq ($(ENV), fujitsu)
+  CC=fccpx
+  MPICC=mpifccpx
+  CFLAGS=-Kfast -D_FUJITSU -I../include
+  OMP_FLAGS=-Kopenmp
 else
   CC=gcc
+  MPICC=mpicc
   CFLAGS=-O3 -I../include
   OMP_FLAGS=-fopenmp
-  CUDA_BIN=-ccbin gcc
+  NVCC=nvcc
+  NVCC_CFLAGS=-O3 -I../include
+  NVCC_BIN=-ccbin gcc
+  NVCC_MPIBIN=-ccbin mpicc
 endif
-MPICC=mpicc
-NVCC=nvcc
-CUDA_FLAGS=-O3 -I../include
-CUDA_MPIBIN=-ccbin mpicc
 
 ##############
 LIBS=../libodp.a -lm
@@ -62,14 +71,14 @@ mpi_threads_grid.x: mpi_grid.c
 	$(MPICC) $(CFLAGS) $(OMP_FLAGS) -o $@ $< $(MPI_THREADS_LIBS)
 ##############
 cuda_general.x: general.c
-	$(NVCC) $(CUDA_FLAGS) -o $@ $< $(CUDA_LIBS) $(CUDA_BIN)
+	$(NVCC) $(NVCC_CFLAGS) -o $@ $< $(CUDA_LIBS) $(NVCC_BIN)
 cuda_grid.x: grid.c
-	$(NVCC) $(CUDA_FLAGS) -o $@ $< $(CUDA_LIBS) $(CUDA_BIN)
+	$(NVCC) $(NVCC_CFLAGS) -o $@ $< $(CUDA_LIBS) $(NVCC_BIN)
 ##############
 mpi_cuda_general.x: mpi_general.c
-	$(NVCC) $(CUDA_FLAGS) -o $@ $< $(MPI_CUDA_LIBS) $(CUDA_MPIBIN)
+	$(NVCC) $(NVCC_CFLAGS) -o $@ $< $(MPI_CUDA_LIBS) $(NVCC_MPIBIN)
 mpi_cuda_grid.x: mpi_grid.c
-	$(NVCC) $(CUDA_FLAGS) -o $@ $< $(MPI_CUDA_LIBS) $(CUDA_MPIBIN)
+	$(NVCC) $(NVCC_CFLAGS) -o $@ $< $(MPI_CUDA_LIBS) $(NVCC_MPIBIN)
 
 ##############
 test: serial_test

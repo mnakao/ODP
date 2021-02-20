@@ -13,7 +13,9 @@
 #include <limits.h>
 #include <float.h>
 #include "parameter.h"
+#ifndef _FUJITSU
 #include <immintrin.h>
+#endif
 #ifdef _OPENMP
   #include <omp.h>
 #endif
@@ -37,6 +39,8 @@
 
 #ifdef __NVCC__
 #define POPCNT(a) __popcll(a)
+#elif _FUJITSU
+#define POPCNT(a) __builtin_popcountl(a)
 #else
 #define POPCNT(a) _mm_popcnt_u64(a)
 #endif

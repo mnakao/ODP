@@ -1,17 +1,25 @@
 ifeq ($(ENV), intel)
   CC=icc
+  MPICC=mpicc
   CFLAGS=-O3 -std=gnu99 -Wno-unknown-pragmas -mavx2
-  CUDA_FLAGS=-O3
+  LDFLAGS=-lm
   OMP_FLAGS=-qopenmp
+  NVCC=nvcc
+  NVCC_FLAGS=-O3
+else ifeq ($(ENV), fujitsu)
+  CC=fccpx
+  MPICC=mpifccpx
+  CFLAGS=-Kfast -D_FUJITSU
+  OMP_FLAGS=-Kopenmp
 else
   CC=gcc
-  CFLAGS=-O3 -mcmodel=medium -march=native -std=gnu99 -Wno-unknown-pragmas
-  CUDA_FLAGS=-O3
+  MPICC=mpicc
+  CFLAGS=-O3 -march=native -std=gnu99 -Wno-unknown-pragmas
+  LDFLAGS=-lm
   OMP_FLAGS=-fopenmp
+  NVCC=nvcc
+  NVCC_FLAGS=-O3
 endif
-MPICC=mpicc
-NVCC=nvcc
-LDFLAGS=-lm
 
 serial: libodp.a
 threads: libodp_threads.a
@@ -43,15 +51,15 @@ aspl_mpi.o: aspl_mpi.c common.h parameter.h
 aspl_mpi_threads.o: aspl_mpi.c common.h parameter.h
 	$(MPICC) $(CFLAGS) $(OMP_FLAGS) -o $@ -c $<
 aspl_cuda.o: aspl_cuda.cu common.h parameter.h
-	$(NVCC) $(CUDA_FLAGS) -o $@ -c $<
+	$(NVCC) $(NVCC_FLAGS) -o $@ -c $<
 aspl_mpi_cuda.o: aspl_mpi_cuda.cu common.h parameter.h
-	$(NVCC) $(CUDA_FLAGS) -o $@ -c $< -ccbin mpicc
+	$(NVCC) $(NVCC_FLAGS) -o $@ -c $< -ccbin mpicc
 utils.o: utils.c common.h parameter.h
 	$(CC) $(CFLAGS) -o $@ -c $<
 utils_threads.o: utils.c common.h parameter.h
 	$(CC) $(CFLAGS) $(OMP_FLAGS) -o $@ -c $<
 utils_cuda.o: utils_cuda.cu common.h parameter.h
-	$(NVCC) $(CUDA_FLAGS) -o $@ -c $<
+	$(NVCC) $(NVCC_FLAGS) -o $@ -c $<
 
 clean:
 	rm -f *.o *.a

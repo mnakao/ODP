@@ -215,7 +215,7 @@ int ODP_LOCAL_INDEX_GRID(const int x, const int width, const int height, const i
 
 // return adjacency[v][d];
 static int GLOBAL_ADJ_GRID(const int width, const int height, const int degree, const int symmetries,
-			   const int (*adjacency)[degree], const int v, const int d)
+						   const int (*adjacency)[degree], const int v, const int d)
 {
   if(symmetries == 1){
     return adjacency[v][d];
@@ -269,7 +269,7 @@ static int simple_top_down_step(const int nodes, const int height, const int num
     for(int i=0;i<num_frontier;i++){
       int v = frontier[i];
       for(int j=0;j<degree;j++){
-	int n = GLOBAL_ADJ_GRID(width, height, degree, symmetries, (int (*)[degree])adjacency, v, j);
+	int n = GLOBAL_ADJ_GRID(width, height, degree, symmetries, (const int (*)[degree])adjacency, v, j);
         if(bitmap[n] == NOT_VISITED){
           bitmap[n] = VISITED;
           next[count++] = n;
@@ -398,41 +398,6 @@ static int global2local_vertex_grid(const int v, const int width, const int heig
   }
 }
 
-static bool check_isolated_vertex_grid(const int v, const int width, const int height, const int symmetries,
-				       const int degree, const int *num_degrees, const int (*adjacency)[degree])
-{
-  int based_width = width/2;
-  int based_height = (symmetries == 2)? height : height/2;
-  int x = global2local_vertex_grid(v, width, height, symmetries);
-  int d = (!num_degrees)? degree : num_degrees[x]; // x is a local vertex
-  for(int i=1;i<d;i++)
-    if(adjacency[x][0] != adjacency[x][i])
-      return false;
-
-  if(num_degrees){
-    if(num_degrees[x] < num_degrees[global2local_vertex_grid(adjacency[x][0], width, height, symmetries)])
-      return false;
-  }
-
-  return true;
-}
-
-static bool check_isolated_vertex_general(const int n, const int based_nodes, const int degree,
-					  const int *num_degrees, const int (*adjacency)[degree])
-{
-  int x = n % based_nodes;
-  int d = (!num_degrees)? degree : num_degrees[x];
-  for(int i=1;i<d;i++)
-    if(adjacency[x][0] != adjacency[x][i])
-      return false;
-
-  if(num_degrees)
-    if(num_degrees[x] < num_degrees[adjacency[x][0]%based_nodes])
-      return false;
-  
-  return true;
-}
-
 // adjacency[v][v_d] = u;
 static void set_adjacency(const int v, const int v_d, const int u, const int width, const int height,
                           const int degree, const int symmetries, int (*adjacency)[degree])
@@ -501,42 +466,12 @@ static bool check_multiple_edges_grid_s(const int u, const int u_d, const int v,
   return true;
 }
 
-static bool check_isolated_vertices_grid(const int u[2], const int v[2], const int width, const int height, const int symmetries,
-                                         const int degree, const int *num_degrees, int (*adjacency)[degree])
-{
-  if(check_isolated_vertex_grid(u[0], width, height, symmetries, degree, num_degrees, adjacency) ||
-     check_isolated_vertex_grid(v[0], width, height, symmetries, degree, num_degrees, adjacency) ||
-     check_isolated_vertex_grid(u[1], width, height, symmetries, degree, num_degrees, adjacency) ||
-     check_isolated_vertex_grid(v[1], width, height, symmetries, degree, num_degrees, adjacency)){
-    ODP_Restore_adjacency_grid(adjacency);
-    return false;
-  }
-  else
-    return true;
-}
-
 void ODP_Restore_adjacency_general(int (*adjacency)[_degree])
 {
   int based_nodes = _nodes/_symmetries;
   for(int i=0;i<2;i++){
     adjacency[_u[i]%based_nodes][_u_d[i]] = LOCAL_INDEX_GENERAL(_v[i], _u[i], _nodes, _symmetries);
     adjacency[_v[i]%based_nodes][_v_d[i]] = LOCAL_INDEX_GENERAL(_u[i], _v[i], _nodes, _symmetries);
-  }
-}
-
-static bool check_isolated_vertices_general(const int u[2], const int v[2], const int nodes, const int symmetries,
-					    const int degree, const int *num_degrees, int (*adjacency)[degree])
-{
-  int based_nodes = nodes/symmetries;
-  if(check_isolated_vertex_general(u[0], based_nodes, degree, num_degrees, adjacency) ||
-     check_isolated_vertex_general(v[0], based_nodes, degree, num_degrees, adjacency) ||
-     check_isolated_vertex_general(u[1], based_nodes, degree, num_degrees, adjacency) ||
-     check_isolated_vertex_general(v[1], based_nodes, degree, num_degrees, adjacency)){
-    ODP_Restore_adjacency_general(adjacency);
-    return false;
-  }
-  else{
-    return true;
   }
 }
 
@@ -605,9 +540,9 @@ static bool mutate_adjacency_1opt_general_s(const int u, const int u_d, const in
 					    int adjacency[nodes/symmetries][degree])
 {
   int based_nodes = nodes/symmetries;
-  int v = GLOBAL_ADJ_GENERAL(nodes, degree, symmetries, adjacency, u, u_d);
+  int v = GLOBAL_ADJ_GENERAL(nodes, degree, symmetries, (const int (*)[degree])adjacency, u, u_d);
   if(IS_DIAMETER_GENERAL(u, v, nodes, symmetries)) return false;
-  int v_d = get_degree_index_general(u, v, u_d, nodes, symmetries, degree, num_degrees, adjacency);
+  int v_d = get_degree_index_general(u, v, u_d, nodes, symmetries, degree, num_degrees, (const int (*)[degree])adjacency);
   int new_v;
   if((u-v)%based_nodes == 0){
     if(symmetries <= 4) return false;
@@ -627,8 +562,8 @@ static bool mutate_adjacency_1opt_general_s(const int u, const int u_d, const in
   }
   int new_u = v - (new_v - u);
   int tmp[2] = {LOCAL_INDEX_GENERAL(new_v, u, nodes, symmetries), LOCAL_INDEX_GENERAL(new_u, v, nodes, symmetries)};
-   if(!check_multiple_edges_general_s(u%based_nodes, u_d, tmp[0], nodes, degree, num_degrees, symmetries, adjacency) ||
-      !check_multiple_edges_general_s(v%based_nodes, v_d, tmp[1], nodes, degree, num_degrees, symmetries, adjacency))
+  if(!check_multiple_edges_general_s(u%based_nodes, u_d, tmp[0], nodes, degree, num_degrees, symmetries, (const int (*)[degree])adjacency) ||
+	 !check_multiple_edges_general_s(v%based_nodes, v_d, tmp[1], nodes, degree, num_degrees, symmetries, (const int (*)[degree])adjacency))
      return false;
    
   adjacency[u%based_nodes][u_d] = tmp[0];
@@ -663,17 +598,17 @@ static bool mutate_adjacency_2opt_general_s(const int nodes, const int degree, c
     if(u[0] == u[1]) continue;
     
     u_d[0] = (!num_degrees)? get_random(degree) : get_random(num_degrees[u[0]%based_nodes]);
-    v[0] = GLOBAL_ADJ_GENERAL(nodes, degree, symmetries, adjacency, u[0], u_d[0]);
+    v[0] = GLOBAL_ADJ_GENERAL(nodes, degree, symmetries, (const int (*)[degree])adjacency, u[0], u_d[0]);
     if(v[0] == u[1]) continue;
     
     u_d[1] = (!num_degrees)? get_random(degree) : get_random(num_degrees[u[1]%based_nodes]);
-    v[1] = GLOBAL_ADJ_GENERAL(nodes, degree, symmetries, adjacency, u[1], u_d[1]);
+    v[1] = GLOBAL_ADJ_GENERAL(nodes, degree, symmetries, (const int (*)[degree])adjacency, u[1], u_d[1]);
     if(v[1] == u[0] || v[0] == v[1]) continue;
     break;
   }
 
-  v_d[0] = get_degree_index_general(u[0], v[0], u_d[0], nodes, symmetries, degree, num_degrees, adjacency);
-  v_d[1] = get_degree_index_general(u[1], v[1], u_d[1], nodes, symmetries, degree, num_degrees, adjacency);
+  v_d[0] = get_degree_index_general(u[0], v[0], u_d[0], nodes, symmetries, degree, num_degrees, (const int (*)[degree])adjacency);
+  v_d[1] = get_degree_index_general(u[1], v[1], u_d[1], nodes, symmetries, degree, num_degrees, (const int (*)[degree])adjacency);
   backup_restore_adjacency(u, u_d, v, v_d);
   
   if(IS_DIAMETER_GENERAL(u[0], v[0], nodes, symmetries) && IS_DIAMETER_GENERAL(u[1], v[1], nodes, symmetries)){
@@ -689,8 +624,8 @@ static bool mutate_adjacency_2opt_general_s(const int nodes, const int degree, c
       tmp[0] = LOCAL_INDEX_GENERAL(v[1], u[0], nodes, symmetries);
       tmp[1] = LOCAL_INDEX_GENERAL(v[0], u[1], nodes, symmetries);
     }
-    if(!check_multiple_edges_general_s(u[0]%based_nodes, u_d[0], tmp[0], nodes, degree, num_degrees, symmetries, adjacency) || 
-       !check_multiple_edges_general_s(u[1]%based_nodes, u_d[1], tmp[1], nodes, degree, num_degrees, symmetries, adjacency))
+    if(!check_multiple_edges_general_s(u[0]%based_nodes, u_d[0], tmp[0], nodes, degree, num_degrees, symmetries, (const int (*)[degree])adjacency) || 
+       !check_multiple_edges_general_s(u[1]%based_nodes, u_d[1], tmp[1], nodes, degree, num_degrees, symmetries, (const int (*)[degree])adjacency))
       return false;
     
     adjacency[u[0]%based_nodes][u_d[0]] = tmp[0];
@@ -729,10 +664,10 @@ static bool mutate_adjacency_2opt_general_s(const int nodes, const int degree, c
       tmp[3] = LOCAL_INDEX_GENERAL(v[1]+opposite, v[1], nodes, symmetries);
     }
     
-    if(!check_multiple_edges_general_s(u[0]%based_nodes, u_d[0], tmp[0], nodes, degree, num_degrees, symmetries, adjacency) ||
-       !check_multiple_edges_general_s(u[1]%based_nodes, u_d[1], tmp[1], nodes, degree, num_degrees, symmetries, adjacency) ||
-       !check_multiple_edges_general_s(v[0]%based_nodes, v_d[0], tmp[2], nodes, degree, num_degrees, symmetries, adjacency) ||
-       !check_multiple_edges_general_s(v[1]%based_nodes, v_d[1], tmp[3], nodes, degree, num_degrees, symmetries, adjacency))
+    if(!check_multiple_edges_general_s(u[0]%based_nodes, u_d[0], tmp[0], nodes, degree, num_degrees, symmetries, (const int (*)[degree])adjacency) ||
+       !check_multiple_edges_general_s(u[1]%based_nodes, u_d[1], tmp[1], nodes, degree, num_degrees, symmetries, (const int (*)[degree])adjacency) ||
+       !check_multiple_edges_general_s(v[0]%based_nodes, v_d[0], tmp[2], nodes, degree, num_degrees, symmetries, (const int (*)[degree])adjacency) ||
+       !check_multiple_edges_general_s(v[1]%based_nodes, v_d[1], tmp[3], nodes, degree, num_degrees, symmetries, (const int (*)[degree])adjacency))
       return false;
 	  
     adjacency[u[0]%based_nodes][u_d[0]] = tmp[0];
@@ -768,10 +703,10 @@ static bool mutate_adjacency_2opt_general_s(const int nodes, const int degree, c
     tmp[3] = LOCAL_INDEX_GENERAL(v[0], v[1], nodes, symmetries);
   }
 
-  if(!check_multiple_edges_general_s(u[0]%based_nodes, u_d[0], tmp[0], nodes, degree, num_degrees, symmetries, adjacency) ||
-     !check_multiple_edges_general_s(u[1]%based_nodes, u_d[1], tmp[1], nodes, degree, num_degrees, symmetries, adjacency) ||
-     !check_multiple_edges_general_s(v[0]%based_nodes, v_d[0], tmp[2], nodes, degree, num_degrees, symmetries, adjacency) ||
-     !check_multiple_edges_general_s(v[1]%based_nodes, v_d[1], tmp[3], nodes, degree, num_degrees, symmetries, adjacency))
+  if(!check_multiple_edges_general_s(u[0]%based_nodes, u_d[0], tmp[0], nodes, degree, num_degrees, symmetries, (const int (*)[degree])adjacency) ||
+     !check_multiple_edges_general_s(u[1]%based_nodes, u_d[1], tmp[1], nodes, degree, num_degrees, symmetries, (const int (*)[degree])adjacency) ||
+     !check_multiple_edges_general_s(v[0]%based_nodes, v_d[0], tmp[2], nodes, degree, num_degrees, symmetries, (const int (*)[degree])adjacency) ||
+     !check_multiple_edges_general_s(v[1]%based_nodes, v_d[1], tmp[3], nodes, degree, num_degrees, symmetries, (const int (*)[degree])adjacency))
     return false;
   
   adjacency[u[0]%based_nodes][u_d[0]] = tmp[0];
@@ -822,19 +757,19 @@ void ODP_Mutate_adjacency_general(const int nodes, const int degree, const int *
 static bool mutate_adjacency_1opt_grid_s(const int u, const int u_d, const int width, const int height, const int degree,
 					 const int *num_degrees, const int length, const int symmetries, int (*adjacency)[degree])
 {
-  int v = GLOBAL_ADJ_GRID(width, height, degree, symmetries, adjacency, u, u_d);
+  int v = GLOBAL_ADJ_GRID(width, height, degree, symmetries, (const int (*)[degree])adjacency, u, u_d);
   if(IS_DIAMETER_GRID(u, v, width, height, symmetries)) return false;
   else if(symmetries == 2 && u == ODP_ROTATE(v, width, height, symmetries, 180)) return false;
   else if(symmetries == 4 && (u == ODP_ROTATE(v, width, height, symmetries, 90) || u == ODP_ROTATE(v, width, height, symmetries, 270))) return false;
-  int v_d = get_degree_index_grid(u, v, u_d, width, height, symmetries, degree, num_degrees, adjacency);
+  int v_d = get_degree_index_grid(u, v, u_d, width, height, symmetries, degree, num_degrees, (const int (*)[degree])adjacency);
 
-  int rnd = get_random(symmetries), tmp[2];
+  int rnd = get_random(symmetries);
   if(rnd != symmetries-1){
     int new_v = ODP_ROTATE(v, width, height, symmetries, (rnd+1)*(360/symmetries));
     int new_u = ODP_ROTATE(u, width, height, symmetries, (symmetries-rnd-1)*(360/symmetries));
     if(!CHECK_LENGTH(u,new_v,height,length)) return false;
-    if(!check_multiple_edges_grid_s(new_v, v_d, u, width, height, degree, num_degrees, symmetries, adjacency) ||
-       !check_multiple_edges_grid_s(new_u, u_d, v, width, height, degree, num_degrees, symmetries, adjacency))
+    if(!check_multiple_edges_grid_s(new_v, v_d, u, width, height, degree, num_degrees, symmetries, (const int (*)[degree])adjacency) ||
+       !check_multiple_edges_grid_s(new_u, u_d, v, width, height, degree, num_degrees, symmetries, (const int (*)[degree])adjacency))
       return false;
     set_adjacency(new_v, v_d, u, width, height, degree, symmetries, adjacency);
     set_adjacency(new_u, u_d, v, width, height, degree, symmetries, adjacency);
@@ -843,8 +778,8 @@ static bool mutate_adjacency_1opt_grid_s(const int u, const int u_d, const int w
     int new_v = ODP_ROTATE(u, width, height, symmetries, 180);
     int new_u = ODP_ROTATE(v, width, height, symmetries, 180);
     if(!CHECK_LENGTH(u,new_v,height,length) || !CHECK_LENGTH(v,new_u,height,length)) return false;
-    if(!check_multiple_edges_grid_s(new_v, u_d, u, width, height, degree, num_degrees, symmetries, adjacency) ||
-       !check_multiple_edges_grid_s(new_u, v_d, v, width, height, degree, num_degrees, symmetries, adjacency))
+    if(!check_multiple_edges_grid_s(new_v, u_d, u, width, height, degree, num_degrees, symmetries, (const int (*)[degree])adjacency) ||
+       !check_multiple_edges_grid_s(new_u, v_d, v, width, height, degree, num_degrees, symmetries, (const int (*)[degree])adjacency))
       return false;
     
     set_adjacency(new_v, u_d, u, width, height, degree, symmetries, adjacency);
@@ -856,7 +791,7 @@ static bool mutate_adjacency_1opt_grid_s(const int u, const int u_d, const int w
 static bool mutate_adjacency_2opt_grid_s(const int width, const int height, const int degree, const int *num_degrees,
 					 const int length, const int symmetries, int (*adjacency)[degree])
 {
-  int u[2], v[2], u_d[2], v_d[2], nodes = width*height, based_nodes = nodes/symmetries;
+  int u[2], v[2], u_d[2], v_d[2], nodes = width*height;
 
   while(1){
     u[0] = get_random(nodes);
@@ -864,17 +799,17 @@ static bool mutate_adjacency_2opt_grid_s(const int width, const int height, cons
     if(u[0] == u[1]) continue;
 
     u_d[0] = (!num_degrees)? get_random(degree) : get_random(num_degrees[global2local_vertex_grid(u[0],width,height,symmetries)]);
-    v[0] = GLOBAL_ADJ_GRID(width, height, degree, symmetries, adjacency, u[0], u_d[0]);
+    v[0] = GLOBAL_ADJ_GRID(width, height, degree, symmetries, (const int (*)[degree])adjacency, u[0], u_d[0]);
     if(v[0] == u[1]) continue;
 
     u_d[1] = (!num_degrees)? get_random(degree) : get_random(num_degrees[global2local_vertex_grid(u[1],width,height,symmetries)]);
-    v[1] = GLOBAL_ADJ_GRID(width, height, degree, symmetries, adjacency, u[1], u_d[1]);
+    v[1] = GLOBAL_ADJ_GRID(width, height, degree, symmetries, (const int (*)[degree])adjacency, u[1], u_d[1]);
     if(v[1] == u[0] || v[0] == v[1]) continue;
     break;
   }
 
-  v_d[0] = get_degree_index_grid(u[0], v[0], u_d[0], width, height, symmetries, degree, num_degrees, adjacency);
-  v_d[1] = get_degree_index_grid(u[1], v[1], u_d[1], width, height, symmetries, degree, num_degrees, adjacency);
+  v_d[0] = get_degree_index_grid(u[0], v[0], u_d[0], width, height, symmetries, degree, num_degrees, (const int (*)[degree])adjacency);
+  v_d[1] = get_degree_index_grid(u[1], v[1], u_d[1], width, height, symmetries, degree, num_degrees, (const int (*)[degree])adjacency);
   backup_restore_adjacency(u, u_d, v, v_d);
 
   if(IS_DIAMETER_GRID(u[0], v[0], width, height, symmetries) && IS_DIAMETER_GRID(u[1], v[1], width, height, symmetries)){
@@ -896,8 +831,8 @@ static bool mutate_adjacency_2opt_grid_s(const int width, const int height, cons
       tmp[1] = v[0];
     }
     
-    if(!check_multiple_edges_grid_s(u[0], u_d[0], tmp[0], width, height, degree, num_degrees, symmetries, adjacency) ||
-       !check_multiple_edges_grid_s(u[1], u_d[1], tmp[1], width, height, degree, num_degrees, symmetries, adjacency))
+    if(!check_multiple_edges_grid_s(u[0], u_d[0], tmp[0], width, height, degree, num_degrees, symmetries, (const int (*)[degree])adjacency) ||
+       !check_multiple_edges_grid_s(u[1], u_d[1], tmp[1], width, height, degree, num_degrees, symmetries, (const int (*)[degree])adjacency))
       return false;
     
     set_adjacency(u[0], u_d[0], tmp[0], width, height, degree, symmetries, adjacency);
@@ -946,10 +881,10 @@ static bool mutate_adjacency_2opt_grid_s(const int width, const int height, cons
       tmp[3] = v1_opposite;
     }
 
-     if(!check_multiple_edges_grid_s(u[0], u_d[0], tmp[0], width, height, degree, num_degrees, symmetries, adjacency) ||
-	!check_multiple_edges_grid_s(u[1], u_d[1], tmp[1], width, height, degree, num_degrees, symmetries, adjacency) ||
-	!check_multiple_edges_grid_s(v[0], v_d[0], tmp[2], width, height, degree, num_degrees, symmetries, adjacency) ||
-	!check_multiple_edges_grid_s(v[1], v_d[1], tmp[3], width, height, degree, num_degrees, symmetries, adjacency))
+	if(!check_multiple_edges_grid_s(u[0], u_d[0], tmp[0], width, height, degree, num_degrees, symmetries, (const int (*)[degree])adjacency) ||
+		!check_multiple_edges_grid_s(u[1], u_d[1], tmp[1], width, height, degree, num_degrees, symmetries, (const int (*)[degree])adjacency) ||
+		!check_multiple_edges_grid_s(v[0], v_d[0], tmp[2], width, height, degree, num_degrees, symmetries, (const int (*)[degree])adjacency) ||
+		!check_multiple_edges_grid_s(v[1], v_d[1], tmp[3], width, height, degree, num_degrees, symmetries, (const int (*)[degree])adjacency))
        return false;
      
     set_adjacency(u[0], u_d[0], tmp[0], width, height, degree, symmetries, adjacency);
@@ -989,10 +924,10 @@ static bool mutate_adjacency_2opt_grid_s(const int width, const int height, cons
     tmp[3] = v[0];
   }
 
-  if(!check_multiple_edges_grid_s(u[0], u_d[0], tmp[0], width, height, degree, num_degrees, symmetries, adjacency) ||
-     !check_multiple_edges_grid_s(u[1], u_d[1], tmp[1], width, height, degree, num_degrees, symmetries, adjacency) ||
-     !check_multiple_edges_grid_s(v[0], v_d[0], tmp[2], width, height, degree, num_degrees, symmetries, adjacency) ||
-     !check_multiple_edges_grid_s(v[1], v_d[1], tmp[3], width, height, degree, num_degrees, symmetries, adjacency))
+  if(!check_multiple_edges_grid_s(u[0], u_d[0], tmp[0], width, height, degree, num_degrees, symmetries, (const int (*)[degree])adjacency) ||
+     !check_multiple_edges_grid_s(u[1], u_d[1], tmp[1], width, height, degree, num_degrees, symmetries, (const int (*)[degree])adjacency) ||
+     !check_multiple_edges_grid_s(v[0], v_d[0], tmp[2], width, height, degree, num_degrees, symmetries, (const int (*)[degree])adjacency) ||
+     !check_multiple_edges_grid_s(v[1], v_d[1], tmp[3], width, height, degree, num_degrees, symmetries, (const int (*)[degree])adjacency))
     return false;
     
   set_adjacency(u[0], u_d[0], tmp[0], width, height, degree, symmetries, adjacency);
@@ -1097,7 +1032,7 @@ void ODP_Generate_random_general(const int nodes, const int degree, int (*edge)[
 
   int lines = (nodes*degree)/2;
   int *adjacency = malloc(sizeof(int)*nodes*degree);
-  ODP_Conv_edge2adjacency_general(nodes, lines, degree, edge, adjacency);
+  ODP_Conv_edge2adjacency_general(nodes, lines, degree, (const int (*)[2])edge, adjacency);
 
   // Give randomness
   for(int i=0;i<lines*GEN_GRAPH_ITERS;i++)
@@ -1155,7 +1090,7 @@ void ODP_Generate_random_general_s(const int nodes, const int degree, const int 
   }
 
   int *adjacency = malloc(sizeof(int) * based_nodes * degree);
-  ODP_Conv_edge2adjacency_general_s(nodes, lines, degree, edge, symmetries, (int (*)[degree])adjacency);
+  ODP_Conv_edge2adjacency_general_s(nodes, lines, degree, (const int (*)[2])edge, symmetries, (int (*)[degree])adjacency);
 
   // Give randomness
   for(int i=0;i<based_lines*GEN_GRAPH_ITERS;i++)
@@ -1236,18 +1171,27 @@ void ODP_Write_edge_grid(const int lines, const int height, const int edge[lines
 
 void ODP_Malloc(uint64_t **a, const size_t s, const bool enable_avx2)
 {
+#ifdef _FUJITSU
+  posix_memalign((void **)a, ALIGN_VALUE, s);
+#else
   if(enable_avx2)
     *a = _mm_malloc(s, ALIGN_VALUE);
   else
     posix_memalign((void **)a, ALIGN_VALUE, s);
+#endif
 }
 
 void ODP_Free(uint64_t *a, const bool enable_avx2)
 {
+#ifdef _FUJITSU
+  free(a);
+#else
   if(enable_avx2)
     _mm_free(a);
   else
     free(a);
+#endif
+
 }
 
 double ODP_Get_mem_usage(const int kind, const int nodes, const int degree, const int symmetries,
@@ -1665,7 +1609,7 @@ void ODP_Generate_random_grid(const int width, const int height, const int degre
   }
   int lines = (nodes*degree)/2;
   int *adjacency = malloc(sizeof(int)*nodes*degree);
-  ODP_Conv_edge2adjacency_grid(width, height, lines, degree, edge, adjacency);
+  ODP_Conv_edge2adjacency_grid(width, height, lines, degree, (const int (*)[2])edge, adjacency);
 
   // Give randomness
   for(int i=0;i<lines*GEN_GRAPH_ITERS;i++)
@@ -1788,7 +1732,7 @@ void ODP_Generate_random_grid_s(const int width, const int height, const int deg
     }
   }
   int (*adjacency)[degree] = malloc(sizeof(int) * based_nodes * degree);
-  ODP_Conv_edge2adjacency_grid_s(width, height, lines, degree, edge, symmetries, adjacency);
+  ODP_Conv_edge2adjacency_grid_s(width, height, lines, degree, (const int (*)[2])edge, symmetries, adjacency);
 
   // Give randomness
   for(int i=0;i<based_lines*GEN_GRAPH_ITERS;i++)
@@ -1798,7 +1742,7 @@ void ODP_Generate_random_grid_s(const int width, const int height, const int deg
   while(simple_bfs(nodes, height, degree, symmetries, (symmetries != 1), (int *)adjacency))
     ODP_Mutate_adjacency_grid_s(width, height, degree, NULL, length, symmetries, adjacency);
 
-  ODP_Conv_adjacency2edge_grid_s(width, height, degree, NULL, adjacency, symmetries, edge);
+  ODP_Conv_adjacency2edge_grid_s(width, height, degree, NULL, (const int (*)[degree])adjacency, symmetries, edge);
 
   free(adjacency);
 }
@@ -1833,7 +1777,7 @@ static void matmul_avx2(const uint64_t *restrict A, uint64_t *restrict B, const 
 	__m256i *b = (__m256i *)(B + itable[i]*elements);
 	int d = (!num_degrees)? degree : num_degrees[i];
 	for(int j=0;j<d;j++){
-	  int n = GLOBAL_ADJ_GRID(width, height, degree, symmetries, (int (*)[degree])adjacency, i, j);
+	  int n = GLOBAL_ADJ_GRID(width, height, degree, symmetries, (const int (*)[degree])adjacency, i, j);
 	  __m256i *a = (__m256i *)(A + itable[n]*elements);
 	  for(int k=0;k<quarter_elements;k++){
 	    __m256i aa = _mm256_load_si256(a+k);
@@ -1890,7 +1834,7 @@ static void matmul(const uint64_t *restrict A, uint64_t *restrict B, const int n
 	int ii = itable[i];
 	int d = (!num_degrees)? degree : num_degrees[i];
 	for(int j=0;j<d;j++){
-	  int n = GLOBAL_ADJ_GRID(width, height, degree, symmetries, (int (*)[degree])adjacency, i, j);
+	  int n = GLOBAL_ADJ_GRID(width, height, degree, symmetries, (const int (*)[degree])adjacency, i, j);
 	  int nn = itable[n];
 	  for(int k=0;k<elements;k++)
 	    B[ii*elements+k] |= A[nn*elements+k];
@@ -1956,7 +1900,7 @@ static void matmul_avx2_CHUNK(const uint64_t *restrict A, uint64_t *restrict B, 
 	__m256i *b = (__m256i *)(B + itable[i]*CPU_CHUNK);
 	int d = (!num_degrees)? degree : num_degrees[i];
 	for(int j=0;j<d;j++){
-	  int n = GLOBAL_ADJ_GRID(width, height, degree, symmetries, (int (*)[degree])adjacency, i, j);
+	  int n = GLOBAL_ADJ_GRID(width, height, degree, symmetries, (const int (*)[degree])adjacency, i, j);
 	  __m256i *a = (__m256i *)(A + itable[n]*CPU_CHUNK);
 	  for(int k=0;k<CPU_CHUNK/4;k++){
 	    __m256i aa = _mm256_load_si256(a+k);
@@ -2013,7 +1957,7 @@ static void matmul_CHUNK(const uint64_t *restrict A, uint64_t *restrict B, const
 	int ii = itable[i];
 	int d = (!num_degrees)? degree : num_degrees[i];
 	for(int j=0;j<d;j++){
-	  int n = GLOBAL_ADJ_GRID(width, height, degree, symmetries, (int (*)[degree])adjacency, i, j);
+	  int n = GLOBAL_ADJ_GRID(width, height, degree, symmetries, (const int (*)[degree])adjacency, i, j);
 	  int nn = itable[n];
 	  for(int k=0;k<CPU_CHUNK;k++)
 	    B[ii*CPU_CHUNK+k] |= A[nn*CPU_CHUNK+k];
@@ -2067,7 +2011,7 @@ int ODP_top_down_step(const int level, const int num_frontier, const int* restri
 	int v = frontier[i];
 	int d = (!num_degrees)? degree : num_degrees[i];
 	for(int j=0;j<d;j++){
-         int n = GLOBAL_ADJ_GRID(width, height, degree, symmetries, (int (*)[degree])adjacency, v, j);
+         int n = GLOBAL_ADJ_GRID(width, height, degree, symmetries, (const int (*)[degree])adjacency, v, j);
          if(bitmap[n] == NOT_VISITED){
            bitmap[n]   = VISITED;
            distance[n] = level;
@@ -2124,7 +2068,7 @@ int ODP_top_down_step(const int level, const int num_frontier, const int* restri
       int v = frontier[i];
       int d = (!num_degrees)? degree : num_degrees[i];
       for(int j=0;j<d;j++){
-	int n = GLOBAL_ADJ_GRID(width, height, degree, symmetries, (int (*)[degree])adjacency, v, j);
+	int n = GLOBAL_ADJ_GRID(width, height, degree, symmetries, (const int (*)[degree])adjacency, v, j);
 	if(bitmap[n] == NOT_VISITED){
 	  bitmap[n]   = VISITED;
 	  distance[n] = level;
