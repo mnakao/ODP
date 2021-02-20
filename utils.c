@@ -3,14 +3,14 @@ static int _u[2], _v[2], _u_d[2], _v_d[2];
 static int _nodes, _degree, _width, _height, _symmetries;
 
 #ifdef _OPENMP
-static int *ODP_local_frontier;
-#pragma omp threadprivate(ODP_local_frontier)
+static int *_local_frontier;
+#pragma omp threadprivate(_local_frontier)
 
 void ODP_declare_local_frontier(const int nodes)
 {
 #pragma omp parallel
   {
-    ODP_local_frontier = malloc(sizeof(int) * nodes);
+    _local_frontier = malloc(sizeof(int) * nodes);
   }
 }
 
@@ -18,7 +18,7 @@ void ODP_free_local_frontier()
 {
 #pragma omp parallel
   {
-    free(ODP_local_frontier);
+    free(_local_frontier);
   }
 }
 #endif
@@ -2036,13 +2036,13 @@ int ODP_top_down_step(const int level, const int num_frontier, const int* restri
          if(bitmap[n] == NOT_VISITED){
            bitmap[n]   = VISITED;
            distance[n] = level;
-           ODP_local_frontier[local_count++] = n;
+           _local_frontier[local_count++] = n;
          }
 	}
       }  // end for i
 #pragma omp critical
       {
-	memcpy(&next[count], ODP_local_frontier, local_count*sizeof(int));
+	memcpy(&next[count], _local_frontier, local_count*sizeof(int));
 	count += local_count;
       }
     }
@@ -2063,13 +2063,13 @@ int ODP_top_down_step(const int level, const int num_frontier, const int* restri
 	  if(bitmap[n] == NOT_VISITED){
 	    bitmap[n]   = VISITED;
 	    distance[n] = level;
-	    ODP_local_frontier[local_count++] = n;
+	    _local_frontier[local_count++] = n;
 	  }
 	}
       }  // end for i
 #pragma omp critical
       {
-	memcpy(&next[count], ODP_local_frontier, local_count*sizeof(int));
+	memcpy(&next[count], _local_frontier, local_count*sizeof(int));
 	count += local_count;
       }
     }
