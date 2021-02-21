@@ -4,7 +4,7 @@ ifeq ($(ENV), intel)
   CLIBS=../../libodp.a -lm
 else ifeq ($(ENV), fujitsu)
   CC=fccpx
-  CFLAGS=-Kfast -D_FUJITSU -I../../include
+  CFLAGS=-Kfast -D_FUJITSU -I../../include -Nclang
   CLIBS=../../libodp.a -lm
 else
   CC=gcc

@@ -10,7 +10,7 @@ ifeq ($(ENV), intel)
 else ifeq ($(ENV), fujitsu)
   CC=fccpx
   MPICC=mpifccpx
-  CFLAGS=-Kfast -D_FUJITSU -I../include
+  CFLAGS=-Kfast -D_FUJITSU -I../include -Nclang
   OMP_FLAGS=-Kopenmp
 else
   CC=gcc

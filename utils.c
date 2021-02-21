@@ -755,16 +755,16 @@ static bool check_rotated_edges_overlap_grid(const int u0, const int v0, const i
 					     const int width, const int height, const int symmetries)
 {
   if(symmetries == 2){
-    return (u0 == ODP_ROTATE(u1, width, height, symmetries, 180) && v0 == ODP_ROTATE(v1, width, height, symmetries, 180) ||
-	    u0 == ODP_ROTATE(v1, width, height, symmetries, 180) && v0 == ODP_ROTATE(u1, width, height, symmetries, 180));
+    return ((u0 == ODP_ROTATE(u1, width, height, symmetries, 180) && v0 == ODP_ROTATE(v1, width, height, symmetries, 180)) ||
+			(u0 == ODP_ROTATE(v1, width, height, symmetries, 180) && v0 == ODP_ROTATE(u1, width, height, symmetries, 180)));
   }
   else if(symmetries == 4){
-    return (u0 == ODP_ROTATE(u1, width, height, symmetries,  90) && v0 == ODP_ROTATE(v1, width, height, symmetries,  90) ||
-	    u0 == ODP_ROTATE(u1, width, height, symmetries, 180) && v0 == ODP_ROTATE(v1, width, height, symmetries, 180) ||
-	    u0 == ODP_ROTATE(u1, width, height, symmetries, 270) && v0 == ODP_ROTATE(v1, width, height, symmetries, 270) ||
-	    u0 == ODP_ROTATE(v1, width, height, symmetries,  90) && v0 == ODP_ROTATE(u1, width, height, symmetries,  90) ||
-	    u0 == ODP_ROTATE(v1, width, height, symmetries, 180) && v0 == ODP_ROTATE(u1, width, height, symmetries, 180) ||
-	    u0 == ODP_ROTATE(v1, width, height, symmetries, 270) && v0 == ODP_ROTATE(u1, width, height, symmetries, 270));
+    return ((u0 == ODP_ROTATE(u1, width, height, symmetries,  90) && v0 == ODP_ROTATE(v1, width, height, symmetries,  90)) ||
+			(u0 == ODP_ROTATE(u1, width, height, symmetries, 180) && v0 == ODP_ROTATE(v1, width, height, symmetries, 180)) ||
+			(u0 == ODP_ROTATE(u1, width, height, symmetries, 270) && v0 == ODP_ROTATE(v1, width, height, symmetries, 270)) ||
+			(u0 == ODP_ROTATE(v1, width, height, symmetries,  90) && v0 == ODP_ROTATE(u1, width, height, symmetries,  90)) ||
+			(u0 == ODP_ROTATE(v1, width, height, symmetries, 180) && v0 == ODP_ROTATE(u1, width, height, symmetries, 180)) ||
+			(u0 == ODP_ROTATE(v1, width, height, symmetries, 270) && v0 == ODP_ROTATE(u1, width, height, symmetries, 270)));
   }
   return false; 
 }
