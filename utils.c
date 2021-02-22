@@ -1192,7 +1192,7 @@ void ODP_Write_edge_grid(const int lines, const int height, const int edge[lines
 
 void ODP_Malloc(uint64_t **a, const size_t s, const bool enable_avx2)
 {
-#ifdef _FUJITSU
+#ifdef _FUGAKU
   posix_memalign((void **)a, ALIGN_VALUE, s);
 #else
   if(enable_avx2)
@@ -1204,7 +1204,7 @@ void ODP_Malloc(uint64_t **a, const size_t s, const bool enable_avx2)
 
 void ODP_Free(uint64_t *a, const bool enable_avx2)
 {
-#ifdef _FUJITSU
+#ifdef _FUGAKU
   free(a);
 #else
   if(enable_avx2)

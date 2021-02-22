@@ -13,7 +13,7 @@
 #include <limits.h>
 #include <float.h>
 #include "parameter.h"
-#ifndef _FUJITSU
+#ifndef _FUGAKU
   #include <immintrin.h>
 #endif
 #ifdef _OPENMP
@@ -39,7 +39,7 @@
 
 #ifdef __NVCC__
 #define POPCNT(a) __popcll(a)
-#elif _FUJITSU
+#elif _FUGAKU
 #define POPCNT(a) __builtin_popcountl(a)
 #else
 #define POPCNT(a) _mm_popcnt_u64(a)

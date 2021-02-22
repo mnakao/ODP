@@ -7,10 +7,10 @@ ifeq ($(ENV), intel)
   NVCC_CFLAGS=-O3 -I../include
   NVCC_BIN=-ccbin icc
   NVCC_MPIBIN=-ccbin mpiicc
-else ifeq ($(ENV), fujitsu)
+else ifeq ($(ENV), fugaku)
   CC=fccpx
   MPICC=mpifccpx
-  CFLAGS=-Kfast -D_FUJITSU -I../include -Nclang
+  CFLAGS=-Kfast -I../include -Nclang
   OMP_FLAGS=-Kopenmp
 else
   CC=gcc

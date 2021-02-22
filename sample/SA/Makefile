@@ -2,9 +2,9 @@ ifeq ($(ENV), intel)
   CC=icc
   CFLAGS=-O3 -std=gnu99 -Wno-unknown-pragmas -mavx2 -I../../include
   CLIBS=../../libodp.a -lm
-else ifeq ($(ENV), fujitsu)
+else ifeq ($(ENV), fugaku)
   CC=fccpx
-  CFLAGS=-Kfast -D_FUJITSU -I../../include -Nclang
+  CFLAGS=-Kfast -I../../include -Nclang
   CLIBS=../../libodp.a -lm
 else
   CC=gcc
