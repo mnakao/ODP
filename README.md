@@ -198,7 +198,7 @@ The meaning of each item in the profile is as follows.
 * Number of Times : Number of times ODP_Set_aspl() was executed.
 * Total Time : Total execution time of ODP_Set_aspl().
 * Average Time : Average execution time of ODP_Set_aspl().
-* Algorithm : MATRIX, MATRIX_SAVING or BFS. The parentheses are the types of libraries used. That is, SERIAL, THREADS, MPI, MPI+THREADS, CUDA, or MPI+CUDA.
+* Algorithm : MATRIX, MATRIX_SAVING or BFS. The parentheses are the types of libraries used. That is, SERIAL, THREADS, CUDA, MPI, MPI+THREADS, or MPI+CUDA.
 * Symmetries : Numer of symmetries in a graph.
 * Memory Usage : Estimated ammount of memory used in the library.
 * Num of Procs : Number of processes used in the library.
