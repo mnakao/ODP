@@ -3,9 +3,9 @@ This library is for Order/Degree Problem with a noweight undirected graph.
 You can use following.
 * libodp.a : Serial version
 * libodp_threads.a : Threads version
+* libodp_cuda.a: CUDA (Compute Unified Device Architecture) version
 * libodp_mpi.a : MPI (Message Passing Interface) version
 * libodp_mpi_threads.a: MPI + Threads version
-* libodp_cuda.a: CUDA (Compute Unified Device Architecture) version
 * libodp_mpi_cuda.a: MPI + CUDA version
 
 ## Algotherm for ASPL (Average Shortest Path Length)
@@ -32,6 +32,7 @@ Please see the paper (Open Access).
 _When you write a paper using this library, please refer to the paper._
 
 ## Quick start
+### For serial version
 ```
 $ git clone https://github.com/mnakao/ODP.git
 $ cd ODP
@@ -46,7 +47,7 @@ ASPL         = 1.9166666667 (230/120)
 ASPL Gap     = 0.1833333333 (1.9166666667 - 1.7333333333)
 ```
 
-## Quick start for threads version
+### For threads version
 ```
 $ git clone https://github.com/mnakao/ODP.git
 $ cd ODP
@@ -61,10 +62,70 @@ ASPL         = 1.9166666667 (230/120)
 ASPL Gap     = 0.1833333333 (1.9166666667 - 1.7333333333)
 ```
 
+### CUDA version
+```
+$ git clone https://github.com/mnakao/ODP.git
+$ cd ODP
+$ make cuda
+$ cd ./sample
+$ make cuda
+$ ./cuda_general.x ./graph/general/n16d4.edges
+Nodes = 16, Degrees = 4
+Diameter     = 3
+Diameter Gap = 1 (3 - 2)
+ASPL         = 1.9166666667 (230/120)
+ASPL Gap     = 0.1833333333 (1.9166666667 - 1.7333333333)
+```
+
+### MPI version
+```
+$ git clone https://github.com/mnakao/ODP.git
+$ cd ODP
+$ make mpi
+$ cd ./sample
+$ make mpi
+$ mpiexec -n 2 ./mpi_general.x ./graph/general/n16d4.edges
+Nodes = 16, Degrees = 4
+Diameter     = 3
+Diameter Gap = 1 (3 - 2)
+ASPL         = 1.9166666667 (230/120)
+ASPL Gap     = 0.1833333333 (1.9166666667 - 1.7333333333)
+```
+
+### MPI threads version
+```
+$ git clone https://github.com/mnakao/ODP.git
+$ cd ODP
+$ make mpi_threads
+$ cd ./sample
+$ make mpi_threads
+$ mpiexec -n 1 ./mpi_threads_general.x ./graph/general/n16d4.edges
+Nodes = 16, Degrees = 4
+Diameter     = 3
+Diameter Gap = 1 (3 - 2)
+ASPL         = 1.9166666667 (230/120)
+ASPL Gap     = 0.1833333333 (1.9166666667 - 1.7333333333)
+```
+
+### MPI CUDA threads version
+```
+$ git clone https://github.com/mnakao/ODP.git
+$ cd ODP
+$ make mpi_cuda
+$ cd ./sample
+$ make mpi_cuda
+$ mpiexec -n 1 ./mpi_cuda_general.x ./graph/general/n16d4.edges
+Nodes = 16, Degrees = 4
+Diameter     = 3
+Diameter Gap = 1 (3 - 2)
+ASPL         = 1.9166666667 (230/120)
+ASPL Gap     = 0.1833333333 (1.9166666667 - 1.7333333333)
+```
+
 ## How to create libraries
 ```
 $ cd ODP
-$ make [serial|threads|mpi|mpi_threads|cuda|mpi_cuda|all]
+$ make [serial|threads|cuda|mpi|mpi_threads|mpi_cuda|all]
 ```
 
 ## How to use libraries
@@ -73,7 +134,7 @@ In order to create the executable, you need to include the header file `./includ
 ## How to compile sample programs
 ```
 $ cd ODP/sample
-$ make [serial|threads|mpi|mpi_threads|cuda|mpi_cuda|all]
+$ make [serial|threads|cuda|mpi|mpi_threads|mpi_cuda|all]
 ```
 
 ## File format for graph
