@@ -32,7 +32,7 @@ Please see the paper (Open Access).
 _When you write a paper using this library, please refer to the paper._
 
 ## Quick start
-### For serial version
+### Serial version
 ```
 $ git clone https://github.com/mnakao/ODP.git
 $ cd ODP
@@ -47,7 +47,7 @@ ASPL         = 1.9166666667 (230/120)
 ASPL Gap     = 0.1833333333 (1.9166666667 - 1.7333333333)
 ```
 
-### For threads version
+### Threads version
 ```
 $ git clone https://github.com/mnakao/ODP.git
 $ cd ODP
@@ -92,7 +92,7 @@ ASPL         = 1.9166666667 (230/120)
 ASPL Gap     = 0.1833333333 (1.9166666667 - 1.7333333333)
 ```
 
-### MPI threads version
+### MPI + threads version
 ```
 $ git clone https://github.com/mnakao/ODP.git
 $ cd ODP
@@ -107,7 +107,7 @@ ASPL         = 1.9166666667 (230/120)
 ASPL Gap     = 0.1833333333 (1.9166666667 - 1.7333333333)
 ```
 
-### MPI CUDA threads version
+### MPI + CUDA version
 ```
 $ git clone https://github.com/mnakao/ODP.git
 $ cd ODP
