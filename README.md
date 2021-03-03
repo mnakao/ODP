@@ -84,7 +84,7 @@ $ cd ODP
 $ make mpi
 $ cd ./sample
 $ make mpi
-$ mpiexec -n 2 ./mpi_general.x ./graph/general/n16d4.edges
+$ mpiexec -n 1 ./mpi_general.x ./graph/general/n16d4.edges
 Nodes = 16, Degrees = 4
 Diameter     = 3
 Diameter Gap = 1 (3 - 2)
