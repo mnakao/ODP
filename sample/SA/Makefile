@@ -23,15 +23,13 @@ LIBODP=../../libodp.a
 LIBODP_THREADS=../../libodp_threads.a
 LIBODP_CUDA=../../libodp_cuda.a -lcuda
 all: serial
-serial:general.x grid.x general_s.x grid_s.x general_vt.x
+serial:general.x grid.x general_s.x grid_s.x
 threads: threads_general.x threads_grid.x threads_general_s.x threads_grid_s.x
 cuda: cuda_general.x cuda_grid.x cuda_general_s.x cuda_grid_s.x
 ############
 general.x: general.c common.o common.h
 	$(CC) $(CFLAGS) common.o -o $@ $< $(CLIBS) $(LIBODP)
 general_s.x: general_s.c common.o common.h
-	$(CC) $(CFLAGS) common.o -o $@ $< $(CLIBS) $(LIBODP)
-general_vt.x: general_vt.c common.o common.h
 	$(CC) $(CFLAGS) common.o -o $@ $< $(CLIBS) $(LIBODP)
 grid.x: grid.c common.o common.h
 	$(CC) $(CFLAGS) common.o -o $@ $< $(CLIBS) $(LIBODP)
