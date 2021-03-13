@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 from __future__ import print_function
 from __future__ import unicode_literals
 from itertools import *
@@ -39,15 +39,16 @@ def main():
 		node_size = 5
 	if in_edges_path.endswith(".gz"):
 		in_edges_path = os.path.splitext(in_edges_path)[0]
+
 	out_image_path = os.path.splitext(in_edges_path)[0] + ".png"
-        out_image_path = os.path.basename(out_image_path)
+	out_image_path = os.path.basename(out_image_path)
 	if is_general:
 		layout = nx.circular_layout(g)
 	else:
 		layout = grid_layout(g)
 	plt.figure(figsize=(args.s,args.s))
-#        nx.draw(g, with_labels=args.n, node_size=node_size, linewidths=0, alpha=1, node_color='#000000', edge_color='#000000', pos=layout)
-        nx.draw(g, with_labels=args.n, node_size=node_size, linewidths=0, alpha=0.5, node_color='#3399ff', edge_color='#666666', pos=layout, width=2)
+#	nx.draw(g, with_labels=args.n, node_size=node_size, linewidths=0, alpha=1, node_color='#000000', edge_color='#000000', pos=layout)
+	nx.draw(g, with_labels=args.n, node_size=node_size, linewidths=0, alpha=0.5, node_color='#3399ff', edge_color='#666666', pos=layout, width=2)
 #	plt.xlim(-1.03, 1.03)
 #	plt.ylim(-1.03, 1.03)
 	plt.draw()

@@ -1,4 +1,4 @@
-#!/usr/bin/python2.7
+#!/usr/bin/python3
 # coding: utf-8
 
 import networkx as nx
@@ -19,7 +19,7 @@ def main(filename):
   nnodes = max_vertex_num + 1
 #  assert((num_of_lines*2) % nnodes == 0)
   degree = num_of_lines * 2 / nnodes
-  print("Nodes = {}, Degrees = {}".format(nnodes, degree))
+  print("Nodes = {}, Degrees = {}".format(nnodes, int(degree)))
 
   infile.seek(0)
   g = nx.read_edgelist(infile)
@@ -63,14 +63,14 @@ def max_avg_for_matrix(data):
         cnt += 1
         sum += data[i][j]
         if max < data[i][j]:
-	  max = data[i][j]
+          max = data[i][j]
 
   return max, sum, cnt
 
 if __name__ == '__main__':
   params = sys.argv
   if len(params) != 2:
-    print 'Usage: python %s parameter' % params[0]
+    print ('Usage: python %s parameter' % params[0])
     quit()
   
   filename = params[1]
