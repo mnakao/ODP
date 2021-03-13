@@ -3,8 +3,6 @@ ifeq ($(ENV), intel)
   MPICC=mpiicc
   CFLAGS=-O3 -std=gnu99 -mavx2 -I../include
   OMP_FLAGS=-qopenmp
-  NVCC=nvcc
-  NVCC_CFLAGS=-O3 -I../include
   NVCC_BIN=-ccbin icc
   NVCC_MPIBIN=-ccbin mpiicc
 else ifeq ($(ENV), fugaku)
@@ -17,11 +15,11 @@ else
   MPICC=mpicc
   CFLAGS=-O3 -I../include
   OMP_FLAGS=-fopenmp
-  NVCC=nvcc
-  NVCC_CFLAGS=-O3 -I../include
   NVCC_BIN=-ccbin gcc
   NVCC_MPIBIN=-ccbin mpicc
 endif
+NVCC=nvcc
+NVCC_CFLAGS=-O3 -I../include
 
 ##############
 LIBS=../libodp.a -lm

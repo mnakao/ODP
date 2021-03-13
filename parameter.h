@@ -2,7 +2,7 @@
 #define PARAMETER_INCLUDED
 
 #define MEM_THRESHOLD  (2*1024) /* 2048 MB : Algorithm switching threshold */
-#ifdef _FUGAKU
+#ifdef __FUJITSU
 #define CPU_CHUNK            64
 #define ALIGN_VALUE          64
 #else
