@@ -17,11 +17,11 @@ else
   NVCC_BIN=-ccbin gcc
 endif
 NVCC=nvcc
-NVCC_CFLAGS=-O3
+NVCC_CFLAGS=-O3 -I../../include
 ############
 LIBODP=../../libodp.a
 LIBODP_THREADS=../../libodp_threads.a
-LIBODP_CUDA=../../libodp_cuda.a
+LIBODP_CUDA=../../libodp_cuda.a -lcuda
 all: serial
 serial:general.x grid.x general_s.x grid_s.x general_vt.x
 threads: threads_general.x threads_grid.x threads_general_s.x threads_grid_s.x
