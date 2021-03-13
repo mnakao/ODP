@@ -13,9 +13,12 @@
 #include <limits.h>
 #include <float.h>
 #include "parameter.h"
-#ifndef _FUGAKU
-  #include <immintrin.h>
+#if defined(__ARM_NEON)
+#include <arm_neon.h>
+#elif !defined(__FUJITSU)
+#include <immintrin.h>
 #endif
+
 #ifdef _OPENMP
   #include <omp.h>
 #endif
@@ -37,10 +40,10 @@
 #define VISITED            1
 #define NOT_DEFINED       -1
 
-#ifdef __NVCC__
-#define POPCNT(a) __popcll(a)
-#elif _FUGAKU
+#if defined(__ARM_NEON) || defined(__FUJITSU)
 #define POPCNT(a) __builtin_popcountl(a)
+#elif defined(__NVCC__)
+#define POPCNT(a) __popcll(a)
 #else
 #define POPCNT(a) _mm_popcnt_u64(a)
 #endif

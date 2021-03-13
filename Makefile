@@ -4,12 +4,10 @@ ifeq ($(ENV), intel)
   CFLAGS=-O3 -std=gnu99 -Wno-unknown-pragmas -mavx2
   LDFLAGS=-lm
   OMP_FLAGS=-qopenmp
-  NVCC=nvcc
-  NVCC_FLAGS=-O3
 else ifeq ($(ENV), fugaku)
   CC=fccpx
   MPICC=mpifccpx
-  CFLAGS=-Kfast -D_FUGAKU -Nclang
+  CFLAGS=-Kfast -Nclang
   OMP_FLAGS=-Kopenmp
 else
   CC=gcc
@@ -17,9 +15,9 @@ else
   CFLAGS=-O3 -march=native -std=gnu99 -Wno-unknown-pragmas
   LDFLAGS=-lm
   OMP_FLAGS=-fopenmp
-  NVCC=nvcc
-  NVCC_FLAGS=-O3
 endif
+NVCC=nvcc
+NVCC_FLAGS=-O3
 
 serial: libodp.a
 threads: libodp_threads.a
