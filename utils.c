@@ -1080,7 +1080,28 @@ void ODP_Generate_random_general_s(const int nodes, const int degree, const int 
   int based_nodes = nodes/symmetries;
   int lines       = (nodes*degree)/2;
   int based_lines = lines/symmetries;
+  int half_degree = degree/2;
+  for(int i=0;i<nodes-1;i++){
+    for(int j=0;j<half_degree;j++){
+      edge[i*half_degree+j][0] = i;
+      edge[i*half_degree+j][1] = i+1;
+    }
+  }
+  for(int j=0;j<half_degree;j++){
+    int i = nodes - 1;
+    edge[i*half_degree+j][0] = i;
+    edge[i*half_degree+j][1] = 0;
+  }
 
+  if(degree%2 == 1){
+    int half_node = nodes/2; // half_nodes must be a multiple of 2
+    for(int i=0;i<half_node;i++){
+      edge[half_degree*nodes+i][0] = i;
+      edge[half_degree*nodes+i][1] = i+half_node;
+    }
+  }
+  
+#if 0
   if(based_nodes%2==0 || degree%2 == 0){
     ODP_Generate_random_general(based_nodes, degree, edge);
     for(int i=1;i<symmetries;i++){
@@ -1109,12 +1130,13 @@ void ODP_Generate_random_general_s(const int nodes, const int degree, const int 
       edge[offset+i][1] = i + nodes/2;
     }
   }
-
+#endif
+  
   int *adjacency = malloc(sizeof(int) * based_nodes * degree);
   ODP_Conv_edge2adjacency_general_s(nodes, lines, degree, (const int (*)[2])edge, symmetries, (int (*)[degree])adjacency);
 
   // Give randomness
-  for(int i=0;i<based_lines*GEN_GRAPH_ITERS;i++)
+  for(int i=0;i<lines*GEN_GRAPH_ITERS;i++)
     ODP_Mutate_adjacency_general_s(nodes, degree, NULL, symmetries, (int (*)[degree])adjacency);
 
   // Repeat until there are no unreachable vertices
