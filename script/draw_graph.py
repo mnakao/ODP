@@ -43,7 +43,7 @@ def main():
 	out_image_path = os.path.splitext(in_edges_path)[0] + ".png"
 	out_image_path = os.path.basename(out_image_path)
 	if is_general:
-		layout = nx.circular_layout(g)
+		layout = nx.circular_layout(sorted(g))
 	else:
 		layout = grid_layout(g)
 	plt.figure(figsize=(args.s,args.s))
