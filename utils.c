@@ -1026,10 +1026,8 @@ void ODP_Srand(const unsigned int seed)
   srand(seed);
 }
 
-void ODP_Generate_random_general(const int nodes, const int degree, int (*edge)[2])
+static void create_simple_graph(const int nodes, const int degree, int (*edge)[2])
 {
-  CHECK_PARAMETERS(nodes, degree);
-
   int half_degree = degree/2;
   for(int i=0;i<nodes-1;i++){
     for(int j=0;j<half_degree;j++){
@@ -1042,7 +1040,7 @@ void ODP_Generate_random_general(const int nodes, const int degree, int (*edge)[
     edge[i*half_degree+j][0] = i;
     edge[i*half_degree+j][1] = 0;
   }
-
+  
   if(degree%2 == 1){
     int half_node = nodes/2; // half_nodes must be a multiple of 2
     for(int i=0;i<half_node;i++){
@@ -1050,7 +1048,13 @@ void ODP_Generate_random_general(const int nodes, const int degree, int (*edge)[
       edge[half_degree*nodes+i][1] = i+half_node;
     }
   }
+}
 
+void ODP_Generate_random_general(const int nodes, const int degree, int (*edge)[2])
+{
+  CHECK_PARAMETERS(nodes, degree);
+  
+  create_simple_graph(nodes, degree, edge);
   int lines = (nodes*degree)/2;
   int *adjacency = malloc(sizeof(int)*nodes*degree);
   ODP_Conv_edge2adjacency_general(nodes, lines, degree, (const int (*)[2])edge, adjacency);
@@ -1076,62 +1080,12 @@ void ODP_Generate_random_general_s(const int nodes, const int degree, const int 
     ODP_Generate_random_general(nodes, degree, edge);
     return;
   }
-  
+
+  create_simple_graph(nodes, degree, edge);
   int based_nodes = nodes/symmetries;
   int lines       = (nodes*degree)/2;
   int based_lines = lines/symmetries;
-  int half_degree = degree/2;
-  for(int i=0;i<nodes-1;i++){
-    for(int j=0;j<half_degree;j++){
-      edge[i*half_degree+j][0] = i;
-      edge[i*half_degree+j][1] = i+1;
-    }
-  }
-  for(int j=0;j<half_degree;j++){
-    int i = nodes - 1;
-    edge[i*half_degree+j][0] = i;
-    edge[i*half_degree+j][1] = 0;
-  }
-
-  if(degree%2 == 1){
-    int half_node = nodes/2; // half_nodes must be a multiple of 2
-    for(int i=0;i<half_node;i++){
-      edge[half_degree*nodes+i][0] = i;
-      edge[half_degree*nodes+i][1] = i+half_node;
-    }
-  }
-  
-#if 0
-  if(based_nodes%2==0 || degree%2 == 0){
-    ODP_Generate_random_general(based_nodes, degree, edge);
-    for(int i=1;i<symmetries;i++){
-      for(int j=0;j<based_lines;j++){
-	for(int k=0;k<2;k++){
-	  int v = edge[j][k] + based_nodes * i;
-	  edge[i*based_lines+j][k] = NORM(v, nodes);
-	}
-      }
-    }
-  }
-  else{
-    ODP_Generate_random_general(based_nodes, degree-1, edge);
-    int based_lines_shrink = (based_nodes*(degree-1))/2;
-    for(int i=1;i<symmetries;i++){
-      for(int j=0;j<based_lines_shrink;j++){
-	for(int k=0;k<2;k++){
-	  int v = edge[j][k] + based_nodes * i;
-	  edge[i*based_lines_shrink+j][k] = NORM(v, nodes);
-	}
-      }
-    }
-    int offset = lines - nodes/2;
-    for(int i=0;i<nodes/2;i++){
-      edge[offset+i][0] = i;
-      edge[offset+i][1] = i + nodes/2;
-    }
-  }
-#endif
-  
+ 
   int *adjacency = malloc(sizeof(int) * based_nodes * degree);
   ODP_Conv_edge2adjacency_general_s(nodes, lines, degree, (const int (*)[2])edge, symmetries, (int (*)[degree])adjacency);
 
