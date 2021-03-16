@@ -18,13 +18,16 @@
 #elif !defined(__FUJITSU)
 #include <immintrin.h>
 #endif
-
 #ifdef _OPENMP
   #include <omp.h>
 #endif
 #ifdef __NVCC__
   #include <cuda.h>
 #endif
+
+typedef struct {
+  int u[2], v[2], u_d[2], v_d[2];
+} ODP_Restore;
 
 #define ERROR(...) do{fprintf(stderr,__VA_ARGS__); exit(1);}while(0)
 #define MAX(a, b) ((a) > (b) ? (a) : (b))

@@ -350,10 +350,10 @@ void ODP_Generate_random_grid   (int width, int height, int degree, int length, 
 * [OUT] edge : Edge list of a graph.
 
 ### Mutate an adjacency matrix
-Mutate an adjacency matrix slightly. Specifically, the operation equivalent to the 2-opt method is performed. 
+Mutate an adjacency matrix slightly. Specifically, the operation equivalent to the 2-opt method is performed. The changes are stored in the ODP_Resotre structure variable.
 ```
-void ODP_Mutate_adjacency_general(int nodes, int degree, int num_degrees[nodes], int adjacency[nodes][degree])
-void ODP_Mutate_adjacency_grid   (int width, int height, int degree, int num_degrees[nodes], int length, int adjacency[nodes][degree])
+void ODP_Mutate_adjacency_general(int nodes, int degree, int num_degrees[nodes], ODP_Restore *restore, int adjacency[nodes][degree])
+void ODP_Mutate_adjacency_grid   (int width, int height, int degree, int num_degrees[nodes], int length, ODP_Restore *restore, int adjacency[nodes][degree])
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] degree : Degree in a graph.
@@ -361,14 +361,16 @@ void ODP_Mutate_adjacency_grid   (int width, int height, int degree, int num_deg
 * [IN] width : Width of a grid graph.
 * [IN] height : Height of a grid graph.
 * [IN] length : Maximum length of a grid graph.
+* [OUT] restore : Changes.
 * [OUT] adjacency : Adjacency matrix of a graph.
 
 ### Restore an adjacency matrix
-Undo before being modified by ODP_Mutate_adjacency_general() or ODP_Mutate_adjacency_grid().
+Changes are undone by the ODP_Resotre structure variable.
 ```
-void ODP_Restore_adjacency_general(int adjacency[nodes][degree])
-void ODP_Restore_adjacency_grid   (int adjacency[nodes][degree])
+void ODP_Restore_adjacency_general(ODP_Restore restore, int adjacency[nodes][degree])
+void ODP_Restore_adjacency_grid   (ODP_Restore restore, int adjacency[nodes][degree])
 ```
+* [IN] restore : Changes.
 * [OUT] adjacency : Adjacency matrix of a graph.
 
 ### Get the number of lines in a file

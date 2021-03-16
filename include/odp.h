@@ -1,6 +1,9 @@
 #ifndef APSP_H_INCLUDED
 #define APSP_H_INCLUDED
 #include <stdbool.h>
+typedef struct {
+  int u[2], v[2], u_d[2], v_d[2];
+} ODP_Restore;
 
 extern void ODP_Init_aspl_general(int nodes, int degree, int* num_degrees);
 extern void ODP_Init_aspl_general_s(int nodes, int degree, int* num_degrees, int symmetries);
@@ -48,10 +51,10 @@ extern void ODP_Generate_random_grid_s(int width, int height, int degree, int le
 extern void ODP_Print_adjacency(int nodes, int degree, int *num_degrees, void *adjacency);
 extern void ODP_Print_edge_general(int lines, int (*edge)[2]);
 extern void ODP_Print_edge_grid(int lines, int height, int (*edge)[2]);
-extern void ODP_Mutate_adjacency_general(int nodes, int degree, int *num_degrees, int (*adjacency)[degree]);
-extern void ODP_Mutate_adjacency_general_s(int nodes, int degree, int *num_degrees, int symmetries, int (*adjacency)[degree]);
-extern void ODP_Mutate_adjacency_grid(int width, int height, int degree, int *num_degrees, int length, int (*adjacency)[degree]);
-extern void ODP_Mutate_adjacency_grid_s(int width, int height, int degree, int *num_degrees, int length, int symmetries, int (*adjacency)[degree]);
-extern void ODP_Restore_adjacency_general(void *adjacency);
-extern void ODP_Restore_adjacency_grid(void *adjacency);
+extern void ODP_Mutate_adjacency_general(int nodes, int degree, int *num_degrees, ODP_Restore *r, int (*adjacency)[degree]);
+extern void ODP_Mutate_adjacency_general_s(int nodes, int degree, int *num_degrees, int symmetries, ODP_Restore *r, int (*adjacency)[degree]);
+extern void ODP_Mutate_adjacency_grid(int width, int height, int degree, int *num_degrees, int length, ODP_Restore *r, int (*adjacency)[degree]);
+extern void ODP_Mutate_adjacency_grid_s(int width, int height, int degree, int *num_degrees, int length, int symmetries, ODP_Restore *r, int (*adjacency)[degree]);
+extern void ODP_Restore_adjacency_general(ODP_Restore r, void *adjacency);
+extern void ODP_Restore_adjacency_grid(ODP_Restore r, void *adjacency);
 #endif
