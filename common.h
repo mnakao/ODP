@@ -47,8 +47,10 @@ typedef struct {
 #define POPCNT(a) __builtin_popcountl(a)
 #elif defined(__NVCC__)
 #define POPCNT(a) __popcll(a)
-#else
+#elif defined(__AVX2__)
 #define POPCNT(a) _mm_popcnt_u64(a)
+#else
+#define POPCNT(a) __builtin_popcountl(a)
 #endif
 
 extern void ODP_Set_lbounds_general(const int nodes, const int degree, int *low_diameter, double *low_ASPL);
