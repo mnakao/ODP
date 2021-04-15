@@ -205,6 +205,30 @@ The meaning of each item in the profile is as follows.
 * Num of Threads : Number of threads used in the library.
 
 ## Basic Function
+### Overview
+Basic function calculates ASPL and diameter of a graph.
+```
+#include "odp.h"
+
+int main()
+{
+  ...
+  ODP_Init_aspl_*(...);
+  for(int i=0;i<MAX_ITERATIONS;i++){
+    /* Optimization */
+    ODP_Set_aspl(...);
+  }
+  ODP_Finalize_aspl();
+  ...
+  return 0;
+}
+```
+There are four types of ODP_Init_aspl_\*(), to support combinations of general and grid graphs, serial and MPI.
+ODP_Set_aspl() calculates APSL and diameter of a graph.
+While ODP_Init_aspl_\*() initializes for ODP_Set_aspl(), ODP_Finalize_aspl() finalizes for ODP_Set_aspl().
+ODP_Init_aspl_\*() and ODP_Finalize_aspl() will basically be called only once each in a program.
+Note that ODP_Set_aspl() should be called between ODP_Init_aspl_*() and ODP_Finalize_aspl().
+
 ### Initialize
 Perform the initialization process before executing ODP_Set_aspl().
 ```
@@ -224,7 +248,7 @@ When using ODP_Init_aspl_general() or ODP_Init_aspl_grid(), please link `libodp.
 When using ODP_Init_aspl_mpi_general() or ODP_Init_aspl_mpi_grid(), please link `libodp_mpi.a`, `libodp_mpi_threads.a`, or `libodp_mpi_cuda.a`.
 
 ### Set diameter, sum, and ASPL
-Set diameter, sum, and ASPL. Note that ODP_Set_aspl() must be executed between ODP_Init_aspl\*() and ODP_Finalize_aspl().
+Set diameter, sum, and ASPL. 
 In the case of an unconnected graph, INT_MAX, LONG_MAX, and DBL_MAX are assigned to the values of diameter, sum, and ASPL, respectively.
 ```
 void ODP_Set_aspl(int adjacency[nodes][degree], int *diameter, long *sum, double *ASPL)
