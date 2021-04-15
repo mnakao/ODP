@@ -214,7 +214,7 @@ int main()
 {
   ...
   ODP_Init_aspl_*(...);
-  for(int i=0;i<MAX_ITERATIONS;i++){
+  for(int i=0;i<ITERATIONS;i++){
     /* Optimization */
     ODP_Set_aspl(...);
   }
@@ -226,8 +226,8 @@ int main()
 There are four types of ODP_Init_aspl_\*(), to support combinations of general and grid graphs, serial and MPI.
 ODP_Set_aspl() calculates APSL and diameter of a graph.
 While ODP_Init_aspl_\*() initializes for ODP_Set_aspl(), ODP_Finalize_aspl() finalizes for ODP_Set_aspl().
-ODP_Init_aspl_\*() and ODP_Finalize_aspl() will basically be called only once each in a program.
-Note that ODP_Set_aspl() should be called between ODP_Init_aspl_*() and ODP_Finalize_aspl().
+Thus, ODP_Set_aspl() should be called between ODP_Init_aspl_*() and ODP_Finalize_aspl().
+Note that ODP_Init_aspl_\*() and ODP_Finalize_aspl() will basically be called only once each in a program.
 
 ### Initialize
 Perform the initialization process before executing ODP_Set_aspl().
