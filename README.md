@@ -147,13 +147,13 @@ A file and an edge list are the same.
 The adjacency matrix represents the connection relationship between vertices.
 For example, the first line means that vertex number 0 is connected to 10, 2, 13, and 6.
 
-![](./misc/img/general.png)
+![](https://raw.githubusercontent.com/mnakao/ODP-img/main/general.png)
 
 ### Example for a grid graph
 A file and an edge list are different.
 The format of the edge list and adjacency matrix is the same for general and grid graphs.
 
-![](./misc/img/grid.png)
+![](https://raw.githubusercontent.com/mnakao/ODP-img/main/grid.png)
 
 ## Environment variable
 ### ODP_ASPL=[MATRIX|MATRIX_SAVING|BFS]
@@ -458,7 +458,7 @@ Symmetry in this library means that the original graph matches when the graph is
 Therefore, a value of `symmetries` must be a divisor of `nodes`.
 When `symmetries=1`, target the graph without symmetry.
 
-![](./misc/img/general_s.png)
+![](https://raw.githubusercontent.com/mnakao/ODP-img/main/general_s.png)
 
 The image is an example of a graph with (nodes, degree, symmetries) = (24, 3, 4).
 The adjacency matrix can be divided into four groups (`= symmetries`).
@@ -478,7 +478,7 @@ Grid graphs are almost the same as general graphs, but only values of 1, 2 or 4 
 When `symmetries=2`, `width` is a multiple of 2.
 When `symmetries=4`, `width` and `height` are a multiple of 2, and `width=height`.
 
-![](./misc/img/grid_s2.png)
+![](https://raw.githubusercontent.com/mnakao/ODP-img/main/grid_s2.png)
 
 The image is an example of a graph with (width, height, degree, length, symmetries) = (6, 6, 3, 2, 2).
 As with the general graph, the bottom half can be calculated from the top half.
@@ -490,7 +490,7 @@ Rotate (1,1), (0,2), (2,0) by 180 degrees to get (4,4), (5,3), (3,5).
 The vertex numbers for (4,4), (5,3), and (3,5) are 28, 33, and 23.
 These values match the 36th row of the adjacency matrix.
 
-![](./misc/img/grid_s4.png)
+![](https://raw.githubusercontent.com/mnakao/ODP-img/main/grid_s4.png)
 
 The image is an example of a graph with (width, height, degree, length, symmetries) = (6, 6, 3, 2, 4).
 Only the vertices in the lower left part of the image are used to calculate the other vertices.
