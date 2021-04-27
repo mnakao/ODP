@@ -19,5 +19,7 @@ bool accept(const int nodes, const int current_diameter, const int diameter,
 	    const double current_ASPL, const double ASPL, const double temp, const bool enable_ASPL_priority);
 bool accept_s(const int nodes, const int current_diameter, const int diameter,
 	      const double current_ASPL, const double ASPL, const double temp, const bool enable_ASPL_priority, const int symmetgries);
+bool accept_temp(const int nodes, const int current_diameter, const int diameter,
+                 const double current_ASPL, const double ASPL, const double temp, double *max_diff_energy);
 double get_time();
 #endif

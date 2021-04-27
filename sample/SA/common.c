@@ -43,3 +43,30 @@ bool accept(const int nodes, const int current_diameter, const int diameter,
 {
   return accept_s(nodes, current_diameter, diameter, current_ASPL, ASPL, temp, enable_ASPL_priority, 1);
 }  
+
+bool accept_temp(const int nodes, const int current_diameter, const int diameter,
+                 const double current_ASPL, const double ASPL, const double temp, double *max_diff_energy)
+{
+  if(diameter < current_diameter){
+    return true;
+  }
+  else if(diameter > current_diameter){
+    return false;
+  }
+  else{ //  diameter == current_diameter
+    if(ASPL <= current_ASPL){
+      return true;
+    }
+    else{
+      double diff = ((current_ASPL-ASPL)*nodes*(nodes-1));
+      *max_diff_energy = MAX(*max_diff_energy, -1.0 * diff);
+       
+      if(exp(diff/temp) > uniform_rand()){
+        return true;
+      }
+      else{
+        return false;
+      }
+    }
+  }
+}
