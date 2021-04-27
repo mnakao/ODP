@@ -26,6 +26,10 @@ all: serial
 serial:general.x grid.x general_s.x grid_s.x
 threads: threads_general.x threads_grid.x threads_general_s.x threads_grid_s.x
 cuda: cuda_general.x cuda_grid.x cuda_general_s.x cuda_grid_s.x
+temp: temp_general.x
+############
+temp_general.x: temp_general.c common.o common.h
+	$(CC) $(CFLAGS) common.o -o $@ $< $(CLIBS) $(LIBODP)
 ############
 general.x: general.c common.o common.h
 	$(CC) $(CFLAGS) common.o -o $@ $< $(CLIBS) $(LIBODP)

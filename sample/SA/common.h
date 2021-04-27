@@ -13,6 +13,7 @@
 #define ERROR(...) do{fprintf(stderr, __VA_ARGS__); exit(0);}while(0)
 #define WIDTH(v,h) ((v)/(h))
 #define HEIGHT(v,h) ((v)%(h))
+#define MAX(x,y) ((x)>(y)?(x):(y))
 
 bool accept(const int nodes, const int current_diameter, const int diameter,
 	    const double current_ASPL, const double ASPL, const double temp, const bool enable_ASPL_priority);
