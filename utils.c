@@ -1495,38 +1495,30 @@ void ODP_Set_lbounds_grid(const int m, const int n, const int degree, const int 
 void ODP_Conv_adjacency2edge_general(const int nodes, const int degree, const int *num_degrees,
 				     const int *adjacency, int (*edge)[2])
 {
-  char (*tmp)[degree] = malloc(sizeof(char) * nodes * degree);
-  for(int i=0;i<nodes;i++)
-    for(int j=0;j<degree;j++)
-      tmp[i][j] = NOT_VISITED;
-
-  int lines = get_lines(nodes, degree, num_degrees);
-  int j = 0;
-  for(int u=0;u<nodes;u++){
-    int d = (!num_degrees)? degree : num_degrees[u];
-    for(int i=0;i<d;i++){
-      int v = *(adjacency + u * degree + i);
-      if(tmp[u][i] == NOT_VISITED){
-        if(j >= lines) ERROR("Something Wrong ! [id=0]\n");
-        edge[j][0] = u;
-        edge[j][1] = v;
-        tmp[u][i]  = VISITED;
-        j++;
-        int k=0;
-	int d2 = (!num_degrees)? degree : num_degrees[v];
-        for(k=0;k<d2;k++){
-          if(*(adjacency + v * degree + k) == u && tmp[v][k] == NOT_VISITED){
-            tmp[v][k] = VISITED;
-            break;
-          }
+  int lines = 0, loop_count = 0;
+  
+  for(int i=0;i<nodes;i++){    
+    int d = (!num_degrees)? degree : num_degrees[i];
+    for(int j=0;j<d;j++){
+      int v = *(adjacency + i * degree + j);
+      if(i < v){
+        edge[lines][0] = i;
+        edge[lines][1] = v;
+        lines++;
+      }
+      else if(i == v){ // loop
+        loop_count++;
+        if(loop_count%2 == 0){
+          edge[lines][0] = i;
+          edge[lines][1] = v;
+          lines++;
         }
-        if(k==d2)
-          ERROR("Something Wrong ! [id=1]\n");
       }
     }
   }
-
-  free(tmp);
+  
+  if(loop_count%2 == 1 || lines != get_lines(nodes, degree, num_degrees))
+    ERROR("Something Wrong ! [id=1]\n");
 }
 
 void ODP_Conv_adjacency2edge_grid(const int width, const int height, const int degree, const int *num_degrees,
@@ -1998,7 +1990,7 @@ int ODP_top_down_step(const int level, const int num_frontier, const int* restri
                       const int height, const int symmetries,
                       int* restrict frontier, int* restrict next, int* restrict distance, char* restrict bitmap)
 {
-  int count = 0, based_nodes = nodes/symmetries;;
+  int count = 0, based_nodes = nodes/symmetries;
   if(enable_grid_s){
     int width = nodes/height;
 #pragma omp parallel
