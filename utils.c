@@ -382,6 +382,9 @@ static int get_lines(const int nodes, const int degree, const int *num_degrees)
   else{
     for(int i=0;i<nodes;i++)
       lines += num_degrees[i];
+    
+    if(lines%2 == 1) ERROR("Something Wrong ! [id=2]\n");
+    lines /= 2;
   }
   return lines;
 }
@@ -1516,7 +1519,7 @@ void ODP_Conv_adjacency2edge_general(const int nodes, const int degree, const in
       }
     }
   }
-  
+
   if(loop_count%2 == 1 || lines != get_lines(nodes, degree, num_degrees))
     ERROR("Something Wrong ! [id=1]\n");
 }
