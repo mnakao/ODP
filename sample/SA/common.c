@@ -14,12 +14,15 @@ static double uniform_rand()
 
 bool accept_s(const int nodes, const int current_diameter, const int diameter,
 	      const double current_ASPL, const double ASPL, const double temp,
-	      const bool enable_ASPL_priority, const int symmetries)
+	      const bool hill_climbing, const bool ASPL_priority, const int symmetries)
 {
-  if(diameter < current_diameter && !enable_ASPL_priority){
+  if(hill_climbing)
+    return (ASPL <= current_ASPL);
+
+  if(diameter < current_diameter && !ASPL_priority){
     return true;
   }
-  else if(diameter > current_diameter && !enable_ASPL_priority){
+  else if(diameter > current_diameter && !ASPL_priority){
     return false;
   }
   else{ //  diameter == current_diameter
@@ -28,20 +31,15 @@ bool accept_s(const int nodes, const int current_diameter, const int diameter,
     }
     else{
       double diff = ((current_ASPL-ASPL)*nodes*(nodes-1))/symmetries;
-      if(exp(diff/temp) > uniform_rand()){
-        return true;
-      }
-      else{
-        return false;
-      }
+      return exp(diff/temp) > uniform_rand();
     }
   }
 }
 
-bool accept(const int nodes, const int current_diameter, const int diameter,
-            const double current_ASPL, const double ASPL, const double temp, const bool enable_ASPL_priority)
+bool accept(const int nodes, const int current_diameter, const int diameter, const double current_ASPL,
+            const double ASPL, const double temp, const bool hill_climbing, const bool ASPL_priority)
 {
-  return accept_s(nodes, current_diameter, diameter, current_ASPL, ASPL, temp, enable_ASPL_priority, 1);
+  return accept_s(nodes, current_diameter, diameter, current_ASPL, ASPL, temp, hill_climbing, ASPL_priority, 1);
 }  
 
 bool accept_temp(const int nodes, const int current_diameter, const int diameter,

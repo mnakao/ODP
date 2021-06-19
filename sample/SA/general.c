@@ -2,14 +2,14 @@
 
 static void print_help(char *argv)
 {
-  ERROR("%s [-N nodes] [-D degree] [-f input] [-o output] [-s seed] [-n calcs] [-w max_temp] [-c min_temp] [-A]\n", argv);
+  ERROR("%s [-N nodes] [-D degree] [-f input] [-o output] [-s seed] [-n calcs] [-w max_temp] [-c min_temp] [-Y] [-A]\n", argv);
 }
 
 static void set_args(const int argc, char **argv, int *nodes, int *degree, char **infname, char **outfname,
-		     int *seed, long *ncalcs, double *max_temp, double *min_temp, bool *enable_ASPL_priority)
+		     int *seed, long *ncalcs, double *max_temp, double *min_temp, bool *hill_climbing, bool *ASPL_priority)
 {
   int result;
-  while((result = getopt(argc,argv,"N:D:f:o:s:n:w:c:A"))!=-1){
+  while((result = getopt(argc,argv,"N:D:f:o:s:n:w:c:YA"))!=-1){
     switch(result){
     case 'N':
       *nodes = atoi(optarg);
@@ -53,8 +53,11 @@ static void set_args(const int argc, char **argv, int *nodes, int *degree, char 
       if(*min_temp <= 0)
         ERROR("MIN value > 0\n");
       break;
+    case 'Y':
+      *hill_climbing = true;
+      break;
     case 'A':
-      *enable_ASPL_priority = true;
+      *ASPL_priority = true;
       break;
     default:
       print_help(argv[0]);
@@ -65,7 +68,7 @@ static void set_args(const int argc, char **argv, int *nodes, int *degree, char 
 int main(int argc, char *argv[])
 {
   char *infname = NULL, *outfname = NULL;
-  bool enable_ASPL_priority = false;
+  bool hill_climbing = false, ASPL_priority = false;
   int nodes = NOT_DEFINED, degree = NOT_DEFINED, lines, (*edge)[2];
   int seed = 0, diameter, current_diameter, best_diameter, low_diameter;
   long sum, best_sum, ncalcs = 10000;
@@ -73,7 +76,7 @@ int main(int argc, char *argv[])
   ODP_Restore r;
 
   set_args(argc, argv, &nodes, &degree, &infname, &outfname, &seed,
-	   &ncalcs, &max_temp, &min_temp, &enable_ASPL_priority);
+	   &ncalcs, &max_temp, &min_temp, &hill_climbing, &ASPL_priority);
   
   ODP_Srand(seed);
   if(infname){
@@ -97,7 +100,12 @@ int main(int argc, char *argv[])
   printf("Nodes = %d, Degrees = %d\n", nodes, degree);
   printf("Random seed = %d\n", seed);
   printf("Number of calculations = %ld\n", ncalcs);
-  printf("Max, Min temperature = %f, %f\n", max_temp, min_temp);
+  if(hill_climbing)
+    printf("Method = Hill Climbing\n");
+  else{
+    printf("Method = Simulated Annealing\n");
+    printf("Max, Min temperature = %f, %f\n", max_temp, min_temp);
+  }
   if(infname)
     printf("Input file name = %s\n", infname);
   if(outfname)
@@ -121,13 +129,23 @@ int main(int argc, char *argv[])
     printf("Find optimum solution\n");
   }
   else{
-    double cooling_rate = pow(min_temp/max_temp, (double)1.0/ncalcs);
+    double cooling_rate = (hill_climbing)? 0 : pow(min_temp/max_temp, (double)1.0/ncalcs);
     double temp = max_temp;
     int	interval = (ncalcs < 100)? 1 : ncalcs/100;
-    printf("Ncalcs : Temp : Diameter Gap : ASPL Gap\n");
+    if(hill_climbing)
+      printf("Ncalcs : Best ASPL Gap ( Dia. )\n");
+    else
+      printf("Ncalcs : Temp : current ASPL Gap ( Dia. ) : Best ASPL Gap ( Dia. )\n");
     for(long i=0;i<ncalcs;i++){
-      if(i%interval == 0)
-	printf("%ld\t%f\t%d\t%f\n", i, temp, best_diameter-low_diameter, best_ASPL-low_ASPL);
+      if(i%interval == 0){
+        if(hill_climbing)
+          printf("%ld\t%f ( %d )\n", i, 
+                 best_ASPL-low_ASPL, best_diameter-low_diameter);
+        else
+          printf("%ld\t%f\t%f ( %d )\t%f ( %d )\n", i, temp,
+                 current_ASPL-low_ASPL, current_diameter-low_diameter,
+                 best_ASPL-low_ASPL, best_diameter-low_diameter);
+      }
 
       ODP_Mutate_adjacency_general(nodes, degree, NULL, &r, adjacency);
       ODP_Set_aspl(adjacency, &diameter, &sum, &ASPL);
@@ -142,7 +160,7 @@ int main(int argc, char *argv[])
 	}
       }
       
-      if(accept(nodes, current_diameter, diameter, current_ASPL, ASPL, temp, enable_ASPL_priority)){
+      if(accept(nodes, current_diameter, diameter, current_ASPL, ASPL, temp, hill_climbing, ASPL_priority)){
 	current_diameter = diameter;
 	current_ASPL     = ASPL;
       }
@@ -162,7 +180,7 @@ int main(int argc, char *argv[])
   printf("ASPL            = %.10f (%ld/%.0f)\n", best_ASPL, best_sum, (double)nodes*(nodes-1)/2);
   printf("ASPL Gap        = %.10f (%.10f - %.10f)\n", best_ASPL - low_ASPL, best_ASPL, low_ASPL);
   printf("Time            = %f sec.\n", sa_time);
-  printf("ASPL priority?  = %s\n", (enable_ASPL_priority)? "Yes" : "No");
+  printf("ASPL priority?  = %s\n", (ASPL_priority)? "Yes" : "No");
   //  printf("Loop ?          = %s\n", (ODP_Check_loop(lines, edge))? "Yes" : "No");
   //  printf("Multiple Edges? = %s\n", (ODP_Check_multiple_edges(lines, edge))? "Yes" : "No");
 

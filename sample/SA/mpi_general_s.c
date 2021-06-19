@@ -1,3 +1,4 @@
+#include <mpi.h>
 #include "common.h"
 
 static void print_help(char *argv)
@@ -74,12 +75,14 @@ int main(int argc, char *argv[])
 {
   char *infname = NULL, *outfname = NULL;
   bool hill_climbing = false, ASPL_priority = false;
-  int nodes = NOT_DEFINED, degree = NOT_DEFINED, symmetries = 1, lines, (*edge)[2];
+  int nodes = NOT_DEFINED, degree = NOT_DEFINED, symmetries = 1, lines, (*edge)[2], rank;
   int seed = 0, diameter, current_diameter, best_diameter, low_diameter;
   long sum, best_sum, ncalcs = 10000;
   double max_temp = 100, min_temp = 0.22, ASPL, current_ASPL, best_ASPL, low_ASPL;
   ODP_Restore r;
 
+  MPI_Init(&argc, &argv);
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   set_args(argc, argv, &nodes, &degree, &symmetries, &infname, &outfname, &seed,
            &ncalcs, &max_temp, &min_temp, &hill_climbing, &ASPL_priority);
 
@@ -106,26 +109,26 @@ int main(int argc, char *argv[])
     ODP_Generate_random_general_s(nodes, degree, symmetries, edge);
   }
 
-  printf("Nodes = %d, Degrees = %d, Symmetries = %d\n", nodes, degree, symmetries);
-  printf("Random seed = %d\n", seed);
-  printf("Number of calculations = %ld\n", ncalcs);
+  PRINT_R0("Nodes = %d, Degrees = %d, Symmetries = %d\n", nodes, degree, symmetries);
+  PRINT_R0("Random seed = %d\n", seed);
+  PRINT_R0("Number of calculations = %ld\n", ncalcs);
   if(hill_climbing)
-    printf("Method = Hill Climbing\n");
+    PRINT_R0("Method = Hill Climbing\n");
   else{
-    printf("Method = Simulated Annealing\n");
-    printf("Max, Min temperature = %f, %f\n", max_temp, min_temp);
+    PRINT_R0("Method = Simulated Annealing\n");
+    PRINT_R0("Max, Min temperature = %f, %f\n", max_temp, min_temp);
   }
   if(infname)
-    printf("Input file name = %s\n", infname);
+    PRINT_R0("Input file name = %s\n", infname);
   if(outfname)
-    printf("Output file name = %s\n", outfname);
+    PRINT_R0("Output file name = %s\n", outfname);
   
   int based_nodes = nodes/symmetries;
   int (*adjacency)[degree] = malloc(sizeof(int)*based_nodes*degree);      // int adjacency[based_nodes][degree];
   int (*best_adjacency)[degree] = malloc(sizeof(int)*based_nodes*degree); // int best_adjacency[based_nodes][degree];
 
   ODP_Conv_edge2adjacency_general_s(nodes, lines, degree, edge, symmetries, adjacency);
-  ODP_Init_aspl_general_s(nodes, degree, NULL, symmetries); 
+  ODP_Init_aspl_mpi_general_s(nodes, degree, NULL, MPI_COMM_WORLD, symmetries); 
   ODP_Set_aspl(adjacency, &diameter, &sum, &ASPL); 
 
   best_diameter = current_diameter = diameter;
@@ -134,25 +137,26 @@ int main(int argc, char *argv[])
   memcpy(best_adjacency, adjacency, sizeof(int)*based_nodes*degree);
 
   ODP_Set_lbounds_general(nodes, degree, &low_diameter, &low_ASPL);
+  MPI_Barrier(MPI_COMM_WORLD); // To measure time with ODP_PROFILE=1.
   double sa_time = get_time();
   if(diameter == low_diameter && ASPL == low_ASPL){
-    printf("Find optimum solution\n");
+    PRINT_R0("Find optimum solution\n");
   }
   else{
     double cooling_rate = (hill_climbing)? 0 : pow(min_temp/max_temp, (double)1.0/ncalcs);
     double temp = max_temp;
     int	interval = (ncalcs < 100)? 1 : ncalcs/100;
     if(hill_climbing)
-      printf("Ncalcs : Best ASPL Gap ( Dia. )\n");
+      PRINT_R0("Ncalcs : Best ASPL Gap ( Dia. )\n");
     else
-      printf("Ncalcs : Temp : current ASPL Gap ( Dia. ) : Best ASPL Gap ( Dia. )\n");
+      PRINT_R0("Ncalcs : Temp : current ASPL Gap ( Dia. ) : Best ASPL Gap ( Dia. )\n");
     for(long i=0;i<ncalcs;i++){
       if(i%interval == 0){
         if(hill_climbing)
-          printf("%ld\t%f ( %d )\n", i,
+          PRINT_R0("%ld\t%f ( %d )\n", i,
                  best_ASPL-low_ASPL, best_diameter-low_diameter);
         else
-          printf("%ld\t%f\t%f ( %d )\t%f ( %d )\n", i, temp,
+          PRINT_R0("%ld\t%f\t%f ( %d )\t%f ( %d )\n", i, temp,
                  current_ASPL-low_ASPL, current_diameter-low_diameter,
                  best_ASPL-low_ASPL, best_diameter-low_diameter);
       }
@@ -166,7 +170,7 @@ int main(int argc, char *argv[])
 	best_ASPL     = ASPL;
 	memcpy(best_adjacency, adjacency, sizeof(int)*based_nodes*degree);
 	if(diameter == low_diameter && ASPL == low_ASPL){
-	  printf("Find optimum solution\n");
+	  PRINT_R0("Find optimum solution\n");
 	  break;
 	}
       }
@@ -185,22 +189,23 @@ int main(int argc, char *argv[])
   ODP_Finalize_aspl();
   ODP_Conv_adjacency2edge_general_s(nodes, degree, NULL, best_adjacency, symmetries, edge);
   
-  printf("---\n");
-  printf("Diameter        = %d\n", best_diameter);
-  printf("Diameter Gap    = %d (%d - %d)\n", best_diameter - low_diameter, best_diameter, low_diameter);
-  printf("ASPL            = %.10f (%ld/%.0f)\n", best_ASPL, best_sum, (double)nodes*(nodes-1)/2);
-  printf("ASPL Gap        = %.10f (%.10f - %.10f)\n", best_ASPL - low_ASPL, best_ASPL, low_ASPL);
-  printf("Time            = %f sec.\n", sa_time);
-  printf("ASPL priority?  = %s\n", (ASPL_priority)? "Yes" : "No");
-  //  printf("Loop ?          = %s\n", (ODP_Check_loop(lines, edge))? "Yes" : "No");
-  //  printf("Multiple Edges? = %s\n", (ODP_Check_multiple_edges(lines, edge))? "Yes" : "No");
+  PRINT_R0("---\n");
+  PRINT_R0("Diameter        = %d\n", best_diameter);
+  PRINT_R0("Diameter Gap    = %d (%d - %d)\n", best_diameter - low_diameter, best_diameter, low_diameter);
+  PRINT_R0("ASPL            = %.10f (%ld/%.0f)\n", best_ASPL, best_sum, (double)nodes*(nodes-1)/2);
+  PRINT_R0("ASPL Gap        = %.10f (%.10f - %.10f)\n", best_ASPL - low_ASPL, best_ASPL, low_ASPL);
+  PRINT_R0("Time            = %f sec.\n", sa_time);
+  PRINT_R0("ASPL priority?  = %s\n", (ASPL_priority)? "Yes" : "No");
+  //  PRINT_R0("Loop ?          = %s\n", (ODP_Check_loop(lines, edge))? "Yes" : "No");
+  //  PRINT_R0("Multiple Edges? = %s\n", (ODP_Check_multiple_edges(lines, edge))? "Yes" : "No");
 
-  if(outfname)
+  if(outfname && rank == 0)
     ODP_Write_edge_general(lines, edge, outfname);
   
   free(edge);
   free(adjacency);
   free(best_adjacency);
-
+  
+  MPI_Finalize();
   return 0;
 }
