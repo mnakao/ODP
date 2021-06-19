@@ -19,7 +19,7 @@ else
   CLIBS=-lm
   OMP_FLAGS=-fopenmp
   NVCC_BIN=-ccbin gcc
-  NVCC_MPIBIN=-ccbin mpicc
+  NVCC_MPIBIN=-ccbin mpicxx
 endif
 NVCC=nvcc
 NVCC_CFLAGS=-O3 -I../../include
@@ -64,7 +64,7 @@ mpi_general_s.x: mpi_general_s.c common.o common.h
 	$(MPICC) $(CFLAGS) common.o -o $@ $< $(LIBODP_MPI)
 mpi_cuda_general.x: mpi_general.c common.o common.h
 	$(NVCC) $(NVCC_CFLAGS) common.o -o $@ $< $(LIBODP_MPI_CUDA) $(NVCC_MPIBIN)
-mpi_cuda_general_s.x: mpi_general.c common.o common.h
+mpi_cuda_general_s.x: mpi_general_s.c common.o common.h
 	$(NVCC) $(NVCC_CFLAGS) common.o -o $@ $< $(LIBODP_MPI_CUDA) $(NVCC_MPIBIN)
 ############
 cuda_general.x: general.c common.o common.h
