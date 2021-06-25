@@ -30,13 +30,15 @@ LIBODP_THREADS=../libodp_threads.a
 LIBODP_CUDA=../libodp_cuda.a -lcuda
 LIBODP_MPI_CUDA=../libodp_mpi_cuda.a -lcuda -lm
 all: serial
-serial:general_3opt.x
+serial:general_3opt.x general_s_2opt.x
 threads: threads_general_3opt.x
 mpi: mpi_general_3opt.x
 cuda: cuda_general_3opt.x
 mpi_cuda: mpi_cuda_general_3opt.x
 ############
 general_3opt.x: general_3opt.c common.o common.h
+	$(CC) $(CFLAGS) common.o -o $@ $< $(CLIBS) $(LIBODP)
+general_s_2opt.x: general_s_2opt.c common.o common.h
 	$(CC) $(CFLAGS) common.o -o $@ $< $(CLIBS) $(LIBODP)
 ############
 threads_general_3opt.x: general_3opt.c common.o common.h
