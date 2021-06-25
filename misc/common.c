@@ -1,5 +1,5 @@
 #include "common.h"
-#define MAX_NOPT 3
+#define MAX_NOPT 4
 static int _u[MAX_NOPT], _v[MAX_NOPT], _u_d[MAX_NOPT], _v_d[MAX_NOPT];
 
 void undo_adjacency(const int num, const int degree, int (*adjacency)[degree])
