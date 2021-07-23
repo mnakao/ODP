@@ -32,7 +32,7 @@ def main(filename):
   
   print("Diameter     = {}".format(diam, low_diam))
   print("Diameter Gap = {} ({} - {})".format(diam-low_diam, diam, low_diam))
-  print("ASPL         = {:.10f} ({}/{})".format(aspl, int(sum/2), cnt/2))
+  print("ASPL         = {:.10f} ({}/{})".format(aspl, int(sum/2), int(cnt/2)))
   print("ASPL Gap     = {:.10f} ({:.10f} - {:.10f})".format(aspl-low_aspl, aspl, low_aspl))
 
 def lower_bound_of_diam_aspl(nnodes, degree):
