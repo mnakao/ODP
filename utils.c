@@ -469,24 +469,32 @@ void ODP_Restore_adjacency_grid(ODP_Restore r, int (*adjacency)[_degree])
 static bool check_multiple_edges_general_s(const int u, const int u_d, const int v, const int nodes, const int degree,
 					   const int *num_degrees, const int symmetries, const int (*adjacency)[degree])
 {
+  return true;
+  // Not much performance change, always return true;
+#if 0
   int based_nodes = nodes/symmetries;
   int d = (!num_degrees)? degree : num_degrees[u%based_nodes];
   for(int i=0;i<d;i++)
     if(i!=u_d && adjacency[u][i] == v)
       return false;
-
+  
   return true;
+#endif
 }
 
 static bool check_multiple_edges_grid_s(const int u, const int u_d, const int v, const int width, const int height,
 					const int degree, const int *num_degrees, const int symmetries, const int (*adjacency)[degree])
 {
+  return true;
+  // Not much performance change, always return true;
+#if 0
   int d = (!num_degrees)? degree : num_degrees[global2local_vertex_grid(u, width, height, symmetries)];
   for(int i=0;i<d;i++)
     if(i!=u_d && GLOBAL_ADJ_GRID(width, height, degree, symmetries, adjacency, u, i) == v)
       return false;
 
   return true;
+#endif
 }
 
 void ODP_Restore_adjacency_general(ODP_Restore r, int (*adjacency)[_degree])
