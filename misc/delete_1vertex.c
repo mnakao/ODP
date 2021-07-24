@@ -75,10 +75,10 @@ int main(int argc, char *argv[])
   ODP_Finalize_aspl();
   ODP_Set_lbounds_general(nodes, degree, &low_diameter, &low_ASPL);
   
-  printf("Diameter     = %d\n", diameter);
-  printf("Diameter Gap = %d (%d - %d)\n", diameter - low_diameter, diameter, low_diameter);
-  printf("ASPL         = %.10f (%ld/%.0f)\n", ASPL, sum, (double)nodes*(nodes-1)/2);
-  printf("ASPL Gap     = %.10f (%.10f - %.10f)\n", ASPL - low_ASPL, ASPL, low_ASPL);
+  printf("Diameter        = %d\n", diameter);
+  printf("Diameter Gap    = %d (%d - %d)\n", diameter - low_diameter, diameter, low_diameter);
+  printf("ASPL            = %.10f (%ld/%.0f)\n", ASPL, sum, (double)nodes*(nodes-1)/2);
+  printf("ASPL Gap        = %.10f (%.10f - %.10f)\n", ASPL - low_ASPL, ASPL, low_ASPL);
   
   printf("---\n");
   printf("Deleting vertex %d\n", deleting_vertex);
@@ -140,10 +140,10 @@ int main(int argc, char *argv[])
   ODP_Set_aspl(new_adjacency, &new_diameter, &new_sum, &new_ASPL);
   ODP_Finalize_aspl();
   ODP_Set_lbounds_general(new_nodes, degree, &new_low_diameter, &new_low_ASPL);
-  printf("Diameter     = %d\n", new_diameter);
-  printf("Diameter Gap = %d (%d - %d)\n", new_diameter - new_low_diameter, new_diameter, new_low_diameter);
-  printf("ASPL         = %.10f (%ld/%.0f)\n", new_ASPL, new_sum, (double)new_nodes*(new_nodes-1)/2);
-  printf("ASPL Gap     = %.10f (%.10f - %.10f)\n", new_ASPL - new_low_ASPL, new_ASPL, new_low_ASPL);
+  printf("Diameter        = %d\n", new_diameter);
+  printf("Diameter Gap    = %d (%d - %d)\n", new_diameter - new_low_diameter, new_diameter, new_low_diameter);
+  printf("ASPL            = %.10f (%ld/%.0f)\n", new_ASPL, new_sum, (double)new_nodes*(new_nodes-1)/2);
+  printf("ASPL Gap        = %.10f (%.10f - %.10f)\n", new_ASPL - new_low_ASPL, new_ASPL, new_low_ASPL);
 
   return 0;
 }
