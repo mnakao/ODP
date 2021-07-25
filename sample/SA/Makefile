@@ -27,12 +27,14 @@ NVCC_CFLAGS=-O3 -I../../include
 LIBODP=../../libodp.a
 LIBODP_MPI=../../libodp_mpi.a -lm
 LIBODP_THREADS=../../libodp_threads.a
+LIBODP_MPI_THREADS=../../libodp_mpi_threads.a
 LIBODP_CUDA=../../libodp_cuda.a -lcuda
 LIBODP_MPI_CUDA=../../libodp_mpi_cuda.a -lcuda -lm
 all: serial
 serial:general.x grid.x general_s.x grid_s.x
 threads: threads_general.x threads_grid.x threads_general_s.x threads_grid_s.x
 mpi: mpi_general.x mpi_general_s.x
+mpi_threads: mpi_threads_general.x mpi_threads_general_s.x
 cuda: cuda_general.x cuda_grid.x cuda_general_s.x cuda_grid_s.x
 mpi_cuda: mpi_cuda_general.x mpi_cuda_general_s.x
 temp: temp_general.x
@@ -62,6 +64,12 @@ mpi_general.x: mpi_general.c common.o common.h
 	$(MPICC) $(CFLAGS) common.o -o $@ $< $(LIBODP_MPI)
 mpi_general_s.x: mpi_general_s.c common.o common.h
 	$(MPICC) $(CFLAGS) common.o -o $@ $< $(LIBODP_MPI)
+##############
+mpi_threads_general.x: mpi_general.c common.o common.h
+	$(MPICC) $(OMP_FLAGS) $(CFLAGS) common.o -o $@ $< $(LIBODP_MPI_THREADS)
+mpi_threads_general_s.x: mpi_general_s.c common.o common.h
+	$(MPICC) $(OMP_FLAGS) $(CFLAGS) common.o -o $@ $< $(LIBODP_MPI_THREADS)
+##############
 mpi_cuda_general.x: mpi_general.c common.o common.h
 	$(NVCC) $(NVCC_CFLAGS) common.o -o $@ $< $(LIBODP_MPI_CUDA) $(NVCC_MPIBIN)
 mpi_cuda_general_s.x: mpi_general_s.c common.o common.h
