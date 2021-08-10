@@ -30,13 +30,14 @@ LIBODP_THREADS=../libodp_threads.a
 LIBODP_CUDA=../libodp_cuda.a -lcuda
 LIBODP_MPI_CUDA=../libodp_mpi_cuda.a -lcuda -lm
 all: serial
-#serial:general_3opt.x general_s_2opt.x
-serial: delete_1vertex.x delete_1vertex_hc.x
+serial: delete_1vertex.x delete_1vertex_hc.x change_orp.x
 threads: threads_delete_1vertex_hc.x
 mpi: mpi_general_3opt.x
 cuda: cuda_general_3opt.x
 mpi_cuda: mpi_cuda_general_3opt.x
 ############
+change_orp.x: change_orp.c
+	$(CC) $(CFLAGS) -o $@ $< $(CLIBS) $(LIBODP)
 delete_1vertex.x: delete_1vertex.c common.o common.h
 	$(CC) $(CFLAGS) common.o -o $@ $< $(CLIBS) $(LIBODP)
 delete_1vertex_hc.x: delete_1vertex_hc.c common.o common.h
