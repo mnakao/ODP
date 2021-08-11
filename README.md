@@ -508,10 +508,10 @@ Note that the new `adjacency matrix'` is not created from contiguous region of t
 
 ### Initialize
 ```
-void ODP_Init_aspl_general_s    (int nodes, int degree, int num_degrees[nodes/symmetries], int symmetries)
-void ODP_Init_aspl_grid_s       (int width, int height, int degree, int num_degrees[nodes/symmetries], int symmetries)
-void ODP_Init_aspl_mpi_general_s(int nodes, int degree, int num_degrees[nodes/symmetries], MPI_Comm comm, int symmetries)
-void ODP_Init_aspl_mpi_grid_s   (int width, int height, int degree, int num_degrees[nodes/symmetries], MPI_Comm comm, int symmetries)
+void ODP_Init_aspl_general_s    (int nodes, int degree, int num_degrees[nodes], int symmetries)
+void ODP_Init_aspl_grid_s       (int width, int height, int degree, int num_degrees[nodes], int symmetries)
+void ODP_Init_aspl_mpi_general_s(int nodes, int degree, int num_degrees[nodes], MPI_Comm comm, int symmetries)
+void ODP_Init_aspl_mpi_grid_s   (int width, int height, int degree, int num_degrees[nodes], MPI_Comm comm, int symmetries)
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] degree: Degree in a graph.
@@ -540,8 +540,8 @@ void ODP_Conv_edge2adjacency_grid_s   (int width, int height, int lines, int deg
 
 ### Convert an adjacency matrix to an edge list
 ```
-void ODP_Conv_adjacency2edge_general_s(int nodes, int degree, int num_degrees[nodes/symmetries], int adjacency[nodes/symmetries][degree], int symmetries, int edge[lines][2])
-void ODP_Conv_adjacency2edge_grid_s   (int width, int height, int degree, int num_degrees[nodes/symmetries], int adjacency[nodes/symmetries][degree], int symmetries, int edge[lines][2])
+void ODP_Conv_adjacency2edge_general_s(int nodes, int degree, int num_degrees[nodes], int adjacency[nodes/symmetries][degree], int symmetries, int edge[lines][2])
+void ODP_Conv_adjacency2edge_grid_s   (int width, int height, int degree, int num_degrees[nodes], int adjacency[nodes/symmetries][degree], int symmetries, int edge[lines][2])
 ```
 * [IN] nodes : Number of nodes in a graph.
 * [IN] degree: Degree in a graph.
