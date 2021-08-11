@@ -2010,7 +2010,7 @@ int ODP_top_down_step(const int level, const int num_frontier, const int* restri
 #pragma omp for nowait
       for(int i=0;i<num_frontier;i++){
 	int v = frontier[i];
-	int d = (!num_degrees)? degree : num_degrees[i];
+	int d = (!num_degrees)? degree : num_degrees[v];
 	for(int j=0;j<d;j++){
          int n = GLOBAL_ADJ_GRID(width, height, degree, symmetries, (const int (*)[degree])adjacency, v, j);
          if(bitmap[n] == NOT_VISITED){
@@ -2036,7 +2036,7 @@ int ODP_top_down_step(const int level, const int num_frontier, const int* restri
 	int v = frontier[i];
 	int p = v/based_nodes;
 	int m = v - p * based_nodes;
-	int d = (!num_degrees)? degree : num_degrees[i];
+	int d = (!num_degrees)? degree : num_degrees[m];
 	for(int j=0;j<d;j++){
 	  int n = *(adjacency + m * degree + j) + p * based_nodes;
 	  if(n >= nodes) n -= nodes;
@@ -2067,7 +2067,7 @@ int ODP_top_down_step(const int level, const int num_frontier, const int* restri
     int width = nodes/height;
     for(int i=0;i<num_frontier;i++){
       int v = frontier[i];
-      int d = (!num_degrees)? degree : num_degrees[i];
+      int d = (!num_degrees)? degree : num_degrees[v];
       for(int j=0;j<d;j++){
 	int n = GLOBAL_ADJ_GRID(width, height, degree, symmetries, (const int (*)[degree])adjacency, v, j);
 	if(bitmap[n] == NOT_VISITED){
@@ -2084,7 +2084,7 @@ int ODP_top_down_step(const int level, const int num_frontier, const int* restri
       int v = frontier[i];
       int p = v/based_nodes;
       int m = v - p * based_nodes;
-      int d = (!num_degrees)? degree : num_degrees[i];
+      int d = (!num_degrees)? degree : num_degrees[m];
       for(int j=0;j<d;j++){
 	int n = *(adjacency + m * degree + j) + p * based_nodes;
 	if(n >= nodes) n -= nodes;
