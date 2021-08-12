@@ -184,15 +184,16 @@ int main(int argc, char *argv[])
     u_d = get_random(degree);
     v   = GLOBAL_ADJ(nodes, degree, symmetries, adjacency, u, u_d);
     v_d = get_index(u, v, u_d, nodes, symmetries, degree, adjacency);
-  } while(u%based_nodes == v%based_nodes);
+  } while(u == v || (symmetries%2 == 0 && abs(u-v) == nodes/2));
 
-  int tmp = GLOBAL_ADJ(nodes, degree, symmetries, adjacency, u, degree-1);
+  int tmp = GLOBAL_ADJ(nodes, degree, symmetries, adjacency, u, num_degrees[u%based_nodes]-1);
   adjacency[u%based_nodes][u_d] = LOCAL_INDEX(tmp, u, nodes, symmetries);
-  adjacency[u%based_nodes][degree-1] = NOT_DEFINED;
-  tmp = GLOBAL_ADJ(nodes, degree, symmetries, adjacency, v, degree-1);
-  adjacency[v%based_nodes][v_d] = LOCAL_INDEX(tmp, v, nodes, symmetries);
-  adjacency[v%based_nodes][degree-1] = NOT_DEFINED;
+  adjacency[u%based_nodes][num_degrees[u%based_nodes]-1] = NOT_DEFINED;
   num_degrees[u%based_nodes]--;
+  
+  tmp = GLOBAL_ADJ(nodes, degree, symmetries, adjacency, v, num_degrees[v%based_nodes]-1);
+  adjacency[v%based_nodes][v_d] = LOCAL_INDEX(tmp, v, nodes, symmetries);
+  adjacency[v%based_nodes][num_degrees[v%based_nodes]-1] = NOT_DEFINED;
   num_degrees[v%based_nodes]--;
 
   for(int i=based_nodes;i<nodes;i++)
