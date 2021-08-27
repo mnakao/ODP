@@ -7,7 +7,7 @@ ifeq ($(ENV), intel)
 else ifeq ($(ENV), fugaku)
   CC=fccpx
   MPICC=mpifccpx
-  CFLAGS=-O3 -Nclang
+  CFLAGS=-O3 -Nclang -D__FUGAKU
   OMP_FLAGS=-Kopenmp
 else
   CC=gcc

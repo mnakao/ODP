@@ -57,7 +57,7 @@ static void aspl_mpi_mat(const int* restrict adjacency,
 		 _itable, _elements, _symmetries, _enable_avx2);
 
       uint64_t num = 0;
-#if !defined(__FUJITSU)
+#ifndef __FUGAKU
 #pragma omp parallel for reduction(+:num)
 #endif
       for(int i=0;i<_elements*_nodes;i++)
@@ -105,7 +105,7 @@ static void aspl_mpi_mat_saving(const int* restrict adjacency,
 		       _symmetries, _enable_avx2);
 
       uint64_t num = 0;
-#if !defined(__FUJITSU)
+#ifndef __FUGAKU
 #pragma omp parallel for reduction(+:num)
 #endif
       for(int i=0;i<CPU_CHUNK*_nodes;i++)
