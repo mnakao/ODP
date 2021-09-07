@@ -1,4 +1,6 @@
 #include "common.h"
+extern double calc_max_temp(int nodes, int degree, int seed);
+extern double calc_min_temp();
 
 static void print_help(char *argv)
 {
@@ -72,7 +74,7 @@ int main(int argc, char *argv[])
   int nodes = NOT_DEFINED, degree = NOT_DEFINED, lines, (*edge)[2];
   int seed = 0, diameter, current_diameter, best_diameter, low_diameter;
   long sum, best_sum, ncalcs = 10000;
-  double max_temp = 100, min_temp = 0.22, ASPL, current_ASPL, best_ASPL, low_ASPL;
+  double max_temp = NOT_DEFINED, min_temp = NOT_DEFINED, ASPL, current_ASPL, best_ASPL, low_ASPL;
   ODP_Restore r;
 
   set_args(argc, argv, &nodes, &degree, &infname, &outfname, &seed,
@@ -80,6 +82,8 @@ int main(int argc, char *argv[])
   
   ODP_Srand(seed);
   if(infname){
+    if(nodes != NOT_DEFINED || degree != NOT_DEFINED)
+      ERROR("When using -f option, you cannot use -N and -D.\n");
     lines = ODP_Get_lines(infname);
     edge = malloc(sizeof(int)*lines*2); // int edge[lines][2];
     ODP_Read_edge_general(infname, edge);
@@ -96,6 +100,12 @@ int main(int argc, char *argv[])
     edge = malloc(sizeof(int)*lines*2); // int edge[lines][2];
     ODP_Generate_random_general(nodes, degree, edge);
   }
+
+  if(max_temp == NOT_DEFINED)
+    max_temp = calc_max_temp(nodes, degree, seed);
+  
+  if(min_temp == NOT_DEFINED)
+    min_temp = calc_min_temp();
   
   printf("Nodes = %d, Degrees = %d\n", nodes, degree);
   printf("Random seed = %d\n", seed);

@@ -42,43 +42,47 @@ temp: temp_general.x
 temp_general.x: temp_general.c common.o common.h
 	$(CC) $(CFLAGS) common.o -o $@ $< $(CLIBS) $(LIBODP)
 ############
-general.x: general.c common.o common.h
-	$(CC) $(CFLAGS) common.o -o $@ $< $(CLIBS) $(LIBODP)
-general_s.x: general_s.c common.o common.h
-	$(CC) $(CFLAGS) common.o -o $@ $< $(CLIBS) $(LIBODP)
+general.x: general.c detect_temp.o common.o common.h
+	$(CC) $(CFLAGS) detect_temp.o common.o -o $@ $< $(CLIBS) $(LIBODP)
+detect_temp.o: detect_temp.c common.h
+	$(CC) $(CFLAGS) -c $< $(CLIBS)
+general_s.x: general_s.c detect_temp.o common.o common.h
+	$(CC) $(CFLAGS) common.o detect_temp.o -o $@ $< $(CLIBS) $(LIBODP)
 grid.x: grid.c common.o common.h
 	$(CC) $(CFLAGS) common.o -o $@ $< $(CLIBS) $(LIBODP)
 grid_s.x: grid_s.c common.o common.h
 	$(CC) $(CFLAGS) common.o -o $@ $< $(CLIBS) $(LIBODP)
 ############
-threads_general.x: general.c common.o common.h
-	$(CC) $(CFLAGS) $(OMP_FLAGS) common.o -o $@ $< $(CLIBS) $(LIBODP_THREADS)
-threads_general_s.x: general_s.c common.o common.h
-	$(CC) $(CFLAGS) $(OMP_FLAGS) common.o -o $@ $< $(CLIBS) $(LIBODP_THREADS)
+threads_general.x: general.c detect_temp.o common.o common.h
+	$(CC) $(CFLAGS) $(OMP_FLAGS) detect_temp.o common.o -o $@ $< $(CLIBS) $(LIBODP_THREADS)
+threads_general_s.x: general_s.c detect_temp.o common.o common.h
+	$(CC) $(CFLAGS) $(OMP_FLAGS) detect_temp.o common.o -o $@ $< $(CLIBS) $(LIBODP_THREADS)
 threads_grid.x: grid.c common.o common.h
 	$(CC) $(CFLAGS) $(OMP_FLAGS) common.o -o $@ $< $(CLIBS) $(LIBODP_THREADS)
 threads_grid_s.x: grid_s.c common.o common.h
 	$(CC) $(CFLAGS) $(OMP_FLAGS) common.o -o $@ $< $(CLIBS) $(LIBODP_THREADS)
 ##############
-mpi_general.x: mpi_general.c common.o common.h
-	$(MPICC) $(CFLAGS) common.o -o $@ $< $(LIBODP_MPI)
-mpi_general_s.x: mpi_general_s.c common.o common.h
-	$(MPICC) $(CFLAGS) common.o -o $@ $< $(LIBODP_MPI)
+mpi_general.x: mpi_general.c mpi_detect_temp.o common.o common.h
+	$(MPICC) $(CFLAGS) mpi_detect_temp.o common.o -o $@ $< $(LIBODP_MPI)
+mpi_general_s.x: mpi_general_s.c mpi_detect_temp.o common.o common.h
+	$(MPICC) $(CFLAGS) mpi_detect_temp.o common.o -o $@ $< $(LIBODP_MPI)
+mpi_detect_temp.o: mpi_detect_temp.c common.h
+	$(MPICC) $(CFLAGS) mpi_detect_temp.c -c $<
 ##############
-mpi_threads_general.x: mpi_general.c common.o common.h
-	$(MPICC) $(OMP_FLAGS) $(CFLAGS) common.o -o $@ $< $(LIBODP_MPI_THREADS)
-mpi_threads_general_s.x: mpi_general_s.c common.o common.h
-	$(MPICC) $(OMP_FLAGS) $(CFLAGS) common.o -o $@ $< $(LIBODP_MPI_THREADS)
+mpi_threads_general.x: mpi_general.c mpi_detect_temp.o common.o common.h
+	$(MPICC) $(OMP_FLAGS) $(CFLAGS) mpi_detect_temp.o common.o -o $@ $< $(LIBODP_MPI_THREADS)
+mpi_threads_general_s.x: mpi_general_s.c mpi_detect_temp.o common.o common.h
+	$(MPICC) $(OMP_FLAGS) $(CFLAGS) mpi_detect_temp.o common.o -o $@ $< $(LIBODP_MPI_THREADS)
 ##############
-mpi_cuda_general.x: mpi_general.c common.o common.h
-	$(NVCC) $(NVCC_CFLAGS) common.o -o $@ $< $(LIBODP_MPI_CUDA) $(NVCC_MPIBIN)
-mpi_cuda_general_s.x: mpi_general_s.c common.o common.h
-	$(NVCC) $(NVCC_CFLAGS) common.o -o $@ $< $(LIBODP_MPI_CUDA) $(NVCC_MPIBIN)
+mpi_cuda_general.x: mpi_general.c mpi_detect_temp.o common.o common.h
+	$(NVCC) $(NVCC_CFLAGS) mpi_detect_temp.o common.o -o $@ $< $(LIBODP_MPI_CUDA) $(NVCC_MPIBIN)
+mpi_cuda_general_s.x: mpi_general_s.c mpi_detect_temp.o common.o common.h
+	$(NVCC) $(NVCC_CFLAGS) mpi_detect_temp.o common.o -o $@ $< $(LIBODP_MPI_CUDA) $(NVCC_MPIBIN)
 ############
-cuda_general.x: general.c common.o common.h
-	$(NVCC) $(NVCC_CFLAGS) common.o -o $@ $< $(CLIBS) $(LIBODP_CUDA) $(NVCC_BIN)
-cuda_general_s.x: general_s.c common.o common.h
-	$(NVCC) $(NVCC_CFLAGS) common.o -o $@ $< $(CLIBS) $(LIBODP_CUDA) $(NVCC_BIN)
+cuda_general.x: general.c detect_temp.o common.o common.h
+	$(NVCC) $(NVCC_CFLAGS) detect_temp.o common.o -o $@ $< $(CLIBS) $(LIBODP_CUDA) $(NVCC_BIN)
+cuda_general_s.x: general_s.c detect_temp.o common.o common.h
+	$(NVCC) $(NVCC_CFLAGS) detect_temp.o common.o -o $@ $< $(CLIBS) $(LIBODP_CUDA) $(NVCC_BIN)
 cuda_grid.x: grid.c common.o common.h
 	$(NVCC) $(NVCC_CFLAGS) common.o -o $@ $< $(CLIBS) $(LIBODP_CUDA) $(NVCC_BIN)
 cuda_grid_s.x: grid_s.c common.o common.h
