@@ -13,6 +13,7 @@ Please see the paper (Open Access).
 When you write a paper using this library, please refer to the paper.
 
 * https://dl.acm.org/doi/10.1145/3368474.3368478
+
 ```
 @inproceedings{10.1145/3368474.3368478,
   author = {Nakao, Masahiro and Murai, Hitoshi and Sato, Mitsuhisa},
