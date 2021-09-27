@@ -10,8 +10,10 @@ You can use following.
 
 ## Algotherm for ASPL (Average Shortest Path Length)
 Please see the paper (Open Access).
-* https://dl.acm.org/doi/10.1145/3368474.3368478
+When you write a paper using this library, please refer to the paper.
 
+* https://dl.acm.org/doi/10.1145/3368474.3368478
+```
 @inproceedings{10.1145/3368474.3368478,
   author = {Nakao, Masahiro and Murai, Hitoshi and Sato, Mitsuhisa},
   title = {Parallelization of All-Pairs-Shortest-Path Algorithms in Unweighted Graph},
@@ -28,8 +30,7 @@ Please see the paper (Open Access).
   location = {Fukuoka, Japan},
   series = {HPCAsia2020}
 }
-
-_When you write a paper using this library, please refer to the paper._
+```
 
 ## Quick start
 ### Serial version
