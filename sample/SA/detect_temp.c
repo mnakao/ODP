@@ -46,15 +46,16 @@ double calc_max_temp_s(const int nodes, const int degree, const int seed, const 
   int based_nodes = nodes/symmetries;
   int (*adjacency)[degree] = malloc(sizeof(int) * based_nodes * degree);
 
+  char *val = getenv("ODP_PROFILE");
+  if(val)
+    unsetenv("ODP_PROFILE");
+  
   ODP_Conv_edge2adjacency_general_s(nodes, lines, degree, edge, symmetries, adjacency);
   ODP_Init_aspl_general_s(nodes, degree, NULL, symmetries);
   ODP_Set_aspl(adjacency, &diameter, &sum, &ASPL);
   current_diameter = diameter;
   current_ASPL     = ASPL;
   
-  char *val = getenv("ODP_PROFILE");
-  if(val) unsetenv("ODP_PROFILE");
-
   for(int i=0;i<ncalcs;i++){
     ODP_Mutate_adjacency_general_s(nodes, degree, NULL, symmetries, &r, adjacency);
     ODP_Set_aspl(adjacency, &diameter, &sum, &ASPL);
