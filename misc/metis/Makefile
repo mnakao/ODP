@@ -29,8 +29,10 @@ LIBODP_THREADS=../../libodp_threads.a
 METIS_LIB=/home/mnakao/work/metis-5.1.0/lib/
 METIS_INC=/home/mnakao/work/metis-5.1.0/include/
 all: serial
-serial:general.x general_s.x
+serial:general.x general_s.x edge2metis.x
 ############
+edge2metis.x: edge2metis.c
+	$(CC) edge2metis.c $(CFLAGS) $(LIBODP) -lm -o edge2metis.x
 general.x: general.c detect_temp.o common.o common.h
 	$(CC) $(CFLAGS) detect_temp.o common.o -o $@ $< $(CLIBS) $(LIBODP) -I$(METIS_INC) -L$(METIS_LIB) -lmetis
 general_s.x: general_s.c detect_temp.o common.o common.h
