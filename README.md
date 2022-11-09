@@ -8,8 +8,7 @@ You can use following.
 * libodp_mpi_threads.a: MPI + Threads version
 * libodp_mpi_cuda.a: MPI + CUDA version
 
-## Algotherm for ASPL (Average Shortest Path Length)
-Please see the paper (Open Access).
+## Reference
 When you write a paper using this library, please refer to the paper.
 
 * https://dl.acm.org/doi/10.1145/3368474.3368478
