@@ -1,6 +1,6 @@
- #include "common.h"
-extern double calc_max_temp_s(const int nodes, const int degree, const int seed, const int symmetries);
-extern double calc_min_temp_s();
+#include "common.h"
+extern double calc_general_max_temp_s(const int nodes, const int degree, const int seed, const int symmetries);
+extern double calc_general_min_temp_s();
 
 static void print_help(char *argv)
 {
@@ -111,10 +111,10 @@ int main(int argc, char *argv[])
   }
 
   if(max_temp == NOT_DEFINED)
-    max_temp = calc_max_temp_s(nodes, degree, seed, symmetries);
+    max_temp = calc_general_max_temp_s(nodes, degree, seed, symmetries);
   
   if(min_temp == NOT_DEFINED)
-    min_temp = calc_min_temp_s();
+    min_temp = calc_general_min_temp_s();
 
   printf("Nodes = %d, Degrees = %d, Symmetries = %d\n", nodes, degree, symmetries);
   printf("Random seed = %d\n", seed);

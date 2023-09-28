@@ -48,19 +48,19 @@ detect_temp.o: detect_temp.c common.h
 	$(CC) $(CFLAGS) -c $< $(CLIBS)
 general_s.x: general_s.c detect_temp.o common.o common.h
 	$(CC) $(CFLAGS) common.o detect_temp.o -o $@ $< $(CLIBS) $(LIBODP)
-grid.x: grid.c common.o common.h
-	$(CC) $(CFLAGS) common.o -o $@ $< $(CLIBS) $(LIBODP)
-grid_s.x: grid_s.c common.o common.h
-	$(CC) $(CFLAGS) common.o -o $@ $< $(CLIBS) $(LIBODP)
+grid.x: grid.c detect_temp.o common.o common.h
+	$(CC) $(CFLAGS) detect_temp.o common.o -o $@ $< $(CLIBS) $(LIBODP)
+grid_s.x: grid_s.c detect_temp.o common.o common.h
+	$(CC) $(CFLAGS) detect_temp.o common.o -o $@ $< $(CLIBS) $(LIBODP)
 ############
 threads_general.x: general.c detect_temp.o common.o common.h
 	$(CC) $(CFLAGS) $(OMP_FLAGS) detect_temp.o common.o -o $@ $< $(CLIBS) $(LIBODP_THREADS)
 threads_general_s.x: general_s.c detect_temp.o common.o common.h
 	$(CC) $(CFLAGS) $(OMP_FLAGS) detect_temp.o common.o -o $@ $< $(CLIBS) $(LIBODP_THREADS)
-threads_grid.x: grid.c common.o common.h
-	$(CC) $(CFLAGS) $(OMP_FLAGS) common.o -o $@ $< $(CLIBS) $(LIBODP_THREADS)
-threads_grid_s.x: grid_s.c common.o common.h
-	$(CC) $(CFLAGS) $(OMP_FLAGS) common.o -o $@ $< $(CLIBS) $(LIBODP_THREADS)
+threads_grid.x: grid.c detect_temp.o common.o common.h
+	$(CC) $(CFLAGS) $(OMP_FLAGS) detect_temp.o common.o -o $@ $< $(CLIBS) $(LIBODP_THREADS)
+threads_grid_s.x: grid_s.c detect_temp.o common.o common.h
+	$(CC) $(CFLAGS) $(OMP_FLAGS) detect_temp.o common.o -o $@ $< $(CLIBS) $(LIBODP_THREADS)
 ##############
 mpi_general.x: mpi_general.c mpi_detect_temp.o common.o common.h
 	$(MPICC) $(CFLAGS) mpi_detect_temp.o common.o -o $@ $< $(LIBODP_MPI)

@@ -1,4 +1,6 @@
 #include "common.h"
+extern double calc_grid_max_temp_s(const int width, const int height, const int degree, const int length, const int seed, const int symmetries);
+extern double calc_grid_min_temp_s();
 
 static void print_help(char *argv)
 {
@@ -87,7 +89,7 @@ int main(int argc, char *argv[])
   int width = NOT_DEFINED, height = NOT_DEFINED, degree = NOT_DEFINED, length = NOT_DEFINED, symmetries = 1, lines, (*edge)[2], nodes;
   int seed = 0, diameter, current_diameter, best_diameter, low_diameter;
   long sum, best_sum, ncalcs = 10000;
-  double max_temp = 100, min_temp = 0.22, ASPL, current_ASPL, best_ASPL, low_ASPL;
+  double max_temp = NOT_DEFINED, min_temp = NOT_DEFINED, ASPL, current_ASPL, best_ASPL, low_ASPL;
   ODP_Restore r;
 
   set_args(argc, argv, &width, &height, &degree, &length, &symmetries, &infname,
@@ -116,6 +118,12 @@ int main(int argc, char *argv[])
     edge = malloc(sizeof(int)*lines*2); // int edge[lines][2];
     ODP_Generate_random_grid_s(width, height, degree, length, symmetries, edge);
   }
+
+  if(max_temp == NOT_DEFINED)
+    max_temp = calc_grid_max_temp_s(width, height, degree, length, seed, symmetries);
+  
+  if(min_temp == NOT_DEFINED)
+    min_temp = calc_grid_min_temp_s();
   
   printf("Width = %d, Height = %d, Degrees = %d, Length = %d, Symmetries = %d\n",
 	 width, height, degree, length, symmetries);
